@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>카드 원정대</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 시안 D — 리소 인쇄 느낌의 보드게임. 종이 바탕 + 남색 잉크, 아군 파랑 · 적 분홍 · 에너지 노랑 (단일 라이트 테마) */
+:root {
+  --paper: #f4f0e6; --paper2: #ebe5d6; --ink: #232a3b; --muted: #6b6a73; --blue: #2f6fd6; --pink: #e8436b; --yellow: #f5c400; --green: #2e9e6b;
+  --display: "Jua", "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body); padding: 12px 16px 24px; }
+.wrap { max-width: 1000px; margin: 0 auto; display: grid; gap: 14px; }
+.wrap > * { min-width: 0; }
+header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+header h1 { margin: 0; font: 400 28px/1 var(--display); }
+header h1 span { color: var(--pink); }
+.back { color: var(--muted); font-size: 14px; text-decoration: none; }
+.hud { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-variant-numeric: tabular-nums; }
+.hud .k { font-size: 13px; color: var(--muted); margin-right: 4px; }
+.hud b { font: 400 20px/1 var(--display); }
+.hearts { display: inline-flex; gap: 3px; vertical-align: -2px; }
+.heart { width: 18px; height: 16px; background: var(--pink); clip-path: path("M9 16 L1.5 8.5 A4.4 4.4 0 0 1 9 3 A4.4 4.4 0 0 1 16.5 8.5 Z"); }
+.heart.off { background: #d6cfbf; }
+.path { display: flex; gap: 4px; align-items: center; overflow-x: auto; padding-bottom: 2px; }
+.node { flex: none; width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font: 400 13px var(--display); background: var(--paper); }
+.node.done { background: var(--ink); color: var(--paper); }
+.node.now { background: var(--yellow); }
+.node.boss { border-radius: 6px; width: 38px; }
+.dash { flex: none; width: 10px; height: 2px; background: var(--ink); opacity: .4; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; }
+.board { position: relative; background: var(--paper2); border: 2px solid var(--ink); border-radius: 10px; padding: 10px; box-shadow: 5px 5px 0 var(--ink); }
+canvas { display: block; width: 100%; max-width: 430px; margin: 0 auto; height: auto; touch-action: none; }
+.side { display: grid; gap: 12px; }
+.box { border: 2px solid var(--ink); border-radius: 10px; padding: 12px; background: var(--paper); }
+.box h2 { font: 400 17px/1 var(--display); margin: 0 0 8px; }
+.box p { margin: 0; font-size: 14px; }
+.decklist { display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
+.decklist span { border: 1.5px solid var(--ink); border-radius: 4px; padding: 0 6px; background: #fff; }
+.decklist span.spell { border-style: dashed; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.energy { display: flex; gap: 6px; align-items: center; margin-right: auto; }
+.orb { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); }
+.orb.off { background: transparent; }
+.energy .lbl { font: 400 18px var(--display); margin-left: 4px; }
+button { font: 400 17px/1 var(--display); color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 10px 16px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
+button:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+button:disabled { opacity: .4; cursor: default; }
+#fight { background: var(--pink); color: #fff; }
+.hand { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; min-height: 176px; padding-top: 6px; }
+.card { width: 124px; min-height: 168px; border: 2px solid var(--ink); border-radius: 10px; background: #fffdf7; padding: 8px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 4px; position: relative; text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); font: 13px/1.35 var(--body); color: var(--ink); touch-action: none; user-select: none; transition: transform .12s; }
+.card:hover { transform: translateY(-6px); }
+.card.sel { transform: translateY(-12px); box-shadow: 3px 3px 0 var(--ink), 0 0 0 4px var(--yellow); }
+.card.cant { opacity: .5; }
+.card .cost { position: absolute; top: -10px; left: -10px; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); display: grid; place-items: center; font: 400 17px var(--display); }
+.card .nm { font: 400 16px/1.1 var(--display); padding-left: 14px; }
+.card .art { height: 46px; border-radius: 6px; border: 1.5px solid var(--ink); display: grid; place-items: center; font: 400 26px var(--display); color: #fff; }
+.card .tx { font-size: 12px; }
+.card .st { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.card.spell .art { background: repeating-linear-gradient(45deg, var(--yellow) 0 6px, #f8dc5a 6px 12px); color: var(--ink); }
+.card .stars { color: #c08f00; }
+.card.ghost { position: fixed; pointer-events: none; z-index: 30; transform: rotate(-4deg); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 40; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; }
+.modal { position: fixed; inset: 0; background: rgba(35,42,59,.55); display: grid; place-items: center; z-index: 20; padding: 16px; }
+.sheet { background: var(--paper); border: 2px solid var(--ink); border-radius: 14px; box-shadow: 6px 6px 0 var(--ink); padding: 20px; max-width: 640px; width: 100%; display: grid; gap: 14px; max-height: calc(100% - 32px); overflow: auto; }
+.sheet h3 { margin: 0; font: 400 26px/1.1 var(--display); text-wrap: balance; }
+.sheet p { margin: 0; }
+.choices { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.nodechoice { display: grid; gap: 4px; width: 170px; text-align: left; padding: 14px; }
+.nodechoice small { font: 13px var(--body); color: var(--muted); }
+.legend { font-size: 13px; color: var(--muted); }
+@media (max-width: 820px) {
+  .wrap { display: flex; flex-direction: column; }
+  .main { display: contents; }
+  .board { order: 1; } .controls { order: 2; } .hand { order: 3; } .side { order: 4; }
+  .card { width: calc(33% - 8px); min-width: 96px; min-height: 150px; }
+  .card .art { height: 34px; font-size: 20px; }
+  .card .tx { font-size: 11.5px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="../index.html">← 시안 목록</a>
+    <h1>카드 <span>원정대</span></h1>
+    <div class="hud">
+      <span><span class="k">생명</span><span class="hearts" id="hearts"></span></span>
+      <span><span class="k">전투</span><b id="stage">1 / 10</b></span>
+      <span><span class="k">뽑을 카드</span><b id="pile">0</b></span>
+      <span><span class="k">버린 카드</span><b id="disc">0</b></span>
+    </div>
+  </header>
+  <div class="path" id="path" aria-label="원정 경로"></div>
+  <div class="main">
+    <div class="board">
+      <canvas id="cv" aria-label="5×6 전장. 아래쪽 세 줄에 카드를 내려 유닛을 배치합니다."></canvas>
+    </div>
+    <div class="side">
+      <div class="box"><h2>이번 전투</h2><p id="foe"></p></div>
+      <div class="box"><h2>규칙</h2><p>매 전투마다 덱에서 5장을 뽑고, 에너지로 유닛과 주문을 냅니다. 유닛은 아래쪽 세 줄에 놓고, 주문은 대상을 누르세요. 놓은 유닛을 다시 누르면 손으로 돌아옵니다. 전투는 자동으로 진행됩니다. 이기면 새 카드를 고르고 다음 길을 정합니다.</p></div>
+      <div class="box"><h2>내 덱 <span id="deckcount"></span></h2><div class="decklist" id="decklist"></div></div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="energy" id="energy"></div>
+    <button type="button" id="redraw">다시 뽑기 (1회)</button>
+    <button type="button" id="speed">속도 ×1</button>
+    <button type="button" id="fight">전투 시작</button>
+  </div>
+  <div class="hand" id="hand"></div>
+</div>
+<div id="modal" class="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="../shared/engine.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  // ---------- 카드 ----------
+  const U = (id, name, cost, color, hp, atk, as, range, mana, ability, rare) => ({ id, kind: 'unit', name, cost, color, hp, atk, as, range, mana, ability, rare: !!rare });
+  const S = (id, name, cost, target, text, rare) => ({ id, kind: 'spell', name, cost, target, text, rare: !!rare });
+  const CARDS = {
+    sword: U('sword', '검사', 1, '#2f6fd6', 600, 55, .7, 1, 70, { type: 'strike', power: 150, name: '내려베기', desc: '150 피해' }),
+    archer: U('archer', '궁수', 1, '#2e9e6b', 400, 50, .75, 3, 70, { type: 'volley', power: 90, count: 2, name: '두 발 사격', desc: '적 2명에게 90 피해' }),
+    shield: U('shield', '방패병', 2, '#5b6475', 950, 40, .6, 1, 80, { type: 'shield', power: 350, name: '방패벽', desc: '보호막 350' }),
+    cleric: U('cleric', '성직자', 2, '#d9a400', 500, 30, .65, 3, 70, { type: 'heal', power: 220, name: '치유', desc: '약한 아군 220 회복' }),
+    spear: U('spear', '창병', 2, '#7a4fd0', 700, 62, .7, 2, 80, { type: 'strike', power: 220, name: '찌르기', desc: '2칸 거리 220 피해' }),
+    rogue: U('rogue', '도적', 2, '#232a3b', 520, 70, .85, 1, 70, { type: 'leap', power: 240, name: '배후 습격', desc: '가장 먼 적에게 도약 240 피해' }, true),
+    pyro: U('pyro', '화염술사', 3, '#e8436b', 550, 45, .65, 3, 80, { type: 'aoe', power: 260, name: '화염 폭발', desc: '대상 주변 260 피해' }, true),
+    captain: U('captain', '기사단장', 3, '#1f4fa8', 1150, 75, .65, 1, 90, { type: 'rally', power: 0, name: '돌격 명령', desc: '주변 아군 공속 +25%' }, true),
+    giant: U('giant', '언덕 거인', 4, '#8a6a3a', 2100, 100, .5, 1, 100, { type: 'stun', power: 300, dur: 2, name: '땅 울리기', desc: '300 피해 + 2초 기절' }, true),
+    fireball: S('fireball', '화염구', 1, 'enemy', '적 하나에게 전투 시작 시 300 피해'),
+    warcry: S('warcry', '전투 함성', 1, 'all', '모든 아군 공격력 +25%'),
+    bless: S('bless', '축복', 1, 'ally', '아군 하나 체력 +400, 보호막 200'),
+    haste: S('haste', '가속', 1, 'ally', '아군 하나 공격 속도 +60%'),
+    scout: S('scout', '정찰', 0, 'draw', '카드 2장 뽑기'),
+    crystal: S('crystal', '마나 결정', 0, 'energy', '이번 전투 에너지 +1', true),
+    meteor: S('meteor', '유성 낙하', 2, 'enemy', '적 하나와 주변에 전투 시작 시 350 피해', true),
+  };
+  const FOES = {
+    goblin: { id: 'goblin', name: '고블린', v: 1, color: '#e8436b', hp: 380, atk: 40, as: .8, range: 1, mana: 0 },
+    slime: { id: 'slime', name: '슬라임', v: 1, color: '#2e9e6b', hp: 560, atk: 30, as: .6, range: 1, mana: 0 },
+    skel: { id: 'skel', name: '해골궁수', v: 1.5, color: '#8a8478', hp: 360, atk: 48, as: .7, range: 3, mana: 0 },
+    wolf: { id: 'wolf', name: '늑대', v: 1.5, color: '#5b6475', hp: 520, atk: 55, as: .9, range: 1, mana: 0 },
+    orc: { id: 'orc', name: '오크', v: 2.5, color: '#4b7a2a', hp: 900, atk: 70, as: .6, range: 1, mana: 90, ability: { type: 'stun', power: 120, dur: 1, name: '강타' } },
+    witch: { id: 'witch', name: '마녀', v: 3, color: '#7a4fd0', hp: 560, atk: 45, as: .6, range: 3, mana: 70, ability: { type: 'aoe', power: 200, name: '저주' } },
+    troll: { id: 'troll', name: '트롤', v: 4, color: '#3b6b5a', hp: 1600, atk: 85, as: .55, range: 1, mana: 0 },
+    dragon: { id: 'dragon', name: '흑룡', v: 99, color: '#232a3b', hp: 5200, atk: 130, as: .55, range: 2, mana: 80, ability: { type: 'aoe', power: 380, radius: 1, name: '화염 숨결' } },
+  };
+  const STARTER = ['sword', 'sword', 'sword', 'archer', 'archer', 'shield', 'fireball', 'warcry'];
+  const NODE = { battle: { k: 'battle', name: '전투', sym: '검', desc: '일반 적. 승리 시 카드 1장 선택' }, elite: { k: 'elite', name: '정예', sym: '정', desc: '강한 적. 승리 시 희귀 카드 선택' }, rest: { k: 'rest', name: '야영지', sym: '쉼', desc: '생명 회복 또는 카드 강화' }, boss: { k: 'boss', name: '흑룡', sym: '룡', desc: '최종 전투' } };
+  const STAGES = 10;
+
+  // ---------- 상태 ----------
+  const st = {
+    lives: 3, stage: 1, node: NODE.battle, history: [],
+    deck: STARTER.map((id) => ({ uid: AC.uid(), card: CARDS[id], star: 1 })),
+    draw: [], discard: [], hand: [], played: [], spells: [], energy: 3, maxEnergy: 3,
+    redrawn: false, phase: 'prep', sel: null, combat: null, speed: 1, enemies: [],
+  };
+
+  // ---------- 보드 ----------
+  const CS = 66, COLS = 5, ROWS = 6, W = CS * COLS + 20, H = CS * ROWS + 20;
+  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: 10, oy: 10, diag: true });
+  const canvas = $('cv'), ctx = AC.setupCanvas(canvas, W, H);
+  const isMine = (cell) => grid.cells[cell].r >= 3;
+
+  function toast(m) { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1600); }
+
+  // ---------- 덱 ----------
+  function drawCards(n) {
+    for (let k = 0; k < n; k++) {
+      if (!st.draw.length) { st.draw = AC.shuffle(st.discard); st.discard = []; }
+      if (!st.draw.length) break;
+      st.hand.push(st.draw.pop());
+    }
+  }
+  function startBattle() {
+    st.draw = AC.shuffle(st.deck.slice());
+    st.discard = []; st.hand = []; st.played = []; st.spells = [];
+    st.maxEnergy = st.energy = 3 + Math.floor((st.stage - 1) / 3);
+    st.redrawn = false; st.phase = 'prep'; st.sel = null; st.combat = null;
+    st.enemies = makeEnemies(st.stage, st.node.k);
+    drawCards(5);
+    render();
+  }
+  function makeEnemies(n, kind) {
+    const out = [], used = new Set();
+    const put = (def, star, rows) => {
+      for (let t = 0; t < 30; t++) {
+        const cell = grid.idx(AC.randi(0, COLS - 1), AC.pick(rows));
+        if (!used.has(cell)) { used.add(cell); out.push({ uid: AC.uid(), def, star, cell }); return; }
+      }
+    };
+    if (kind === 'boss') {
+      put(FOES.dragon, 1, [1]);
+      [FOES.orc, FOES.witch, FOES.wolf, FOES.skel].forEach((d) => put(d, 2, d.range > 1 ? [0] : [2]));
+      return out;
+    }
+    let budget = 1 + n * 1.15 + (kind === 'elite' ? 3 : 0);
+    const pool = Object.values(FOES).filter((f) => f.v <= Math.max(1.5, n * .6) && f.v < 99);
+    while (budget > 0 && out.length < 8) {
+      const f = AC.pick(pool);
+      const star = n >= 6 && Math.random() < (n - 5) * .18 ? 2 : 1;
+      budget -= f.v * (star === 2 ? 2 : 1);
+      put(f, star, f.range > 1 ? [0, 1] : [1, 2]);
+    }
+    return out;
+  }
+
+  // ---------- 카드 사용 ----------
+  function canPay(c) { return st.energy >= c.card.cost; }
+  function selectCard(c) {
+    if (st.phase !== 'prep') return;
+    if (!canPay(c)) return toast('에너지가 부족합니다');
+    const k = c.card;
+    if (k.kind === 'spell' && (k.target === 'all' || k.target === 'draw' || k.target === 'energy')) return playInstant(c);
+    st.sel = st.sel === c ? null : c;
+    if (st.sel) toast(k.kind === 'unit' ? '아래쪽 세 줄의 빈 칸을 누르세요' : k.target === 'enemy' ? '대상 적을 누르세요' : '대상 아군을 누르세요');
+    render();
+  }
+  function spend(c) { st.energy -= c.card.cost; st.hand.splice(st.hand.indexOf(c), 1); st.sel = null; }
+  function playInstant(c) {
+    const k = c.card;
+    spend(c);
+    if (k.target === 'draw') { drawCards(2); st.discard.push(c); }
+    else if (k.target === 'energy') { st.energy += 1; st.discard.push(c); }
+    else st.spells.push({ c, target: null });
+    toast(k.name + ' 사용');
+    render();
+  }
+  function placeAt(c, cell) {
+    if (!isMine(cell) || st.played.some((p) => p.cell === cell)) return false;
+    spend(c);
+    st.played.push({ c, cell });
+    render();
+    return true;
+  }
+  function boardUnitAt(cell) { return st.played.find((p) => p.cell === cell) || null; }
+  function enemyAt(cell) { return st.enemies.find((e) => e.cell === cell) || null; }
+  function useOn(cell) {
+    const c = st.sel, k = c.card;
+    if (k.kind === 'unit') return placeAt(c, cell) || (toast('내 진영의 빈 칸에만 놓을 수 있습니다'), false);
+    if (k.target === 'enemy') { const e = enemyAt(cell); if (!e) return toast('적 유닛을 누르세요'); spend(c); st.spells.push({ c, target: e.uid }); }
+    else if (k.target === 'ally') { const p = boardUnitAt(cell); if (!p) return toast('배치한 아군을 누르세요'); spend(c); st.spells.push({ c, target: p.c.uid }); }
+    toast(k.name + ' 준비 완료 — 전투 시작 시 발동');
+    render();
+  }
+  function unplay(p) {
+    // 놓은 유닛을 손으로 되돌림 (그 유닛을 대상으로 한 주문도 함께 반환)
+    st.played.splice(st.played.indexOf(p), 1);
+    st.hand.push(p.c); st.energy += p.c.card.cost;
+    for (const s of st.spells.filter((s) => s.target === p.c.uid)) { st.spells.splice(st.spells.indexOf(s), 1); st.hand.push(s.c); st.energy += s.c.card.cost; }
+    render();
+  }
+
+  // ---------- 입력 ----------
+  const drag = AC.dragController(canvas, {
+    pick: (pt) => { if (st.phase !== 'prep') return null; const c = grid.cellAt(pt.x, pt.y); return c ? boardUnitAt(c.i) : null; },
+    drop: (p, pt) => {
+      const c = grid.cellAt(pt.x, pt.y);
+      if (!c || !isMine(c.i)) return;
+      const other = boardUnitAt(c.i);
+      if (other) other.cell = p.cell;
+      p.cell = c.i;
+      render();
+    },
+    click: (pt) => {
+      if (st.phase !== 'prep') return;
+      const c = grid.cellAt(pt.x, pt.y);
+      if (!c) return;
+      if (st.sel) return useOn(c.i);
+      const p = boardUnitAt(c.i);
+      if (p) unplay(p);
+    },
+  });
+  function startCardDrag(ev, c, el) {
+    if (st.phase !== 'prep') return;
+    const k = c.card;
+    const sx = ev.clientX, sy = ev.clientY;
+    let ghost = null;
+    const mv = (e) => {
+      if (!ghost && Math.hypot(e.clientX - sx, e.clientY - sy) > 8 && canPay(c) && (k.kind === 'unit' || k.target === 'enemy' || k.target === 'ally')) {
+        ghost = el.cloneNode(true); ghost.classList.add('ghost'); ghost.style.width = el.offsetWidth + 'px'; document.body.appendChild(ghost);
+      }
+      if (ghost) { ghost.style.left = e.clientX - 40 + 'px'; ghost.style.top = e.clientY - 60 + 'px'; }
+    };
+    const up = (e) => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+      if (!ghost) return selectCard(c);
+      ghost.remove();
+      const r = canvas.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      const pt = canvas.toLogical(e), cell = grid.cellAt(pt.x, pt.y);
+      if (!cell) return;
+      st.sel = c;
+      useOn(cell.i);
+      st.sel = null; render();
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  }
+
+  $('redraw').onclick = () => {
+    if (st.phase !== 'prep' || st.redrawn) return;
+    st.redrawn = true;
+    const n = st.hand.length;
+    st.discard.push(...st.hand); st.hand = [];
+    drawCards(n);
+    st.sel = null;
+    render();
+  };
+  $('speed').onclick = () => { st.speed = st.speed === 1 ? 2 : st.speed === 2 ? 4 : 1; render(); };
+  $('fight').onclick = () => fight();
+
+  // ---------- 전투 ----------
+  function fight() {
+    if (st.phase !== 'prep') return;
+    if (!st.played.length) return toast('유닛 카드를 하나 이상 내세요');
+    const ents = [];
+    const byUid = new Map();
+    for (const p of st.played) {
+      const e = AC.makeEntity(p.c.card, p.c.star, 0, p.cell, { color: p.c.card.color, label: p.c.card.name[0] });
+      ents.push(e); byUid.set(p.c.uid, e);
+    }
+    for (const x of st.enemies) {
+      const e = AC.makeEntity(x.def, x.star, 1, x.cell, { color: x.def.color, label: x.def.name[0], big: x.def.id === 'dragon' });
+      ents.push(e); byUid.set(x.uid, e);
+    }
+    const cb = new AC.Combat(grid, ents, { maxTime: 45, hooks: { playerShot: '#2f6fd6', enemyShot: '#e8436b' } });
+    for (const s of st.spells) {
+      const id = s.c.card.id, star = s.c.star, t = s.target ? byUid.get(s.target) : null, m = AC.STAR_MULT[star];
+      if (id === 'warcry') for (const e of cb.alive(0)) { e.atk *= 1 + .25 * m; cb.ring(e.px, e.py, '#f5c400', 24); }
+      else if (id === 'bless' && t) { t.maxHp += 400 * m; t.hp += 400 * m; t.shield += 200 * m; cb.ring(t.px, t.py, '#2e9e6b', 26); }
+      else if (id === 'haste' && t) { t.as *= 1 + .6 * m; cb.ring(t.px, t.py, '#f5c400', 26); }
+      else if (id === 'fireball' && t) { cb.ring(t.px, t.py, '#e8436b', 30, .6); cb.damage(null, t, 300 * m, 'spell'); }
+      else if (id === 'meteor' && t) { cb.ring(t.px, t.py, '#e8436b', 60, .7); for (const e of cb.alive(1)) if (grid.dist(e.cell, t.cell) <= 1) cb.damage(null, e, 350 * m, 'spell'); }
+    }
+    st.combat = cb;
+    st.phase = 'combat';
+    st.sel = null;
+    render();
+  }
+  function endBattle() {
+    const won = st.combat.winner === 0;
+    st.discard.push(...st.hand, ...st.played.map((p) => p.c), ...st.spells.map((s) => s.c));
+    st.hand = []; st.played = []; st.spells = [];
+    st.phase = 'result';
+    st.history.push({ node: st.node, won });
+    if (!won) st.lives--;
+    render();
+    setTimeout(() => {
+      if (st.lives <= 0) return over(false);
+      if (st.node.k === 'boss' && won) return over(true);
+      if (won) reward(st.node.k === 'elite'); else { modal(`<h3>패배 — 생명 1 감소</h3><p>남은 생명 ${st.lives}. 덱은 그대로 유지됩니다. 다음 길을 고르세요.</p><div class="choices"><button type="button" id="ok">계속</button></div>`); $('ok').onclick = chooseNext; }
+    }, 1100);
+  }
+  function over(win) {
+    modal(`<h3>${win ? '흑룡 토벌 성공!' : '원정 실패'}</h3><p>${win ? '남은 생명 ' + st.lives + ' · 덱 ' + st.deck.length + '장으로 원정을 마쳤습니다.' : st.stage + '번째 전투에서 원정이 끝났습니다.'}</p><div class="choices"><button type="button" id="again">새 원정</button></div>`);
+    $('again').onclick = () => location.reload();
+  }
+
+  // ---------- 보상 / 경로 / 야영지 ----------
+  function modal(html) { $('sheet').innerHTML = html; $('modal').hidden = false; }
+  function closeModal() { $('modal').hidden = true; }
+  function reward(rare) {
+    const pool = Object.values(CARDS).filter((c) => (rare ? c.rare : true));
+    const picks = AC.shuffle(pool.slice()).slice(0, 3);
+    modal(`<h3>${rare ? '정예 처치! 희귀 카드를 고르세요' : '승리! 덱에 넣을 카드를 고르세요'}</h3><div class="choices" id="rw"></div><div class="choices"><button type="button" id="skip">건너뛰기</button></div>`);
+    picks.forEach((card) => {
+      const el = cardEl({ uid: 0, card, star: 1 });
+      el.onclick = () => { st.deck.push({ uid: AC.uid(), card, star: 1 }); toast(card.name + ' 획득'); chooseNext(); };
+      $('rw').appendChild(el);
+    });
+    $('skip').onclick = chooseNext;
+  }
+  function chooseNext() {
+    st.stage++;
+    if (st.stage > STAGES) return over(true);
+    if (st.stage === STAGES) {
+      modal(`<h3>마지막 전투: 흑룡의 둥지</h3><p>${NODE.boss.desc}. 에너지 ${3 + Math.floor((STAGES - 1) / 3)}로 시작합니다.</p><div class="choices"><button type="button" id="go">들어간다</button></div>`);
+      $('go').onclick = () => { st.node = NODE.boss; closeModal(); startBattle(); };
+      return;
+    }
+    const opts = AC.shuffle([NODE.battle, NODE.elite, NODE.rest, NODE.battle]).filter((v, i, a) => a.indexOf(v) === i).slice(0, 2);
+    modal(`<h3>갈림길 — ${st.stage}번째 걸음</h3><p>다음으로 갈 곳을 고르세요.</p><div class="choices" id="nx"></div>`);
+    opts.forEach((n) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'nodechoice';
+      b.innerHTML = `${n.name}<small>${n.desc}</small>`;
+      b.onclick = () => { st.node = n; if (n.k === 'rest') rest(); else { closeModal(); startBattle(); } };
+      $('nx').appendChild(b);
+    });
+  }
+  function rest() {
+    st.history.push({ node: NODE.rest, won: true });
+    const ups = st.deck.filter((d) => d.star < 3);
+    modal(`<h3>야영지</h3><p>생명을 회복하거나, 카드 한 장을 강화(★, 능력치 ×1.8)하세요.</p><div class="choices"><button type="button" id="heal" ${st.lives >= 3 ? 'disabled' : ''}>생명 +1 (${st.lives}/3)</button></div><div class="choices" id="up"></div>`);
+    $('heal').onclick = () => { st.lives = Math.min(3, st.lives + 1); toast('생명 회복'); chooseNext(); };
+    ups.forEach((d) => {
+      const el = cardEl(d);
+      el.onclick = () => { d.star++; toast(d.card.name + ' ' + '★'.repeat(d.star) + ' 강화'); chooseNext(); };
+      $('up').appendChild(el);
+    });
+    render();
+  }
+
+  // ---------- 렌더 ----------
+  function cardEl(c) {
+    const k = c.card, el = document.createElement('div');
+    el.className = 'card ' + k.kind;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
+    const m = AC.STAR_MULT[c.star];
+    el.innerHTML = `<span class="cost">${k.cost}</span><span class="nm">${k.name} <span class="stars">${c.star > 1 ? '★'.repeat(c.star) : ''}</span></span>
+      <span class="art" style="background:${k.kind === 'unit' ? k.color : ''}">${k.kind === 'unit' ? k.name[0] : '✦'}</span>
+      <span class="tx">${k.kind === 'unit' ? '<b>' + k.ability.name + '</b> ' + k.ability.desc : k.text}</span>
+      <span class="st">${k.kind === 'unit' ? `<span>체 ${Math.round(k.hp * m)}</span><span>공 ${Math.round(k.atk * m)}</span><span>사 ${k.range}</span>` : '<span>주문</span>'}</span>`;
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+    return el;
+  }
+  function render() {
+    $('hearts').innerHTML = [0, 1, 2].map((i) => `<span class="heart ${i < st.lives ? '' : 'off'}"></span>`).join('');
+    $('stage').textContent = st.stage + ' / ' + STAGES;
+    $('pile').textContent = st.draw.length;
+    $('disc').textContent = st.discard.length;
+    $('energy').innerHTML = Array.from({ length: Math.max(st.maxEnergy, st.energy) }, (_, i) => `<span class="orb ${i < st.energy ? '' : 'off'}"></span>`).join('') + `<span class="lbl">${st.energy} 에너지</span>`;
+    const prep = st.phase === 'prep';
+    $('fight').disabled = !prep; $('redraw').disabled = !prep || st.redrawn;
+    $('speed').textContent = '속도 ×' + st.speed;
+    const hand = $('hand');
+    hand.innerHTML = '';
+    for (const c of st.hand) {
+      const el = cardEl(c);
+      if (c === st.sel) el.classList.add('sel');
+      if (!canPay(c)) el.classList.add('cant');
+      el.addEventListener('pointerdown', (ev) => startCardDrag(ev, c, el));
+      el.addEventListener('click', (ev) => { if (ev.detail === 0) selectCard(c); }); // 키보드
+      hand.appendChild(el);
+    }
+    if (!st.hand.length && prep) hand.innerHTML = '<p class="legend">손에 카드가 없습니다. 전투를 시작하세요.</p>';
+    const names = {};
+    for (const e of st.enemies) names[e.def.name] = (names[e.def.name] || 0) + 1;
+    $('foe').textContent = `${st.node.name} · ` + Object.entries(names).map(([n, k]) => n + (k > 1 ? ' ×' + k : '')).join(', ');
+    $('deckcount').textContent = st.deck.length + '장';
+    $('decklist').innerHTML = st.deck.map((d) => `<span class="${d.card.kind}">${d.card.name}${d.star > 1 ? '★' + d.star : ''}</span>`).join('');
+    const path = $('path');
+    let h = '';
+    for (let i = 1; i <= STAGES; i++) {
+      const done = st.history[i - 1];
+      const cls = i < st.stage ? 'done' : i === st.stage ? 'now' : '';
+      const sym = i === STAGES ? '룡' : i < st.stage && done ? done.node.sym : i === st.stage ? st.node.sym : i;
+      h += (i > 1 ? '<span class="dash"></span>' : '') + `<span class="node ${cls} ${i === STAGES ? 'boss' : ''}">${sym}</span>`;
+    }
+    path.innerHTML = h;
+  }
+
+  function drawToken(x, y, o) {
+    const r = o.big ? 28 : 21;
+    ctx.save();
+    if (o.alpha) ctx.globalAlpha = o.alpha;
+    // 오프셋 그림자(리소 인쇄 어긋남 느낌)
+    ctx.fillStyle = o.side ? '#e8436b' : '#2f6fd6';
+    ctx.beginPath(); ctx.arc(x + 3, y + 3, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = o.flash ? '#ffffff' : o.color;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#232a3b'; ctx.stroke();
+    ctx.fillStyle = '#fffdf7';
+    ctx.font = `${o.big ? 26 : 19}px Jua, "Gowun Dodum", sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(o.label, x, y + 1);
+    if (o.star > 1) { ctx.fillStyle = '#c08f00'; ctx.font = '12px sans-serif'; ctx.fillText('★'.repeat(o.star), x, y + r + 8); }
+    if (o.stun) { ctx.strokeStyle = '#f5c400'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    if (o.mark) { ctx.fillStyle = '#f5c400'; ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x + r * .75, y - r * .75, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#232a3b'; ctx.font = '11px Jua, sans-serif'; ctx.fillText(o.mark, x + r * .75, y - r * .75 + 1); }
+    ctx.restore();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const c of grid.cells) {
+      const mine = c.r >= 3;
+      ctx.fillStyle = mine ? ((c.r + c.c) % 2 ? '#e2ebf7' : '#d6e2f2') : ((c.r + c.c) % 2 ? '#f7e1e6' : '#f1d3da');
+      ctx.fillRect(c.x - CS / 2 + 2, c.y - CS / 2 + 2, CS - 4, CS - 4);
+      if (st.phase === 'prep' && mine && st.sel && st.sel.card.kind === 'unit' && !boardUnitAt(c.i)) {
+        ctx.strokeStyle = '#2f6fd6'; ctx.setLineDash([5, 4]); ctx.lineWidth = 2;
+        ctx.strokeRect(c.x - CS / 2 + 6, c.y - CS / 2 + 6, CS - 12, CS - 12); ctx.setLineDash([]);
+      }
+    }
+    ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2.5;
+    ctx.strokeRect(10, 10, CS * COLS, CS * ROWS);
+    ctx.beginPath(); ctx.moveTo(10, 10 + CS * 3); ctx.lineTo(10 + CS * COLS, 10 + CS * 3); ctx.stroke();
+    if (st.combat) {
+      const cb = st.combat;
+      for (const e of cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py)) {
+        const o = AC.lungeOffset(e);
+        drawToken(e.px + o.x, e.py + o.y, { side: e.side, color: e.color, label: e.label, star: e.star, flash: e.flash > 0, stun: e.stun > 0, big: e.big });
+      }
+      for (const e of cb.units) if (!e.dead) AC.drawBars(ctx, e, { hpAlly: '#2f6fd6', hpEnemy: '#e8436b', mana: '#f5c400', back: '#232a3b', w: e.big ? 56 : 42, off: e.big ? 40 : 33, hpH: 5, manaH: 3, ticks: true });
+      AC.drawFx(ctx, cb, { font: 'Jua, sans-serif' });
+    } else {
+      const marks = new Map(st.spells.filter((s) => s.target).map((s) => [s.target, s.c.card.name[0]]));
+      for (const x of st.enemies) {
+        const c = grid.cells[x.cell];
+        drawToken(c.x, c.y, { side: 1, color: x.def.color, label: x.def.name[0], star: x.star, big: x.def.id === 'dragon', alpha: .85, mark: marks.get(x.uid) });
+      }
+      for (const p of st.played) {
+        if (drag.dragging && drag.obj === p) continue;
+        const c = grid.cells[p.cell];
+        drawToken(c.x, c.y, { side: 0, color: p.c.card.color, label: p.c.card.name[0], star: p.c.star, mark: marks.get(p.c.uid) });
+      }
+      if (drag.dragging && drag.obj) drawToken(drag.pt.x, drag.pt.y, { side: 0, color: drag.obj.c.card.color, label: drag.obj.c.card.name[0], star: drag.obj.c.star });
+    }
+  }
+
+  AC.loop((dt) => {
+    if (st.phase === 'combat' && st.combat) {
+      let left = dt * st.speed;
+      while (left > 0 && !st.combat.done) { const s = Math.min(1 / 60, left); st.combat.step(s); left -= s; }
+      if (st.combat.done) endBattle();
+    } else if (st.phase === 'result' && st.combat) st.combat.step(dt);
+    draw();
+  });
+
+  window.__deck = { st, fight, placeAt, selectCard, useOn };
+  startBattle();
+})();
+</script>
+</body>
+</html>

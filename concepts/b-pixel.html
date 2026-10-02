@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>픽셀 체스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Do+Hyeon&display=swap">
+<style>
+/* 시안 B — 호두나무 체스판 위의 픽셀 말. 각진 픽셀 테두리, 호박색 포인트 (단일 다크 테마) */
+:root {
+  --bg: #24160d; --wood: #3a2415; --wood-hi: #5a3a22; --edge: #120a05; --ink: #f6e7c8; --muted: #c4a37c;
+  --amber: #f2c14e; --ally: #6fdc5b; --enemy: #e8483b; --maple: #d4a56a; --walnut: #8a5a34;
+  --t1: #b9b1a3; --t2: #6fdc5b; --t3: #59a8ff; --t4: #f2c14e;
+  --px: "Silkscreen", "Do Hyeon", monospace;
+  --ko: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 2px, transparent 2px 22px); color: var(--ink); font: 16px/1.4 var(--ko); padding: 12px 16px 20px; image-rendering: pixelated; }
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 12px; }
+.px { background: var(--wood); box-shadow: 0 -4px 0 0 var(--edge), 0 4px 0 0 var(--edge), -4px 0 0 0 var(--edge), 4px 0 0 0 var(--edge), inset 0 4px 0 0 var(--wood-hi); padding: 12px; margin: 4px; }
+header { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+header h1 { margin: 0; font: 400 22px/1 var(--px); color: var(--amber); letter-spacing: .02em; text-shadow: 3px 3px 0 var(--edge); }
+header .back { color: var(--muted); text-decoration: none; font-size: 14px; }
+.hud { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.hud div { display: flex; gap: 6px; align-items: baseline; }
+.hud span { font-size: 13px; color: var(--muted); }
+.hud b { font: 400 18px/1 var(--px); }
+.hud .hp b { color: var(--enemy); } .hud .gold b { color: var(--amber); }
+.timerbox b { color: var(--ally); min-width: 2ch; display: inline-block; text-align: right; }
+.main { display: grid; grid-template-columns: 210px minmax(0, 1fr) 220px; gap: 16px; align-items: start; }
+h2 { font: 400 13px/1 var(--px); color: var(--amber); margin: 0 0 10px; }
+.board { position: relative; }
+canvas { display: block; width: 100%; height: auto; touch-action: none; image-rendering: pixelated; }
+.trait { display: grid; grid-template-columns: 1fr auto; padding: 5px 0; border-bottom: 2px solid var(--edge); opacity: .55; }
+.trait.active { opacity: 1; }
+.trait .tn { font-size: 16px; }
+.trait .tc { font: 400 14px/1 var(--px); color: var(--amber); }
+.trait .ts { grid-column: 1 / -1; display: flex; gap: 3px; }
+.trait .ts b { font: 400 10px/1 var(--px); padding: 2px 4px; background: var(--edge); color: var(--muted); }
+.trait .ts b.on { background: var(--amber); color: var(--edge); }
+.trait .td { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
+.empty { font-size: 14px; color: var(--muted); margin: 0; }
+#info .ih strong { font-size: 20px; }
+#info .stars { color: var(--amber); }
+#info .it { color: var(--muted); font-size: 14px; }
+#info dl { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 8px; margin: 8px 0; font-variant-numeric: tabular-nums; }
+#info dt { color: var(--muted); } #info dd { margin: 0; font-family: var(--px); font-size: 13px; }
+#info .ab { margin: 0 0 10px; font-size: 14px; }
+.help { color: var(--muted); font-size: 14px; margin: 0; }
+button { font: 400 15px/1 var(--ko); color: var(--ink); background: var(--wood-hi); border: 0; padding: 10px 12px; cursor: pointer; box-shadow: 0 4px 0 0 var(--edge), inset 0 -3px 0 0 rgba(0,0,0,.3); }
+button:hover:not(:disabled) { filter: brightness(1.15); }
+button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 0 var(--edge); }
+button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+#fight { background: var(--ally); color: var(--edge); font-size: 18px; }
+#lock.on { background: var(--amber); color: var(--edge); }
+.shopbar { display: grid; grid-template-columns: 180px minmax(0, 1fr) 150px; gap: 14px; align-items: start; }
+.ctrl { display: grid; gap: 8px; }
+.lvl { font-size: 14px; color: var(--muted); }
+.xpbar { height: 8px; background: var(--edge); margin-top: 4px; }
+#xpbar { height: 100%; width: 0; background: var(--t3); }
+#shop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.card { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; background: var(--edge); box-shadow: 0 0 0 3px var(--t1), 0 4px 0 3px var(--edge); min-height: 112px; align-content: start; }
+.card.t2 { box-shadow: 0 0 0 3px var(--t2), 0 4px 0 3px var(--edge); } .card.t3 { box-shadow: 0 0 0 3px var(--t3), 0 4px 0 3px var(--edge); } .card.t4 { box-shadow: 0 0 0 3px var(--t4), 0 4px 0 3px var(--edge); }
+.card canvas { width: 40px; height: 40px; }
+.card .nm { font-size: 15px; }
+.card .tr { font-size: 12px; color: var(--muted); }
+.card .cost { font: 400 12px/1 var(--px); color: var(--amber); }
+.card.poor { opacity: .5; }
+.card.pair { background: #4a3410; }
+.card.sold { box-shadow: none; background: transparent; outline: 2px dashed var(--wood-hi); color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--edge); color: var(--ink); padding: 10px 14px; opacity: 0; pointer-events: none; z-index: 10; box-shadow: 0 0 0 3px var(--amber); max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; }
+.banner { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font: 400 34px/1.2 var(--px); color: var(--ally); text-shadow: 4px 4px 0 var(--edge); opacity: 0; pointer-events: none; text-align: center; white-space: nowrap; }
+.banner.show { opacity: 1; }
+.banner.lose { color: var(--enemy); }
+.banner.over { pointer-events: auto; background: var(--edge); padding: 20px 26px; display: grid; gap: 10px; box-shadow: 0 0 0 4px var(--amber); white-space: normal; }
+.banner small { font: 16px var(--ko); color: var(--ink); text-shadow: none; }
+.rtype { font-size: 13px; padding: 2px 8px; background: var(--edge); color: var(--amber); }
+@media (max-width: 900px) {
+  .wrap { display: flex; flex-direction: column; }
+  .main { display: contents; }
+  .board { order: 1; } .shopbar { order: 2; } #infoPanel { order: 3; } #traitPanel { order: 4; }
+  #traits { display: flex; flex-wrap: wrap; gap: 6px; }
+  .trait { border: 0; background: var(--edge); padding: 4px 8px; display: flex; gap: 6px; }
+  .trait .td, .trait .ts { display: none; }
+  .shopbar { grid-template-columns: minmax(0, 1fr); }
+  .ctrl { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+  #shop { gap: 6px; }
+  .card { min-height: 86px; } .card .tr { display: none; } .card .nm { font-size: 13px; }
+  button { font-size: 13px; padding: 9px 4px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="../index.html">← 시안 목록</a>
+    <h1>PIXEL CHESS</h1>
+    <span class="rtype" id="rtype">크립 라운드</span>
+    <div class="hud">
+      <div class="hp"><span>체력</span><b id="hp">100</b></div>
+      <div><span>라운드</span><b id="round">1</b></div>
+      <div class="gold"><span>골드</span><b id="gold">0</b></div>
+      <div><span>배치</span><b id="count">0</b></div>
+      <div class="timerbox"><span>준비</span><b id="timer">30</b></div>
+    </div>
+  </header>
+  <div class="main">
+    <aside class="px" id="traitPanel"><h2>SYNERGY</h2><div id="traits"></div></aside>
+    <div class="board px">
+      <canvas id="cv" aria-label="8×8 체스판. 아래쪽 네 줄이 내 진영입니다."></canvas>
+      <div id="banner" class="banner"></div>
+    </div>
+    <aside class="px" id="infoPanel">
+      <h2>UNIT</h2>
+      <div id="info" hidden></div>
+      <p class="help">준비 시간이 끝나면 전투가 자동으로 시작됩니다. 1~3라운드와 5의 배수 라운드는 크립 라운드(처치당 +1G). 암살자는 전투 시작과 동시에 적 후열로 잠입합니다.</p>
+    </aside>
+  </div>
+  <div class="shopbar">
+    <div class="ctrl px">
+      <div><span class="lvl">LV <b id="level">1</b> · <span id="xp"></span></span><div class="xpbar"><div id="xpbar"></div></div></div>
+      <button type="button" id="buyxp">경험치 4G</button>
+      <button type="button" id="reroll">새로고침 2G</button>
+      <button type="button" id="lock">잠금</button>
+    </div>
+    <div id="shop"></div>
+    <div class="ctrl px">
+      <button type="button" id="fight">준비 완료</button>
+      <button type="button" id="speed">속도 ×1</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="../shared/engine.js"></script>
+<script src="../shared/shopgame.js"></script>
+<script>
+(() => {
+  const TRAITS = {
+    orc:      { name: '오크', th: [2, 4], desc: '오크 최대 체력 +250 / +550', apply: (e, t, has) => { if (has) { e.maxHp += t === 1 ? 250 : 550; e.hp = e.maxHp; } } },
+    undead:   { name: '언데드', th: [2, 4], desc: '언데드가 쓰러지면 체력 30% / 60%로 한 번 부활', apply: (e, t, has) => { if (has) e.revive = t === 1 ? .3 : .6; } },
+    elf:      { name: '엘프', th: [2, 4], desc: '엘프 회피 20% / 40%', apply: (e, t, has) => { if (has) e.dodge = t === 1 ? .2 : .4; } },
+    dwarf:    { name: '드워프', th: [2], desc: '드워프 사거리 +1, 공격력 +15%', apply: (e, t, has) => { if (has) { e.range += 1; e.atk *= 1.15; } } },
+    warrior:  { name: '전사', th: [2, 4], desc: '전사가 받는 피해 15% / 30% 감소', apply: (e, t, has) => { if (has) e.armor = Math.min(.6, e.armor + (t === 1 ? .15 : .3)); } },
+    hunter:   { name: '사냥꾼', th: [2, 4], desc: '사냥꾼 공격 속도 +35% / +80%', apply: (e, t, has) => { if (has) e.as *= t === 1 ? 1.35 : 1.8; } },
+    mage:     { name: '마법사', th: [2, 4], desc: '모든 아군 스킬 위력 +30% / +70%', apply: (e, t) => { e.spell *= t === 1 ? 1.3 : 1.7; } },
+    assassin: { name: '암살자', th: [2, 4], desc: '암살자 치명타 확률 +20% / +40% (기본: 전투 시작 시 후열 잠입)', apply: (e, t, has) => { if (has) e.crit += t === 1 ? .2 : .4; } },
+  };
+  const D = (id, name, cost, race, cls, hp, atk, as, range, mana, ability, extra) => Object.assign({ id, name, cost, race, cls, hp, atk, as, range, mana, ability }, extra || {});
+  const DEFS = [
+    D('grunt', '오크 도끼병', 1, 'orc', 'warrior', 700, 50, .65, 1, 90, { type: 'stun', power: 120, dur: 1.2, name: '박치기', desc: '120 피해 + 1.2초 기절' }),
+    D('skelarch', '해골 궁수', 1, 'undead', 'hunter', 420, 50, .75, 3, 80, { type: 'volley', power: 90, count: 3, name: '뼈화살', desc: '적 3명에게 90 피해' }),
+    D('elfblade', '엘프 단검수', 1, 'elf', 'assassin', 480, 58, .8, 1, 70, { type: 'strike', power: 200, name: '급소 찌르기', desc: '대상에게 200 피해' }, { crit: .15 }),
+    D('rifle', '드워프 소총수', 1, 'dwarf', 'hunter', 450, 56, .7, 3, 80, { type: 'strike', power: 180, name: '정밀 사격', desc: '대상에게 180 피해' }),
+    D('ghoul', '구울', 1, 'undead', 'warrior', 620, 52, .7, 1, 70, { type: 'drain', power: 140, name: '포식', desc: '140 피해, 60% 회복' }),
+    D('shaman', '오크 주술사', 2, 'orc', 'mage', 560, 42, .6, 3, 80, { type: 'aoe', power: 190, name: '번개 사슬', desc: '대상 주변 1칸 190 피해' }),
+    D('elfarch', '엘프 궁수', 2, 'elf', 'hunter', 500, 62, .8, 4, 80, { type: 'volley', power: 130, count: 3, name: '화살비', desc: '적 3명에게 130 피해' }),
+    D('wraith', '망령', 2, 'undead', 'assassin', 560, 66, .8, 1, 70, { type: 'drain', power: 210, name: '영혼 흡수', desc: '210 피해, 60% 회복' }, { crit: .1 }),
+    D('shield', '드워프 방패병', 2, 'dwarf', 'warrior', 850, 50, .6, 1, 90, { type: 'shield', power: 380, name: '강철 방패', desc: '자신에게 보호막 380' }),
+    D('lich', '리치', 3, 'undead', 'mage', 640, 48, .6, 3, 90, { type: 'aoe', power: 340, name: '서리 폭발', desc: '대상 주변 1칸 340 피해' }),
+    D('chief', '오크 족장', 3, 'orc', 'warrior', 1050, 75, .65, 1, 90, { type: 'rally', power: 0, name: '전쟁 함성', desc: '주변 2칸 아군 공속 +25%' }),
+    D('sage', '엘프 현자', 3, 'elf', 'mage', 600, 44, .65, 3, 80, { type: 'heal', power: 260, count: 2, name: '달빛', desc: '약한 아군 2명 260 회복' }),
+    D('sniper', '드워프 저격수', 3, 'dwarf', 'hunter', 600, 80, .65, 4, 90, { type: 'strike', power: 480, name: '헤드샷', desc: '대상에게 480 피해' }),
+    D('shadow', '그림자 칼날', 4, 'elf', 'assassin', 900, 105, .85, 1, 80, { type: 'leap', power: 420, name: '그림자 도약', desc: '가장 먼 적에게 도약해 420 피해' }, { crit: .2 }),
+    D('dknight', '죽음의 기사', 4, 'undead', 'warrior', 1500, 90, .65, 1, 100, { type: 'stun', power: 350, dur: 2, name: '죽음의 손길', desc: '350 피해 + 2초 기절' }),
+  ];
+  const CREEPS = {
+    rat: { id: 'rat', name: '들쥐', cost: 1, creep: true, hp: 300, atk: 28, as: .8, range: 1, mana: 0, ability: null, race: 'creep' },
+    wolf: { id: 'cwolf', name: '굶주린 늑대', cost: 1, creep: true, hp: 520, atk: 48, as: .8, range: 1, mana: 0, ability: null, race: 'creep' },
+    golem: { id: 'golem', name: '바위 골렘', cost: 2, creep: true, hp: 1200, atk: 70, as: .5, range: 1, mana: 0, ability: null, race: 'creep' },
+    drake: { id: 'drake', name: '고대 비룡', cost: 3, creep: true, hp: 2600, atk: 110, as: .6, range: 2, mana: 0, ability: null, race: 'creep' },
+  };
+  const traitsOf = (d) => (d.creep ? [] : [d.race, d.cls]);
+  const RACE = { orc: ['#5fa043', '#3b6b28'], undead: ['#c9c6b4', '#7d7a6c'], elf: ['#5ab8b0', '#2f7a74'], dwarf: ['#d08b3c', '#8a5420'], creep: ['#a67c52', '#5d4029'] };
+  const CLS = { warrior: '#b9b1a3', hunter: '#6fdc5b', mage: '#b07cff', assassin: '#1a1a1a' };
+  const isCreepRound = (r) => r <= 3 || r % 5 === 0;
+
+  // ---------- 절차적 픽셀 스프라이트 ----------
+  function hash(str) { let h = 2166136261; for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const N = 9, SC = 4, spriteCache = new Map();
+  function sprite(def, side) {
+    const key = def.id + side;
+    if (spriteCache.has(key)) return spriteCache.get(key);
+    const R = rng(hash(def.id));
+    const half = Math.ceil(N / 2), px = [];
+    for (let y = 0; y < N; y++) {
+      px.push(new Array(N).fill(0));
+      for (let x = 0; x < half; x++) {
+        const cx = half - 1 - x, body = 1 - (cx / half) * .7 - Math.abs(y - N / 2) / N * .6;
+        const v = R() < body * (def.creep ? .95 : .85) ? (R() < .25 ? 2 : 1) : 0;
+        px[y][x] = v; px[y][N - 1 - x] = v;
+      }
+    }
+    px[3][half - 2] = 3; px[3][N - half + 1] = 3; // 눈
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = (N + 2) * SC;
+    const c = cv.getContext('2d');
+    const [main, dark] = RACE[def.race];
+    const outline = side ? '#7a1610' : '#120a05';
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      if (px[y][x]) continue;
+      const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => px[y + dy] && px[y + dy][x + dx]);
+      if (near) { c.fillStyle = outline; c.fillRect((x + 1) * SC, (y + 1) * SC, SC, SC); }
+    }
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const v = px[y][x];
+      if (!v) continue;
+      c.fillStyle = v === 3 ? (side ? '#ff5544' : '#fff6c8') : v === 2 ? dark : main;
+      c.fillRect((x + 1) * SC, (y + 1) * SC, SC, SC);
+    }
+    spriteCache.set(key, cv);
+    return cv;
+  }
+
+  const CS = 46, W = 400, gx = (W - CS * 8) / 2;
+  const grid = AC.squareGrid(8, 8, CS, { ox: gx, oy: 8, diag: true });
+  const benchY = 8 + CS * 8 + 38;
+  const benchSlots = Array.from({ length: 8 }, (_, i) => ({ x: gx + CS / 2 + i * CS, y: benchY, r: 22 }));
+  const H = benchY + 30;
+
+  function drawUnit(ctx, x, y, o) {
+    const d = o.def, sp = sprite(d, o.side);
+    const bob = o.ent && !o.ent.moving ? Math.round(Math.sin(performance.now() / 180 + o.ent.id) * 1) : 0;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (o.preview) ctx.globalAlpha = .6;
+    const s = d.creep && d.cost >= 3 ? 1.35 : 1, w = sp.width * s * .95;
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fillRect(Math.round(x - w * .35), Math.round(y + w * .36), Math.round(w * .7), 4);
+    if (o.lifted) { ctx.globalAlpha = .9; y -= 6; }
+    ctx.drawImage(sp, Math.round(x - w / 2), Math.round(y - w / 2 + bob), Math.round(w), Math.round(w));
+    if (o.ent && o.ent.flash > 0) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = .6;
+      ctx.drawImage(sp, Math.round(x - w / 2), Math.round(y - w / 2 + bob), Math.round(w), Math.round(w));
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    }
+    if (!d.creep) {
+      ctx.fillStyle = '#120a05'; ctx.fillRect(Math.round(x + w / 2 - 9), Math.round(y + w / 2 - 9), 8, 8);
+      ctx.fillStyle = CLS[d.cls]; ctx.fillRect(Math.round(x + w / 2 - 8), Math.round(y + w / 2 - 8), 6, 6);
+    }
+    if (o.ent && o.ent.stun > 0) { ctx.fillStyle = '#ffe066'; for (let k = 0; k < 3; k++) ctx.fillRect(Math.round(x - 10 + k * 8), Math.round(y - w / 2 - 4 + (k % 2) * 2), 3, 3); }
+    // 별 (픽셀 점)
+    ctx.fillStyle = '#f2c14e';
+    for (let k = 0; k < o.star; k++) ctx.fillRect(Math.round(x - o.star * 3 + k * 6), Math.round(y + w / 2 - 2), 4, 4);
+    if (o.selected) { ctx.strokeStyle = '#f2c14e'; ctx.lineWidth = 2; ctx.strokeRect(Math.round(x - CS / 2 + 3), Math.round(y - CS / 2 + 3), CS - 6, CS - 6); }
+    ctx.restore();
+  }
+
+  function drawBackground(ctx, game) {
+    const g = game.grid;
+    // 판 테두리
+    ctx.fillStyle = '#120a05';
+    ctx.fillRect(gx - 6, 2, CS * 8 + 12, CS * 8 + 12);
+    for (const c of g.cells) {
+      const light = (c.r + c.c) % 2 === 0;
+      ctx.fillStyle = light ? '#d4a56a' : '#8a5a34';
+      if (c.r < 4) ctx.fillStyle = light ? '#c49a6a' : '#7a4a30';
+      ctx.fillRect(c.x - CS / 2, c.y - CS / 2, CS, CS);
+      // 나뭇결
+      ctx.fillStyle = 'rgba(0,0,0,.06)';
+      ctx.fillRect(c.x - CS / 2, c.y - CS / 2 + ((c.i * 7) % 30) + 6, CS, 2);
+    }
+    ctx.fillStyle = 'rgba(232,72,59,.10)';
+    ctx.fillRect(gx, 8, CS * 8, CS * 4);
+    // 중앙선
+    ctx.fillStyle = '#f2c14e';
+    for (let x = gx; x < gx + CS * 8; x += 8) ctx.fillRect(x, 8 + CS * 4 - 1, 4, 2);
+    // 좌표 (체스 표기)
+    ctx.fillStyle = 'rgba(18,10,5,.55)';
+    ctx.font = '8px Silkscreen, monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    for (let c = 0; c < 8; c++) ctx.fillText('abcdefgh'[c], gx + c * CS + 2, 8 + CS * 8 - 10);
+    for (let r = 0; r < 8; r++) ctx.fillText(String(8 - r), gx + 2, 8 + r * CS + 2);
+    // 벤치
+    for (const s of benchSlots) {
+      ctx.fillStyle = '#2a1a10';
+      ctx.fillRect(s.x - 21, s.y - 21, 42, 42);
+      ctx.fillStyle = '#3a2415';
+      ctx.fillRect(s.x - 19, s.y - 19, 38, 38);
+    }
+  }
+  function drawHighlights(ctx, game, hl) {
+    if (!hl || hl.where !== 'board') return;
+    const c = game.grid.cells[hl.cell];
+    ctx.strokeStyle = '#f2c14e'; ctx.lineWidth = 3;
+    ctx.strokeRect(c.x - CS / 2 + 2, c.y - CS / 2 + 2, CS - 4, CS - 4);
+  }
+
+  function enemyGen(r, game) {
+    if (!isCreepRound(r)) return game.defaultEnemy(r);
+    const g = game.grid;
+    const set = r === 1 ? [CREEPS.rat, CREEPS.rat] : r === 2 ? [CREEPS.rat, CREEPS.wolf, CREEPS.rat] : r === 3 ? [CREEPS.wolf, CREEPS.wolf, CREEPS.wolf]
+      : r === 5 ? [CREEPS.golem, CREEPS.wolf, CREEPS.wolf, CREEPS.golem] : r === 10 ? [CREEPS.golem, CREEPS.golem, CREEPS.drake] : [CREEPS.drake, CREEPS.drake, CREEPS.golem, CREEPS.golem];
+    const cols = [3, 4, 2, 5, 1, 6];
+    return set.map((def, k) => ({ def, star: r >= 10 ? 2 : 1, cell: g.idx(cols[k], k < 3 ? 2 : 1) }));
+  }
+
+  // 픽셀 렌더에서 이미지 프리로드용 상점 초상화
+  function cardHTML(d) {
+    return `<canvas width="44" height="44" data-def="${d.id}"></canvas><span class="nm">${d.name}</span><span class="tr">${TRAITS[d.race].name} · ${TRAITS[d.cls].name}</span><span class="cost">${d.cost}G</span>`;
+  }
+  const shopEl = document.getElementById('shop');
+  new MutationObserver(() => {
+    shopEl.querySelectorAll('canvas[data-def]').forEach((c) => {
+      const d = DEFS.find((x) => x.id === c.dataset.def), ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite(d, 0), 0, 0, 44, 44);
+    });
+  }).observe(shopEl, { childList: true });
+
+  new AC.ShopGame({
+    canvas: document.getElementById('cv'), W, H, grid, benchSlots,
+    defs: DEFS, traits: TRAITS, traitsOf, playerRowStart: 4, maxRounds: 15, prepTime: 30,
+    enemyGen, shopCardHTML: cardHTML, drawBackground, drawHighlights, drawUnit,
+    barStyle: { hpAlly: '#6fdc5b', hpEnemy: '#e8483b', mana: '#59a8ff', w: 34, off: 28, back: '#120a05', hpH: 4, manaH: 2 },
+    fxFont: 'Silkscreen, monospace',
+    onRoundStart: (game) => {
+      const el = document.getElementById('rtype');
+      el.textContent = isCreepRound(game.round) ? '크립 라운드 · 처치당 +1G' : '대전 라운드';
+    },
+    combatHooks: (game) => ({
+      playerShot: '#f2c14e', enemyShot: '#ff6a5a',
+      onStart: (cb) => {
+        // 암살자: 전투 시작 시 가장 먼 적 뒤로 잠입
+        for (const u of cb.units) {
+          if (u.def.cls !== 'assassin') continue;
+          const far = cb.alive(1 - u.side).sort((a, b) => cb.grid.dist(u.cell, b.cell) - cb.grid.dist(u.cell, a.cell))[0];
+          if (!far) continue;
+          const spot = cb.grid.neighbors[far.cell].filter((n) => !cb.occ[n]).sort((a, b) => (u.side ? cb.grid.cells[a].r - cb.grid.cells[b].r : cb.grid.cells[b].r - cb.grid.cells[a].r))[0];
+          if (spot === undefined) continue;
+          cb.ring(u.px, u.py, '#b07cff', 22);
+          cb.teleport(u, spot);
+          u.target = far;
+          cb.ring(u.px, u.py, '#b07cff', 22);
+        }
+      },
+      onDeath: (t, src, cb) => {
+        if (t.revive && !t.revived) {
+          t.revived = true;
+          const cell = cb.occ[t.cell] ? cb.grid.neighbors[t.cell].find((n) => !cb.occ[n]) : t.cell;
+          if (cell === undefined) return;
+          t.dead = false; t.hp = Math.round(t.maxHp * t.revive); t.mana = 0; t.moving = null;
+          t.cell = cell; cb.occ[cell] = t;
+          t.px = cb.grid.cells[cell].x; t.py = cb.grid.cells[cell].y;
+          cb.float(t.px, t.py - 30, '부활', '#e8e2c8');
+          cb.ring(t.px, t.py, '#e8e2c8', 26, .6);
+        } else if (t.side === 1 && t.def.creep) {
+          game.gold += 1;
+          cb.float(t.px, t.py - 30, '+1G', '#f2c14e', true);
+        }
+      },
+    }),
+    onInit: (game) => { game.roster.bench[0] = AC.Roster.unit(AC.pick(DEFS.filter((d) => d.cost === 1))); },
+  });
+})();
+</script>
+</body>
+</html>

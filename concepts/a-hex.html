@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>헥스 왕국</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Marcellus&display=swap">
+<style>
+/* 시안 A — 전쟁 지도 위의 헥스 보드. 숲빛 바탕 + 양피지 패널 + 금박 포인트 (단일 다크 테마) */
+:root {
+  --bg: #17201a; --panel: #e9dfc6; --panel-ink: #2b2418; --ink: #efe6cf; --muted: #a9b29f;
+  --gold: #d9a441; --gold-deep: #9c6f1e; --ally: #6f9a6a; --enemy: #b4553c; --line: #3a4a3c;
+  --t1: #8f948c; --t2: #4f9a5b; --t3: #3f6fc0; --t4: #c8902b;
+  --serif: "Gowun Batang", "Noto Serif KR", "Apple SD Gothic Neo", serif;
+  --display: "Marcellus", "Gowun Batang", serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: radial-gradient(ellipse at 50% 0%, #223024 0%, var(--bg) 70%); color: var(--ink); font: 15px/1.45 var(--serif); padding: 12px 16px 20px; }
+a { color: var(--gold); }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 12px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+header h1 { font: 400 22px/1 var(--display); letter-spacing: .06em; margin: 0; color: var(--gold); }
+header .back { font-size: 13px; color: var(--muted); text-decoration: none; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.stat { display: flex; align-items: baseline; gap: 6px; }
+.stat span { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.stat b { font: 400 20px/1 var(--display); }
+.stat.hp b { color: #f08a6e; }
+.stat.gold b { color: var(--gold); }
+.main { display: grid; grid-template-columns: 220px minmax(0, 1fr) 230px; gap: 12px; align-items: start; }
+.panel { background: var(--panel); color: var(--panel-ink); border-radius: 4px; padding: 12px; box-shadow: 0 0 0 1px #c9b78f inset, 0 8px 24px rgba(0,0,0,.35); }
+.panel h2 { font: 700 13px/1 var(--serif); letter-spacing: .12em; margin: 0 0 8px; color: #6b5427; }
+.board { position: relative; }
+canvas { display: block; width: 100%; height: auto; touch-action: none; border-radius: 6px; }
+.trait { display: grid; grid-template-columns: 1fr auto; gap: 0 6px; padding: 6px 0; border-bottom: 1px dashed #cdbd98; opacity: .6; }
+.trait.active { opacity: 1; }
+.trait .tn { font-weight: 700; }
+.trait .tc { font: 400 16px/1 var(--display); }
+.trait .ts { grid-column: 1 / -1; display: flex; gap: 4px; font-size: 11px; }
+.trait .ts b { padding: 0 5px; border: 1px solid #b8a578; border-radius: 2px; font-weight: 400; }
+.trait .ts b.on { background: #6b5427; color: #f3e9cf; border-color: #6b5427; }
+.trait .td { grid-column: 1 / -1; font-size: 12px; color: #5d5240; }
+.empty { font-size: 13px; color: #6d624d; margin: 0; }
+#info dl { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 8px; margin: 8px 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+#info dt { color: #7a6a4b; }
+#info dd { margin: 0; font-weight: 700; }
+#info .ih strong { font-size: 17px; }
+#info .stars { color: var(--gold-deep); }
+#info .it { font-size: 12px; color: #6d624d; }
+#info .ab { font-size: 13px; margin: 0 0 10px; }
+.sellbtn { width: 100%; }
+.side-help { font-size: 12.5px; color: #5d5240; margin: 0; }
+.side-help kbd { font: 11px var(--serif); border: 1px solid #b8a578; padding: 0 4px; border-radius: 2px; }
+.shopbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.ctrl { display: grid; gap: 6px; align-content: start; }
+button { font: 700 14px/1 var(--serif); border: 1px solid var(--gold-deep); background: #2a2417; color: var(--ink); padding: 9px 12px; border-radius: 3px; cursor: pointer; }
+button:hover:not(:disabled) { background: #3a3120; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+#fight { background: var(--gold); color: #24190a; border-color: var(--gold); font-size: 16px; padding: 12px 18px; }
+#fight:hover:not(:disabled) { background: #e8b65a; }
+#lock.on { background: var(--gold-deep); }
+.lvl { font-size: 12px; color: var(--muted); }
+.xpbar { height: 5px; background: #2b3a2d; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+#xpbar { height: 100%; background: var(--gold); width: 0; transition: width .3s; }
+#shop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.card { display: grid; gap: 4px; text-align: left; padding: 10px; background: var(--panel); color: var(--panel-ink); border: 2px solid var(--t1); min-height: 78px; align-content: start; }
+.card:hover:not(:disabled) { background: #f4ecd8; transform: translateY(-2px); }
+.card.t2 { border-color: var(--t2); } .card.t3 { border-color: var(--t3); } .card.t4 { border-color: var(--t4); box-shadow: 0 0 12px rgba(217,164,65,.5); }
+.card .nm { font-size: 15px; }
+.card .tr { font: 400 11.5px/1.3 var(--serif); color: #6d624d; }
+.card .cost { font: 400 15px/1 var(--display); color: var(--gold-deep); }
+.card.poor { opacity: .55; }
+.card.pair { box-shadow: 0 0 0 3px var(--gold) inset; }
+.card.sold { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: #2a2417; color: var(--ink); border: 1px solid var(--gold-deep); padding: 8px 14px; border-radius: 3px; opacity: 0; transition: .25s; pointer-events: none; z-index: 10; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.banner { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) scale(.9); font: 400 38px/1.1 var(--display); color: var(--gold); text-shadow: 0 2px 0 #000, 0 0 24px rgba(0,0,0,.8); opacity: 0; pointer-events: none; transition: .25s; text-align: center; white-space: nowrap; }
+.banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.banner.lose { color: #f08a6e; }
+.banner.over { pointer-events: auto; background: rgba(23,32,26,.94); padding: 22px 28px; border: 1px solid var(--gold-deep); display: grid; gap: 10px; white-space: normal; }
+.banner small { font: 15px var(--serif); color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+@media (max-width: 900px) {
+  .wrap { display: flex; flex-direction: column; }
+  .main { display: contents; }
+  .board { order: 1; } .shopbar { order: 2; } #infoPanel { order: 3; } #traitPanel { order: 4; } .legend { order: 5; }
+  #traits { display: flex; flex-wrap: wrap; gap: 6px; }
+  .trait { border: 1px solid #cdbd98; border-radius: 3px; padding: 4px 8px; display: flex; gap: 6px; align-items: baseline; }
+  .trait .td, .trait .ts { display: none; }
+  button { font-size: 13px; padding: 8px 6px; }
+  #shop { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+  .card { padding: 6px; min-height: 64px; }
+  .card .nm { font-size: 13px; }
+  .card .tr { display: none; }
+  .shopbar { grid-template-columns: minmax(0, 1fr); }
+  .ctrl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="../index.html">← 시안 목록</a>
+    <h1>HEX KINGDOM · 헥스 왕국</h1>
+    <div class="stats">
+      <div class="stat hp"><span>체력</span><b id="hp">100</b></div>
+      <div class="stat"><span>라운드</span><b id="round">1</b></div>
+      <div class="stat gold"><span>골드</span><b id="gold">0</b></div>
+      <div class="stat"><span>배치</span><b id="count">0</b></div>
+    </div>
+  </header>
+
+  <div class="main">
+    <aside class="panel" id="traitPanel">
+      <h2>시너지</h2>
+      <div id="traits"></div>
+    </aside>
+    <div class="board">
+      <canvas id="cv" aria-label="헥스 전장. 아래쪽 네 줄이 내 진영입니다."></canvas>
+      <div id="banner" class="banner"></div>
+    </div>
+    <aside class="panel" id="infoPanel">
+      <h2>유닛 정보</h2>
+      <div id="info" hidden></div>
+      <p class="side-help">유닛을 끌어서 아래쪽 네 줄에 배치합니다. 같은 유닛 3개가 모이면 ★ 승급. 상점 위로 끌어다 놓으면 판매.<br><kbd>D</kbd> 새로고침 <kbd>F</kbd> 경험치 <kbd>E</kbd> 판매 <kbd>Space</kbd> 전투</p>
+    </aside>
+  </div>
+
+  <div class="shopbar">
+    <div class="ctrl">
+      <div><span class="lvl">레벨 <b id="level">1</b> · 경험치 <span id="xp"></span></span><div class="xpbar"><div id="xpbar"></div></div></div>
+      <button type="button" id="buyxp">경험치 구매 4G</button>
+      <button type="button" id="reroll">새로고침 2G</button>
+      <button type="button" id="lock">잠금</button>
+    </div>
+    <div id="shop"></div>
+    <div class="ctrl">
+      <button type="button" id="fight">전투 시작</button>
+      <button type="button" id="speed">속도 ×1</button>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#3c5aa6"></i>왕국</span><span><i style="background:#3f8a4f"></i>숲</span><span><i style="background:#a4532f"></i>야생</span>
+    <span>테두리 색 = 비용(회색 1 · 초록 2 · 파랑 3 · 금 4)</span>
+  </div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="../shared/engine.js"></script>
+<script src="../shared/shopgame.js"></script>
+<script>
+(() => {
+  const TRAITS = {
+    knight:  { name: '기사', th: [2, 4], desc: '기사가 받는 피해 15% / 30% 감소', apply: (e, t, has) => { if (has) e.armor = Math.min(.6, e.armor + (t === 1 ? .15 : .3)); } },
+    ranger:  { name: '궁수', th: [2, 4], desc: '궁수 공격 속도 +30% / +70%', apply: (e, t, has) => { if (has) e.as *= t === 1 ? 1.3 : 1.7; } },
+    mage:    { name: '마법사', th: [2, 4], desc: '모든 아군 스킬 위력 +25% / +60%', apply: (e, t) => { e.spell *= t === 1 ? 1.25 : 1.6; } },
+    beast:   { name: '야수', th: [2, 4], desc: '야수 체력 +20% / +45%', apply: (e, t, has) => { if (has) { const k = t === 1 ? 1.2 : 1.45; e.maxHp = Math.round(e.maxHp * k); e.hp = e.maxHp; } } },
+    kingdom: { name: '왕국', th: [2, 4], desc: '모든 아군 공격력 +10% / +25%', apply: (e, t) => { e.atk *= t === 1 ? 1.1 : 1.25; } },
+    sylvan:  { name: '숲', th: [2, 3], desc: '숲 유닛 회피 20% / 40%', apply: (e, t, has) => { if (has) e.dodge = t === 1 ? .2 : .4; } },
+    wild:    { name: '야생', th: [2, 3], desc: '야생 유닛 피해 흡혈 20% / 40%', apply: (e, t, has) => { if (has) e.lifesteal = t === 1 ? .2 : .4; } },
+  };
+  const D = (id, name, cost, cls, org, hp, atk, as, range, mana, ability) => ({ id, name, cost, cls, org, hp, atk, as, range, mana, ability });
+  const DEFS = [
+    D('squire', '견습기사', 1, 'knight', 'kingdom', 650, 50, .65, 1, 80, { type: 'shield', power: 260, name: '방패 올리기', desc: '자신에게 보호막 260' }),
+    D('scout', '숲 정찰병', 1, 'ranger', 'sylvan', 450, 48, .75, 3, 70, { type: 'strike', power: 190, name: '조준 사격', desc: '대상에게 190 마법 피해' }),
+    D('wolf', '회색 늑대', 1, 'beast', 'wild', 560, 52, .8, 1, 60, { type: 'drain', power: 150, name: '물어뜯기', desc: '150 피해, 피해량의 60% 회복' }),
+    D('acolyte', '견습 마법사', 1, 'mage', 'kingdom', 420, 36, .6, 3, 60, { type: 'aoe', power: 140, name: '불꽃', desc: '대상 주변 1칸에 140 피해' }),
+    D('paladin', '성기사', 2, 'knight', 'kingdom', 800, 60, .6, 1, 90, { type: 'heal', power: 280, name: '치유의 빛', desc: '체력이 가장 낮은 아군 280 회복' }),
+    D('hunter', '덫사냥꾼', 2, 'ranger', 'wild', 540, 60, .75, 3, 80, { type: 'volley', power: 120, count: 3, name: '연발', desc: '무작위 적 3명에게 120 피해' }),
+    D('druid', '드루이드', 2, 'mage', 'sylvan', 540, 40, .65, 2, 80, { type: 'heal', power: 200, count: 2, name: '숲의 숨결', desc: '약한 아군 2명 200 회복' }),
+    D('bear', '동굴곰', 2, 'beast', 'sylvan', 920, 56, .55, 1, 100, { type: 'stun', power: 160, dur: 1.5, name: '앞발 강타', desc: '160 피해 + 1.5초 기절' }),
+    D('warden', '숲의 수호자', 3, 'knight', 'sylvan', 1050, 70, .6, 1, 100, { type: 'shield', power: 520, name: '나무껍질', desc: '자신에게 보호막 520' }),
+    D('archmage', '대마법사', 3, 'mage', 'kingdom', 620, 50, .65, 3, 90, { type: 'aoe', power: 330, name: '유성', desc: '대상 주변 1칸에 330 피해' }),
+    D('berserk', '광전사', 3, 'beast', 'wild', 860, 82, .8, 1, 70, { type: 'leap', power: 260, name: '도약', desc: '가장 먼 적에게 뛰어들어 260 피해' }),
+    D('windrun', '바람 사수', 3, 'ranger', 'sylvan', 640, 76, .8, 4, 80, { type: 'strike', power: 430, name: '관통 화살', desc: '대상에게 430 마법 피해' }),
+    D('dragon', '붉은 비룡', 4, 'beast', 'wild', 1300, 92, .6, 2, 100, { type: 'aoe', power: 460, radius: 1, name: '용의 숨결', desc: '대상 주변 1칸에 460 피해' }),
+    D('king', '사자왕', 4, 'knight', 'kingdom', 1450, 88, .65, 1, 100, { type: 'rally', power: 0, name: '진군의 함성', desc: '주변 2칸 아군 공격 속도 +25%' }),
+  ];
+  const traitsOf = (d) => [d.cls, d.org];
+  const ORG = { kingdom: '#3c5aa6', sylvan: '#3f8a4f', wild: '#a4532f' };
+  const TIER = ['', '#8f948c', '#4f9a5b', '#3f6fc0', '#d9a441'];
+
+  const W = 420, S = 29;
+  const grid = AC.hexGrid(7, 8, S, { ox: 0, oy: 6 });
+  const gx = (W - grid.w) / 2;
+  grid.cells.forEach((c) => { c.x += gx; });
+  const benchY = grid.h + 6 + 44;
+  const benchSlots = Array.from({ length: 8 }, (_, i) => ({ x: 30 + i * 51.4, y: benchY, r: 23 }));
+  const H = benchY + 34;
+
+  // 클래스 문장(紋章) 그리기
+  function glyph(ctx, cls, x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = '#f6edd5';
+    ctx.fillStyle = '#f6edd5';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (cls === 'knight') {
+      ctx.moveTo(-r * .45, -r * .45); ctx.lineTo(r * .45, -r * .45); ctx.lineTo(r * .45, 0);
+      ctx.quadraticCurveTo(r * .4, r * .45, 0, r * .6); ctx.quadraticCurveTo(-r * .4, r * .45, -r * .45, 0); ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -r * .3); ctx.lineTo(0, r * .35); ctx.stroke();
+    } else if (cls === 'ranger') {
+      ctx.arc(-r * .15, 0, r * .55, -Math.PI / 2.6, Math.PI / 2.6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-r * .55, 0); ctx.lineTo(r * .6, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r * .6, 0); ctx.lineTo(r * .35, -r * .18); ctx.lineTo(r * .35, r * .18); ctx.closePath(); ctx.fill();
+    } else if (cls === 'mage') {
+      for (let k = 0; k < 8; k++) {
+        const a = (k * Math.PI) / 4 - Math.PI / 2, rr = k % 2 ? r * .2 : r * .58;
+        k ? ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      ctx.closePath(); ctx.fill();
+    } else {
+      for (let k = -1; k <= 1; k++) { ctx.moveTo(k * r * .28 - r * .12, -r * .45); ctx.quadraticCurveTo(k * r * .28 + r * .2, 0, k * r * .28 - r * .05, r * .5); }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawUnit(ctx, x, y, o, game) {
+    const d = o.def, r = o.bench ? 17 : 19;
+    ctx.save();
+    if (o.preview) ctx.globalAlpha = .62;
+    if (o.lifted) { ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6; }
+    // 바닥 그림자
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath(); ctx.ellipse(x, y + r * .75, r * .9, r * .32, 0, 0, Math.PI * 2); ctx.fill();
+    // 비용 테두리 + 진영 링
+    ctx.fillStyle = TIER[d.cost];
+    ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = o.side ? '#5a1f16' : '#1d2a1f';
+    ctx.beginPath(); ctx.arc(x, y, r + 1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = ORG[d.org];
+    ctx.beginPath(); ctx.arc(x, y, r - 1, 0, Math.PI * 2); ctx.fill();
+    if (o.ent && o.ent.flash > 0) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fill(); }
+    if (o.ent && o.ent.stun > 0) { ctx.strokeStyle = '#ffe066'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    glyph(ctx, d.cls, x, y, r);
+    // 적 표식
+    if (o.side) { ctx.fillStyle = '#e46d50'; ctx.beginPath(); ctx.moveTo(x - 5, y - r - 6); ctx.lineTo(x + 5, y - r - 6); ctx.lineTo(x, y - r - 1); ctx.fill(); }
+    // 별
+    ctx.fillStyle = '#ffd56a';
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (!o.ent) ctx.fillText('★'.repeat(o.star), x, y + r + 8);
+    else if (o.star > 1) ctx.fillText('★'.repeat(o.star), x, y + r + 6);
+    if (o.selected) { ctx.strokeStyle = '#ffd56a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, r + 7, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function drawBackground(ctx, game) {
+    const g = game.grid, prep = game.phase === 'prep';
+    for (const c of g.cells) {
+      const mine = c.r >= 4;
+      g.hexPath(ctx, c.x, c.y, S - 1.5);
+      ctx.fillStyle = mine ? ((c.r + c.c) % 2 ? '#2f4632' : '#33503a') : ((c.r + c.c) % 2 ? '#3d2b24' : '#45302a');
+      ctx.fill();
+      ctx.strokeStyle = mine ? (prep ? '#5d7f58' : '#425a42') : '#5e3d33';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // 중앙 경계선
+    ctx.strokeStyle = 'rgba(217,164,65,.45)';
+    ctx.setLineDash([6, 6]);
+    const yMid = (g.cells[3 * 7].y + g.cells[4 * 7].y) / 2;
+    ctx.beginPath(); ctx.moveTo(gx + 4, yMid); ctx.lineTo(gx + g.w - 4, yMid); ctx.stroke();
+    ctx.setLineDash([]);
+    // 벤치
+    ctx.fillStyle = '#e9dfc6';
+    ctx.font = '700 11px "Gowun Batang", serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('대기석', 8, benchY - 32);
+    for (const s of benchSlots) {
+      ctx.fillStyle = 'rgba(233,223,198,.08)';
+      ctx.strokeStyle = 'rgba(233,223,198,.25)';
+      AC.roundRect(ctx, s.x - 23, s.y - 23, 46, 46, 6);
+      ctx.fill(); ctx.stroke();
+    }
+  }
+
+  function drawHighlights(ctx, game, hl) {
+    if (!hl || hl.where !== 'board') return;
+    const c = game.grid.cells[hl.cell];
+    game.grid.hexPath(ctx, c.x, c.y, S - 2);
+    ctx.fillStyle = 'rgba(217,164,65,.28)';
+    ctx.fill();
+    ctx.strokeStyle = '#d9a441'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  new AC.ShopGame({
+    canvas: document.getElementById('cv'), W, H, grid, benchSlots,
+    defs: DEFS, traits: TRAITS, traitsOf, playerRowStart: 4, maxRounds: 15,
+    shopCardHTML: (d) => `<span class="nm">${d.name}</span><span class="tr">${TRAITS[d.cls].name} · ${TRAITS[d.org].name}</span><span class="cost">${d.cost}G</span>`,
+    drawBackground, drawHighlights, drawUnit,
+    barStyle: { hpAlly: '#7fd48a', hpEnemy: '#ef6e55', mana: '#6cc7ff', w: 36, off: 30 },
+    fxFont: '"Marcellus", serif',
+    combatHooks: () => ({ playerShot: '#ffd56a', enemyShot: '#ff8a6a' }),
+    onInit: (game) => {
+      // 시작 유닛 하나 지급
+      game.roster.bench[0] = AC.Roster.unit(AC.pick(DEFS.filter((d) => d.cost === 1)));
+    },
+  });
+})();
+</script>
+</body>
+</html>

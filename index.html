@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오토체스 시안 보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 시안 비교 보드: 2열 카드(모바일 1열) + 하단 비교표. 중립 흑연색 위에 각 시안 고유색을 포인트로 */
+:root {
+  --bg: #f3f2ee; --surface: #ffffff; --fg: #1e2126; --muted: #5f646d; --line: #d9d7d0; --accent: #c2410c;
+  --a: #9c6f1e; --b: #b5651d; --c: #12857f; --d: #d6335a;
+  --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #f08a4b; --a: #d9a441; --b: #e0904a; --c: #3fd0c9; --d: #ff6b8b; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #f08a4b; --a: #d9a441; --b: #e0904a; --c: #3fd0c9; --d: #ff6b8b; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); padding: 28px 16px 48px; }
+.wrap { max-width: 1060px; margin: 0 auto; display: grid; gap: 28px; }
+.wrap > * { min-width: 0; }
+header { display: grid; gap: 8px; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+h1 { margin: 0; font: 400 clamp(30px, 5vw, 46px)/1.1 var(--display); text-wrap: balance; }
+.lead { margin: 0; max-width: 64ch; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.concept { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.concept canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 7; }
+.body { padding: 18px 20px 20px; display: grid; gap: 10px; align-content: start; }
+.tag { display: flex; align-items: baseline; gap: 10px; }
+.letter { font: 400 34px/1 var(--display); color: var(--k); }
+.tag h2 { margin: 0; font: 600 20px/1.2 var(--body); }
+.tag small { font: 500 12px var(--mono); color: var(--muted); letter-spacing: .06em; }
+.pitch { margin: 0; }
+dl.spec { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 13.5px; }
+dl.spec dt { color: var(--muted); }
+dl.spec dd { margin: 0; }
+.play { justify-self: start; display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 10px 16px; border-radius: 4px; background: var(--k); color: #fff; font-weight: 600; text-decoration: none; }
+.play:hover { filter: brightness(1.08); }
+.play:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.ka { --k: var(--a); } .kb { --k: var(--b); } .kc { --k: var(--c); } .kd { --k: var(--d); }
+section h2.sec { font: 400 24px/1.2 var(--display); margin: 0 0 12px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 13.5px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font: 500 12px var(--mono); letter-spacing: .06em; color: var(--muted); }
+tbody th { font-weight: 600; white-space: nowrap; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+td b { color: var(--k); }
+.notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.notes div { border-top: 2px solid var(--fg); padding-top: 10px; }
+.notes h3 { margin: 0 0 6px; font-size: 15px; }
+.notes p { margin: 0; color: var(--muted); font-size: 14px; }
+@media (max-width: 760px) {
+  .grid, .notes { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Top-view 2D · Auto battler · 4 concepts</span>
+    <h1>오토체스 시안 4종</h1>
+    <p class="lead">같은 자동 전투 엔진 위에 보드 형태, 경제 구조, 고유 규칙, 비주얼 톤을 다르게 얹은 플레이 가능한 프로토타입입니다. 각 시안을 직접 몇 라운드 해보고 방향을 고르면 그 시안을 기준으로 본 개발을 이어갑니다.</p>
+  </header>
+
+  <div class="grid">
+    <article class="concept ka">
+      <canvas data-thumb="a" width="640" height="280" aria-hidden="true"></canvas>
+      <div class="body">
+        <div class="tag"><span class="letter">A</span><h2>헥스 왕국</h2><small>HEX · CLASSIC</small></div>
+        <p class="pitch">가장 표준적인 오토체스. 헥스 보드, 5칸 상점, 레벨업으로 배치 수 증가, 직업+출신 시너지. 장르 문법을 그대로 따르는 안전한 기준안.</p>
+        <dl class="spec"><dt>보드</dt><dd>헥스 7×8 (6방향)</dd><dt>고유 규칙</dt><dd>직업 4 · 출신 3 시너지, 2/4 단계</dd><dt>톤</dt><dd>전쟁 지도 · 양피지 · 금박</dd></dl>
+        <a class="play" href="concepts/a-hex.html">A안 플레이 →</a>
+      </div>
+    </article>
+    <article class="concept kb">
+      <canvas data-thumb="b" width="640" height="280" aria-hidden="true"></canvas>
+      <div class="body">
+        <div class="tag"><span class="letter">B</span><h2>픽셀 체스</h2><small>8×8 · RETRO</small></div>
+        <p class="pitch">도타 오토체스 계열. 8×8 체스판, 30초 준비 타이머 후 자동 전투, 크립 라운드에서 골드 획득. 암살자 후열 잠입, 언데드 부활 같은 눈에 띄는 규칙.</p>
+        <dl class="spec"><dt>보드</dt><dd>사각 8×8 (8방향)</dd><dt>고유 규칙</dt><dd>준비 타이머 · 크립 라운드 · 종족+직업</dd><dt>톤</dt><dd>호두나무 체스판 · 절차 생성 픽셀 말</dd></dl>
+        <a class="play" href="concepts/b-pixel.html">B안 플레이 →</a>
+      </div>
+    </article>
+    <article class="concept kc">
+      <canvas data-thumb="c" width="640" height="280" aria-hidden="true"></canvas>
+      <div class="body">
+        <div class="tag"><span class="letter">C</span><h2>네온 서킷</h2><small>TERRAIN · ITEMS</small></div>
+        <p class="pitch">배치 전략을 강화한 안. 라운드마다 벽·엄폐·오버클럭 지형이 바뀌고, 승리 보상 칩을 유닛에 장착. 4방향 이동이라 길막과 우회가 의미 있음.</p>
+        <dl class="spec"><dt>보드</dt><dd>사각 7×8 (4방향) + 지형</dd><dt>고유 규칙</dt><dd>지형 재배열 · 아이템 칩 3슬롯</dd><dt>톤</dt><dd>회로 기판 · 네온 라인</dd></dl>
+        <a class="play" href="concepts/c-neon.html">C안 플레이 →</a>
+      </div>
+    </article>
+    <article class="concept kd">
+      <canvas data-thumb="d" width="640" height="280" aria-hidden="true"></canvas>
+      <div class="body">
+        <div class="tag"><span class="letter">D</span><h2>카드 원정대</h2><small>DECK · ROGUELIKE</small></div>
+        <p class="pitch">상점 대신 덱. 매 전투 5장을 뽑아 에너지로 유닛과 주문을 내고, 승리하면 카드를 추가하는 로그라이크 원정(10전, 생명 3). 싱글플레이 짧은 세션용.</p>
+        <dl class="spec"><dt>보드</dt><dd>사각 5×6 (8방향), 내 진영 3줄</dd><dt>고유 규칙</dt><dd>덱빌딩 · 주문 카드 · 갈림길/야영지</dd><dt>톤</dt><dd>리소 인쇄 보드게임 · 종이</dd></dl>
+        <a class="play" href="concepts/d-deck.html">D안 플레이 →</a>
+      </div>
+    </article>
+  </div>
+
+  <section>
+    <h2 class="sec">한눈에 비교</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>A 헥스 왕국</th><th>B 픽셀 체스</th><th>C 네온 서킷</th><th>D 카드 원정대</th></tr></thead>
+        <tbody>
+          <tr><th>유닛 획득</th><td class="ka">상점 5칸 · 새로고침 2G</td><td class="kb">상점 + 크립 처치 골드</td><td class="kc">상점 + 승리 시 칩</td><td class="kd"><b>덱에서 뽑기</b> · 에너지 3→6</td></tr>
+          <tr><th>성장</th><td class="ka">3합성 ★ · 레벨=배치 수</td><td class="kb">3합성 ★ · 레벨=배치 수</td><td class="kc">3합성 ★ · <b>칩 장착</b></td><td class="kd">카드 보상 · 야영지 강화</td></tr>
+          <tr><th>배치 변수</th><td class="ka">앞·뒷줄, 헥스 인접</td><td class="kb"><b>암살자 잠입</b> 대비 후열 보호</td><td class="kc"><b>지형</b>(벽·엄폐·오버클럭)</td><td class="kd">주문 대상 · 적 미리보기</td></tr>
+          <tr><th>세션 길이</th><td class="ka">15라운드 · 약 15분</td><td class="kb">15라운드 · 타이머로 템포 고정</td><td class="kc">15라운드 · 약 15분</td><td class="kd">10전투 · 약 10분</td></tr>
+          <tr><th>멀티 확장</th><td class="ka">8인 공유 풀 구조로 자연스러움</td><td class="kb">타이머 덕분에 동기화 쉬움</td><td class="kc">지형 시드 공유로 공정성 확보</td><td class="kd">비동기 PvP(고스트 덱)가 적합</td></tr>
+          <tr><th>강점</th><td class="ka">장르 이해도 높은 유저에게 즉시 통함</td><td class="kb">레트로 아트로 제작비 낮음, 개성 뚜렷</td><td class="kc">매 라운드 새 퍼즐, 리플레이성</td><td class="kd">모바일·캐주얼에 적합, 콘텐츠 확장 쉬움</td></tr>
+          <tr><th>리스크</th><td class="ka">기존 게임과 차별점 약함</td><td class="kb">절차 생성 스프라이트는 최종 아트로 부족</td><td class="kc">규칙이 많아 첫 판 진입 장벽</td><td class="kd">오토체스 특유의 상점 운영 재미 약함</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div><h3>공통 엔진</h3><p>shared/engine.js 하나로 4개 시안이 돌아갑니다. 사각·헥스 그리드, BFS 이동, 사거리·공속·마나·스킬, 투사체와 데미지 숫자.</p></div>
+    <div><h3>조작</h3><p>유닛은 드래그 또는 탭→칸 탭으로 배치합니다. 상점 위로 끌어다 놓으면 판매. 단축키 D 새로고침, F 경험치, Space 전투.</p></div>
+    <div><h3>다음 단계</h3><p>방향이 정해지면 유닛 데이터 분리(JSON), 밸런스 시트, 사운드, 실제 아트 교체, PvP 매칭 순으로 진행을 제안합니다.</p></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // 각 시안 분위기를 보여주는 정적 썸네일 (게임 코드와 같은 그리기 방식의 축약판)
+  const draws = {
+    a(ctx, W, H) {
+      ctx.fillStyle = '#17201a'; ctx.fillRect(0, 0, W, H);
+      const s = 26, w = Math.sqrt(3) * s;
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 13; c++) {
+        const x = 20 + c * w + (r & 1 ? w / 2 : 0), y = 20 + r * s * 1.5;
+        ctx.beginPath();
+        for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 30); ctx.lineTo(x + (s - 1.5) * Math.cos(a), y + (s - 1.5) * Math.sin(a)); }
+        ctx.closePath();
+        ctx.fillStyle = r < 3 ? ((r + c) % 2 ? '#3d2b24' : '#45302a') : ((r + c) % 2 ? '#2f4632' : '#33503a');
+        ctx.fill();
+      }
+      const tok = [[5, 1, '#a4532f', '#3f6fc0'], [7, 2, '#3c5aa6', '#8f948c'], [4, 4, '#3f8a4f', '#4f9a5b'], [6, 4, '#3c5aa6', '#d9a441'], [8, 5, '#a4532f', '#8f948c']];
+      for (const [c, r, f, t] of tok) {
+        const x = 20 + c * w + (r & 1 ? w / 2 : 0), y = 20 + r * s * 1.5;
+        ctx.fillStyle = t; ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.fill();
+        ctx.fillStyle = f; ctx.beginPath(); ctx.arc(x, y, 16, 0, 7); ctx.fill();
+      }
+    },
+    b(ctx, W, H) {
+      ctx.fillStyle = '#24160d'; ctx.fillRect(0, 0, W, H);
+      const cs = 40;
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 16; c++) {
+        ctx.fillStyle = (r + c) % 2 ? '#8a5a34' : '#d4a56a';
+        ctx.fillRect(c * cs, r * cs, cs, cs);
+      }
+      const px = (x, y, col, seed) => {
+        let s = seed;
+        const R = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+        for (let yy = 0; yy < 7; yy++) for (let xx = 0; xx < 4; xx++) if (R() < .6 - xx * .08) {
+          ctx.fillStyle = R() < .2 ? '#120a05' : col;
+          ctx.fillRect(x + xx * 4, y + yy * 4, 4, 4); ctx.fillRect(x + (6 - xx) * 4, y + yy * 4, 4, 4);
+        }
+      };
+      px(6 + 3 * cs, 6 + cs, '#e8483b', 7); px(6 + 6 * cs, 6 + 2 * cs, '#e8483b', 11); px(6 + 9 * cs, 6 + cs, '#e8483b', 3);
+      px(6 + 4 * cs, 6 + 4 * cs, '#5fa043', 5); px(6 + 7 * cs, 6 + 5 * cs, '#5ab8b0', 9); px(6 + 10 * cs, 6 + 4 * cs, '#c9c6b4', 13);
+    },
+    c(ctx, W, H) {
+      ctx.fillStyle = '#0a1416'; ctx.fillRect(0, 0, W, H);
+      const cs = 46;
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 14; c++) {
+        ctx.strokeStyle = r < 3 ? '#3a2229' : '#1f3a3d'; ctx.strokeRect(c * cs + .5, r * cs + .5, cs - 1, cs - 1);
+      }
+      ctx.fillStyle = '#12292c'; ctx.fillRect(4 * cs + 3, 2 * cs + 3, cs - 6, cs - 6); ctx.fillRect(9 * cs + 3, 3 * cs + 3, cs - 6, cs - 6);
+      ctx.fillStyle = 'rgba(255,184,77,.25)'; ctx.fillRect(6 * cs + 2, 3 * cs + 2, cs - 4, cs - 4);
+      ctx.strokeStyle = '#3fd0c9'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, 3 * cs); ctx.lineTo(W, 3 * cs); ctx.stroke();
+      const shp = (x, y, col, n) => { ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); for (let k = 0; k < n; k++) { const a = Math.PI * 2 * k / n - Math.PI / 2; ctx.lineTo(x + Math.cos(a) * 15, y + Math.sin(a) * 15); } ctx.closePath(); ctx.stroke(); ctx.shadowBlur = 0; };
+      shp(5.5 * cs, 1.5 * cs, '#ff5d73', 4); shp(8.5 * cs, .5 * cs, '#ff5d73', 3); shp(5.5 * cs, 4.5 * cs, '#3fd0c9', 6); shp(6.5 * cs, 3.5 * cs, '#8c8cff', 3); shp(8.5 * cs, 4.5 * cs, '#c9d6d8', 4);
+    },
+    d(ctx, W, H) {
+      ctx.fillStyle = '#f4f0e6'; ctx.fillRect(0, 0, W, H);
+      const cs = 52, ox = 40;
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        ctx.fillStyle = r < 2 ? ((r + c) % 2 ? '#f7e1e6' : '#f1d3da') : ((r + c) % 2 ? '#e2ebf7' : '#d6e2f2');
+        ctx.fillRect(ox + c * cs + 2, 10 + r * cs + 2, cs - 4, cs - 4);
+      }
+      ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2.5; ctx.strokeRect(ox, 10, cs * 5, cs * 5);
+      const tok = (x, y, col, sh) => { ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(x + 3, y + 3, 17, 0, 7); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 17, 0, 7); ctx.fill(); ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2; ctx.stroke(); };
+      tok(ox + 1.5 * cs, 10 + .5 * cs, '#e8436b', '#e8436b'); tok(ox + 3.5 * cs, 10 + 1.5 * cs, '#7a4fd0', '#e8436b');
+      tok(ox + 1.5 * cs, 10 + 2.5 * cs, '#2f6fd6', '#2f6fd6'); tok(ox + 2.5 * cs, 10 + 3.5 * cs, '#2e9e6b', '#2f6fd6');
+      const card = (x, y, rot, col) => { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = '#232a3b'; ctx.fillRect(-36, -50, 80, 112); ctx.fillStyle = '#fffdf7'; ctx.fillRect(-40, -54, 80, 112); ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2; ctx.strokeRect(-40, -54, 80, 112); ctx.fillStyle = col; ctx.fillRect(-32, -36, 64, 36); ctx.fillStyle = '#f5c400'; ctx.beginPath(); ctx.arc(-38, -52, 12, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore(); };
+      card(420, 150, -.12, '#2f6fd6'); card(500, 140, .02, '#e8436b'); card(580, 150, .14, '#f5c400');
+    },
+  };
+  document.querySelectorAll('canvas[data-thumb]').forEach((cv) => draws[cv.dataset.thumb](cv.getContext('2d'), cv.width, cv.height));
+})();
+</script>
+</body>
+</html>

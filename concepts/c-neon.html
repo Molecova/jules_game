@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>네온 서킷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 시안 C — 회로 기판 위의 전술 보드. 청록 잉크 바탕 + 시안 라인 + 호박색 강조, 적은 산호색 (단일 다크 테마) */
+:root {
+  --bg: #0a1416; --bg2: #0f1d20; --line: #1f3a3d; --cyan: #3fd0c9; --coral: #ff5d73; --amber: #ffb84d;
+  --ink: #d8f3ef; --muted: #7fa3a0; --chip: #13272a;
+  --t1: #7fa3a0; --t2: #3fd0c9; --t3: #8c8cff; --t4: #ffb84d;
+  --tech: "Chakra Petch", "IBM Plex Sans KR", sans-serif;
+  --ko: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); background-image: linear-gradient(var(--bg2) 1px, transparent 1px), linear-gradient(90deg, var(--bg2) 1px, transparent 1px); background-size: 24px 24px; color: var(--ink); font: 14px/1.5 var(--ko); padding: 12px 16px 20px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 12px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+header h1 { margin: 0; font: 700 20px/1 var(--tech); letter-spacing: .14em; color: var(--cyan); }
+header h1 small { color: var(--muted); font: 500 12px var(--tech); letter-spacing: .1em; margin-left: 8px; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; }
+.hud { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.hud div { display: flex; gap: 6px; align-items: baseline; }
+.hud span { font: 500 11px var(--tech); letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+.hud b { font: 700 19px/1 var(--tech); }
+.hud .hp b { color: var(--coral); } .hud .gold b { color: var(--amber); }
+.main { display: grid; grid-template-columns: 220px minmax(0, 1fr) 240px; gap: 14px; align-items: start; }
+.panel { border: 1px solid var(--line); background: rgba(15,29,32,.85); padding: 12px; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); }
+h2 { margin: 0 0 10px; font: 700 11px/1 var(--tech); letter-spacing: .18em; color: var(--cyan); text-transform: uppercase; }
+.board { position: relative; }
+canvas { display: block; width: 100%; height: auto; touch-action: none; }
+.trait { display: grid; grid-template-columns: 1fr auto; padding: 6px 0; border-bottom: 1px solid var(--line); opacity: .5; }
+.trait.active { opacity: 1; }
+.trait .tn { font-weight: 600; }
+.trait .tc { font: 700 15px/1 var(--tech); color: var(--cyan); }
+.trait .ts { grid-column: 1 / -1; display: flex; gap: 4px; }
+.trait .ts b { font: 500 10px/1 var(--tech); padding: 2px 5px; border: 1px solid var(--line); color: var(--muted); }
+.trait .ts b.on { border-color: var(--cyan); color: var(--bg); background: var(--cyan); }
+.trait .td { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.empty { color: var(--muted); margin: 0; font-size: 13px; }
+#info .ih strong { font-size: 16px; }
+#info .stars { color: var(--amber); }
+#info .it { font-size: 12px; color: var(--muted); }
+#info dl { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 8px; margin: 8px 0; font-variant-numeric: tabular-nums; }
+#info dt { color: var(--muted); } #info dd { margin: 0; font-family: var(--tech); }
+#info .ab { margin: 0 0 8px; font-size: 13px; }
+#info .items { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.legend { display: grid; gap: 6px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.legend div { display: flex; gap: 8px; align-items: center; }
+.sw { width: 16px; height: 16px; flex: none; border: 1px solid; }
+.sw.wall { background: repeating-linear-gradient(45deg, #2a4a4d 0 3px, #12292c 3px 6px); border-color: #3e6a6d; }
+.sw.cover { border-color: var(--cyan); box-shadow: inset 0 0 0 3px rgba(63,208,201,.25); }
+.sw.oc { border-color: var(--amber); background: rgba(255,184,77,.18); }
+button { font: 600 13px/1 var(--ko); color: var(--ink); background: var(--chip); border: 1px solid var(--line); padding: 10px 12px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+button:disabled { opacity: .4; cursor: default; }
+#fight { background: var(--cyan); color: var(--bg); border-color: var(--cyan); font: 700 15px/1 var(--tech); letter-spacing: .1em; padding: 13px; }
+#fight:hover:not(:disabled) { background: #6ee6e0; color: var(--bg); }
+#lock.on { border-color: var(--amber); color: var(--amber); }
+.shopbar { display: grid; grid-template-columns: 190px minmax(0, 1fr) 150px; gap: 12px; align-items: start; }
+.ctrl { display: grid; gap: 6px; }
+.lvl { font-size: 12px; color: var(--muted); font-family: var(--tech); letter-spacing: .06em; }
+.xpbar { height: 4px; background: var(--line); margin-top: 4px; }
+#xpbar { height: 100%; width: 0; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+#shop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.card { display: grid; gap: 3px; text-align: left; padding: 10px; background: var(--bg2); border: 1px solid var(--t1); border-left-width: 4px; min-height: 76px; align-content: start; }
+.card.t2 { border-color: var(--t2); } .card.t3 { border-color: var(--t3); } .card.t4 { border-color: var(--t4); }
+.card:hover:not(:disabled) { background: var(--chip); color: var(--ink); }
+.card .nm { font-size: 14px; font-weight: 600; }
+.card .tr { font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.card .cost { font: 700 13px/1 var(--tech); color: var(--amber); }
+.card.poor { opacity: .45; }
+.card.pair { box-shadow: 0 0 0 1px var(--amber), 0 0 14px rgba(255,184,77,.35); }
+.card.sold { border: 1px dashed var(--line); background: transparent; color: var(--muted); }
+.inv { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; min-height: 44px; }
+.inv h2 { margin: 0 6px 0 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; border: 1px solid var(--amber); color: var(--ink); background: var(--chip); cursor: grab; touch-action: none; user-select: none; font: 600 12.5px var(--ko); }
+.chip i { width: 18px; height: 18px; display: grid; place-items: center; font: 700 11px var(--tech); color: var(--bg); background: var(--amber); font-style: normal; }
+.chip.sel { background: var(--amber); color: var(--bg); }
+.chip.ghost { position: fixed; pointer-events: none; z-index: 20; opacity: .9; }
+.inv .note { color: var(--muted); font-size: 12px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--bg2); border: 1px solid var(--cyan); color: var(--ink); padding: 8px 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 10; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; }
+.banner { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font: 700 36px/1.1 var(--tech); letter-spacing: .2em; color: var(--cyan); text-shadow: 0 0 18px var(--cyan); opacity: 0; pointer-events: none; transition: opacity .2s; text-align: center; white-space: nowrap; }
+.banner.show { opacity: 1; }
+.banner.lose { color: var(--coral); text-shadow: 0 0 18px var(--coral); }
+.banner.over { pointer-events: auto; background: rgba(10,20,22,.95); border: 1px solid currentColor; padding: 20px 26px; display: grid; gap: 10px; letter-spacing: .1em; white-space: normal; }
+.banner small { font: 14px var(--ko); color: var(--ink); text-shadow: none; letter-spacing: 0; }
+@media (max-width: 900px) {
+  .wrap { display: flex; flex-direction: column; }
+  .main { display: contents; }
+  .board { order: 1; } .inv { order: 2; } .shopbar { order: 3; } #infoPanel { order: 4; } #traitPanel { order: 5; }
+  #traits { display: flex; flex-wrap: wrap; gap: 6px; }
+  .trait { border: 1px solid var(--line); padding: 3px 8px; display: flex; gap: 6px; }
+  .trait .td, .trait .ts { display: none; }
+  .shopbar { grid-template-columns: minmax(0, 1fr); }
+  .ctrl { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+  #shop { gap: 5px; } .card { padding: 6px; min-height: 60px; } .card .tr { display: none; } .card .nm { font-size: 12.5px; }
+  button { padding: 9px 4px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="../index.html">← 시안 목록</a>
+    <h1>NEON CIRCUIT<small>네온 서킷</small></h1>
+    <div class="hud">
+      <div class="hp"><span>HP</span><b id="hp">100</b></div>
+      <div><span>Round</span><b id="round">1</b></div>
+      <div class="gold"><span>Credit</span><b id="gold">0</b></div>
+      <div><span>Deploy</span><b id="count">0</b></div>
+    </div>
+  </header>
+  <div class="main">
+    <aside class="panel" id="traitPanel"><h2>Protocols</h2><div id="traits"></div>
+      <div class="legend">
+        <div><span class="sw wall"></span>벽 — 이동·배치 불가</div>
+        <div><span class="sw cover"></span>엄폐 — 받는 피해 −30%</div>
+        <div><span class="sw oc"></span>오버클럭 — 공격 속도 +40%</div>
+      </div>
+    </aside>
+    <div class="board">
+      <canvas id="cv" aria-label="7×8 회로 보드. 아래쪽 네 줄이 내 진영이며 매 라운드 지형이 바뀝니다."></canvas>
+      <div id="banner" class="banner"></div>
+    </div>
+    <aside class="panel" id="infoPanel"><h2>Unit Spec</h2><div id="info" hidden></div>
+      <p class="empty" id="hint">지형은 라운드마다 바뀝니다. 엄폐·오버클럭 칸을 차지하도록 배치하세요. 승리하면 칩을 얻고, 칩을 유닛에 끌어다 장착합니다(유닛당 3개).</p>
+    </aside>
+  </div>
+  <div class="inv panel" id="inv"><h2>Chips</h2><div id="chips" class="inv"></div></div>
+  <div class="shopbar">
+    <div class="ctrl panel">
+      <div><span class="lvl">LV <b id="level">1</b> · XP <span id="xp"></span></span><div class="xpbar"><div id="xpbar"></div></div></div>
+      <button type="button" id="buyxp">경험치 4C</button>
+      <button type="button" id="reroll">새로고침 2C</button>
+      <button type="button" id="lock">잠금</button>
+    </div>
+    <div id="shop"></div>
+    <div class="ctrl panel">
+      <button type="button" id="fight">DEPLOY</button>
+      <button type="button" id="speed">속도 ×1</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="../shared/engine.js"></script>
+<script src="../shared/shopgame.js"></script>
+<script>
+(() => {
+  const TRAITS = {
+    bulwark: { name: '방벽', th: [2, 4], desc: '방벽이 받는 피해 15% / 30% 감소', apply: (e, t, has) => { if (has) e.armor = Math.min(.6, e.armor + (t === 1 ? .15 : .3)); } },
+    sniper:  { name: '저격', th: [2, 3], desc: '저격 공격력 +25% / +60%', apply: (e, t, has) => { if (has) e.atk *= t === 1 ? 1.25 : 1.6; } },
+    hacker:  { name: '해커', th: [2, 4], desc: '모든 아군 시작 마나 +20 / +45', apply: (e, t) => { e.mana = Math.min(e.maxMana - 1, e.mana + (t === 1 ? 20 : 45)); } },
+    swarm:   { name: '스웜', th: [2, 4], desc: '스웜 공격 속도 +30% / +70%', apply: (e, t, has) => { if (has) e.as *= t === 1 ? 1.3 : 1.7; } },
+    chrome:  { name: '크롬', th: [2, 3], desc: '크롬은 최대 체력 20% / 40% 보호막으로 시작', apply: (e, t, has) => { if (has) e.shield += e.maxHp * (t === 1 ? .2 : .4); } },
+    neon:    { name: '네온', th: [2, 3], desc: '네온 스킬 위력 +35% / +80%', apply: (e, t, has) => { if (has) e.spell *= t === 1 ? 1.35 : 1.8; } },
+    ghost:   { name: '고스트', th: [2], desc: '고스트 회피 30%', apply: (e, t, has) => { if (has) e.dodge = .3; } },
+  };
+  const D = (id, name, cost, cls, org, hp, atk, as, range, mana, ability) => ({ id, name, cost, cls, org, hp, atk, as, range, mana, ability });
+  const DEFS = [
+    D('sdrone', '방패 드론', 1, 'bulwark', 'chrome', 700, 45, .65, 1, 80, { type: 'shield', power: 280, name: '방어막', desc: '자신에게 보호막 280' }),
+    D('rail', '레일 저격수', 1, 'sniper', 'neon', 420, 62, .55, 4, 70, { type: 'strike', power: 220, name: '레일샷', desc: '대상에게 220 피해' }),
+    D('swarmbot', '스웜봇', 1, 'swarm', 'ghost', 450, 40, 1, 1, 70, { type: 'drain', power: 120, name: '분해', desc: '120 피해, 60% 회복' }),
+    D('intruder', '침투 해커', 1, 'hacker', 'neon', 440, 38, .65, 3, 70, { type: 'stun', power: 100, dur: 1.2, name: '시스템 정지', desc: '100 피해 + 1.2초 정지' }),
+    D('mech', '중장갑 메크', 2, 'bulwark', 'chrome', 900, 55, .6, 1, 90, { type: 'stun', power: 160, dur: 1.5, name: '충격파', desc: '160 피해 + 1.5초 정지' }),
+    D('pulse', '펄스 저격수', 2, 'sniper', 'ghost', 520, 70, .6, 4, 80, { type: 'volley', power: 140, count: 3, name: '산탄 펄스', desc: '적 3명에게 140 피해' }),
+    D('nano', '나노 스웜', 2, 'swarm', 'neon', 560, 48, 1.05, 1, 80, { type: 'aoe', power: 150, name: '나노 폭풍', desc: '대상과 인접 칸 150 피해' }),
+    D('medic', '수리 해커', 2, 'hacker', 'chrome', 540, 40, .65, 3, 80, { type: 'heal', power: 240, count: 2, name: '긴급 패치', desc: '약한 아군 2명 240 회복' }),
+    D('fortress', '요새 프레임', 3, 'bulwark', 'neon', 1150, 70, .6, 1, 100, { type: 'shield', power: 600, name: '역장', desc: '자신에게 보호막 600' }),
+    D('phantom', '팬텀', 3, 'swarm', 'ghost', 700, 85, .9, 1, 70, { type: 'leap', power: 300, name: '위상 이동', desc: '가장 먼 적에게 이동해 300 피해' }),
+    D('virus', '바이러스 마스터', 3, 'hacker', 'ghost', 640, 50, .65, 3, 90, { type: 'aoe', power: 320, name: '감염', desc: '대상과 인접 칸 320 피해' }),
+    D('orbital', '궤도 포격수', 3, 'sniper', 'chrome', 620, 86, .6, 5, 90, { type: 'strike', power: 500, name: '궤도 포격', desc: '대상에게 500 피해' }),
+    D('overmind', '오버마인드', 4, 'hacker', 'neon', 1000, 70, .7, 3, 100, { type: 'volley', power: 260, count: 5, name: '연쇄 해킹', desc: '적 5명에게 260 피해' }),
+    D('titan', '타이탄', 4, 'bulwark', 'chrome', 1600, 95, .6, 1, 100, { type: 'rally', power: 0, name: '전술 링크', desc: '주변 2칸 아군 공속 +25%' }),
+  ];
+  const traitsOf = (d) => [d.cls, d.org];
+  const ITEMS = {
+    blade: { k: 'blade', name: '블레이드 칩', sym: 'A', desc: '공격력 +25%', apply: (e) => { e.atk *= 1.25; } },
+    core:  { k: 'core', name: '코어 칩', sym: 'M', desc: '시작 마나 +30', apply: (e) => { e.mana = Math.min(e.maxMana - 1, e.mana + 30); } },
+    plate: { k: 'plate', name: '장갑 칩', sym: 'H', desc: '체력 +300', apply: (e) => { e.maxHp += 300; e.hp += 300; } },
+    clock: { k: 'clock', name: '가속 칩', sym: 'S', desc: '공격 속도 +25%', apply: (e) => { e.as *= 1.25; } },
+    leech: { k: 'leech', name: '흡수 칩', sym: 'L', desc: '흡혈 20%', apply: (e) => { e.lifesteal += .2; } },
+  };
+  const ITEM_KEYS = Object.keys(ITEMS);
+  const ORG = { chrome: '#c9d6d8', neon: '#3fd0c9', ghost: '#8c8cff' };
+  const TIER = ['', '#7fa3a0', '#3fd0c9', '#8c8cff', '#ffb84d'];
+
+  const CS = 52, W = 400, COLS = 7, ROWS = 8, gx = (W - CS * COLS) / 2;
+  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: gx, oy: 8, diag: false });
+  const benchY = 8 + CS * ROWS + 40;
+  const benchSlots = Array.from({ length: 8 }, (_, i) => ({ x: 26 + i * 49.7, y: benchY, r: 22 }));
+  const H = benchY + 30;
+
+  // ---------- 지형 ----------
+  let terrain = new Array(grid.cells.length).fill(0); // 0 없음 1 벽 2 엄폐 3 오버클럭
+  function genTerrain(round) {
+    terrain = new Array(grid.cells.length).fill(0);
+    const pairs = [[1, 2 + Math.min(1, Math.floor(round / 6))], [2, 2], [3, 1 + (round > 4 ? 1 : 0)]];
+    for (const [type, n] of pairs) {
+      let placed = 0, tries = 0;
+      while (placed < n && tries++ < 100) {
+        const c = AC.randi(0, COLS - 1), r = AC.randi(type === 1 ? 3 : 1, 3); // 위쪽 절반에 만들고 점대칭 복제
+        const a = grid.idx(c, r), b = grid.idx(COLS - 1 - c, ROWS - 1 - r);
+        if (terrain[a] || terrain[b]) continue;
+        if (type === 1 && (c === 0 || c === COLS - 1)) continue;
+        terrain[a] = terrain[b] = type;
+        placed++;
+      }
+    }
+  }
+
+  // ---------- 아이템 인벤토리 ----------
+  let inv = [], selChip = -1, gameRef = null;
+  function giveItem(n = 1) { for (let k = 0; k < n; k++) if (inv.length < 6) inv.push(ITEMS[AC.pick(ITEM_KEYS)]); renderInv(); }
+  function equip(u, idx) {
+    if (!u || idx < 0) return false;
+    if (u.items.length >= 3) { gameRef.toast('칩은 유닛당 3개까지 장착됩니다'); return false; }
+    u.items.push(inv[idx]);
+    gameRef.toast(u.def.name + '에 ' + inv[idx].name + ' 장착');
+    inv.splice(idx, 1);
+    selChip = -1;
+    renderInv();
+    gameRef.refresh();
+    return true;
+  }
+  function renderInv() {
+    const el = document.getElementById('chips');
+    el.innerHTML = inv.length ? '' : '<span class="note">승리하면 칩을 얻습니다. 칩을 유닛 위로 끌어 장착하세요.</span>';
+    inv.forEach((it, i) => {
+      const b = document.createElement('span');
+      b.className = 'chip' + (i === selChip ? ' sel' : '');
+      b.tabIndex = 0;
+      b.title = it.desc;
+      b.innerHTML = `<i>${it.sym}</i>${it.name}`;
+      b.addEventListener('pointerdown', (ev) => startChipDrag(ev, i, b));
+      b.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { selChip = i; renderInv(); } });
+      el.appendChild(b);
+    });
+  }
+  function startChipDrag(ev, i, el) {
+    ev.preventDefault();
+    const ghost = el.cloneNode(true);
+    ghost.classList.add('ghost');
+    let moved = false;
+    const sx = ev.clientX, sy = ev.clientY;
+    const mv = (e) => {
+      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 6) { moved = true; document.body.appendChild(ghost); }
+      ghost.style.left = e.clientX + 8 + 'px';
+      ghost.style.top = e.clientY + 8 + 'px';
+    };
+    const up = (e) => {
+      window.removeEventListener('pointermove', mv);
+      window.removeEventListener('pointerup', up);
+      ghost.remove();
+      if (!moved) { selChip = selChip === i ? -1 : i; renderInv(); if (selChip >= 0) gameRef.toast('장착할 유닛을 누르세요'); return; }
+      const cv = document.getElementById('cv'), r = cv.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      equip(gameRef.unitAt(cv.toLogical(e)), i);
+    };
+    window.addEventListener('pointermove', mv);
+    window.addEventListener('pointerup', up);
+  }
+
+  // ---------- 렌더 ----------
+  function shape(ctx, cls, x, y, r) {
+    ctx.beginPath();
+    if (cls === 'bulwark') { ctx.rect(x - r * .8, y - r * .8, r * 1.6, r * 1.6); }
+    else if (cls === 'sniper') { ctx.moveTo(x, y - r); ctx.lineTo(x + r * .9, y + r * .7); ctx.lineTo(x - r * .9, y + r * .7); ctx.closePath(); }
+    else if (cls === 'hacker') { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
+    else { for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; k ? ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r) : ctx.moveTo(x + r, y); } ctx.closePath(); }
+  }
+  function drawUnit(ctx, x, y, o) {
+    const d = o.def, r = o.bench ? 15 : 17, col = o.side ? '#ff5d73' : ORG[d.org];
+    ctx.save();
+    if (o.preview) ctx.globalAlpha = .55;
+    ctx.shadowColor = col; ctx.shadowBlur = o.lifted ? 22 : 10;
+    shape(ctx, d.cls, x, y, r);
+    ctx.fillStyle = o.ent && o.ent.flash > 0 ? '#ffffff' : '#0b1a1c';
+    ctx.fill();
+    ctx.lineWidth = 2.2; ctx.strokeStyle = col; ctx.stroke();
+    ctx.shadowBlur = 0;
+    // 내부 코어: 비용 색
+    ctx.fillStyle = TIER[d.cost];
+    ctx.beginPath(); ctx.arc(x, y, 3.5 + d.cost * .8, 0, Math.PI * 2); ctx.fill();
+    if (o.side && !o.preview) { ctx.strokeStyle = 'rgba(255,93,115,.5)'; ctx.lineWidth = 1; shape(ctx, d.cls, x, y, r + 4); ctx.stroke(); }
+    if (o.ent && o.ent.stun > 0) { ctx.strokeStyle = '#ffb84d'; ctx.setLineDash([2, 3]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    // 별
+    ctx.fillStyle = '#ffb84d';
+    for (let k = 0; k < o.star; k++) { ctx.beginPath(); ctx.moveTo(x - (o.star - 1) * 4 + k * 8, y + r + 3); ctx.lineTo(x - (o.star - 1) * 4 + k * 8 + 3, y + r + 7); ctx.lineTo(x - (o.star - 1) * 4 + k * 8 - 3, y + r + 7); ctx.fill(); }
+    // 장착 칩
+    const items = (o.unit && o.unit.items) || [];
+    items.forEach((it, k) => {
+      ctx.fillStyle = '#ffb84d';
+      ctx.fillRect(x + r - 4, y - r + k * 7 - 2, 6, 5);
+    });
+    if (o.selected) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(x - CS / 2 + 4, y - CS / 2 + 4, CS - 8, CS - 8); }
+    ctx.restore();
+  }
+
+  function drawBackground(ctx, game) {
+    const t = game.time;
+    for (const c of grid.cells) {
+      const x = c.x - CS / 2, y = c.y - CS / 2, ty = terrain[c.i];
+      ctx.fillStyle = c.r >= 4 ? '#0e2023' : '#1a1418';
+      ctx.fillRect(x + 1, y + 1, CS - 2, CS - 2);
+      ctx.strokeStyle = c.r >= 4 ? '#1f3a3d' : '#3a2229';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + .5, y + .5, CS - 1, CS - 1);
+      if (ty === 1) {
+        ctx.fillStyle = '#12292c'; ctx.fillRect(x + 3, y + 3, CS - 6, CS - 6);
+        ctx.save(); ctx.beginPath(); ctx.rect(x + 3, y + 3, CS - 6, CS - 6); ctx.clip();
+        ctx.strokeStyle = '#2a4a4d'; ctx.lineWidth = 3;
+        for (let k = -CS; k < CS; k += 8) { ctx.beginPath(); ctx.moveTo(x + k, y + CS); ctx.lineTo(x + k + CS, y); ctx.stroke(); }
+        ctx.restore();
+        ctx.strokeStyle = '#3e6a6d'; ctx.strokeRect(x + 3.5, y + 3.5, CS - 7, CS - 7);
+      } else if (ty === 2) {
+        ctx.strokeStyle = '#3fd0c9'; ctx.lineWidth = 2;
+        const m = 7, L = 10;
+        for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+          const cx = c.x - sx * (CS / 2 - m), cy = c.y - sy * (CS / 2 - m);
+          ctx.beginPath(); ctx.moveTo(cx + sx * L, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, cy + sy * L); ctx.stroke();
+        }
+      } else if (ty === 3) {
+        const pulse = .14 + .08 * Math.sin(t * 4 + c.i);
+        ctx.fillStyle = `rgba(255,184,77,${pulse})`; ctx.fillRect(x + 2, y + 2, CS - 4, CS - 4);
+        ctx.strokeStyle = '#ffb84d'; ctx.lineWidth = 2;
+        for (let k = 0; k < 2; k++) { ctx.beginPath(); ctx.moveTo(c.x - 8, c.y + 4 - k * 8 + 4); ctx.lineTo(c.x, c.y - 4 - k * 8 + 4); ctx.lineTo(c.x + 8, c.y + 4 - k * 8 + 4); ctx.stroke(); }
+      }
+    }
+    // 회로 트레이스: 중앙선
+    ctx.strokeStyle = 'rgba(63,208,201,.6)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(gx, 8 + CS * 4); ctx.lineTo(gx + CS * COLS, 8 + CS * 4); ctx.stroke();
+    ctx.fillStyle = '#3fd0c9';
+    for (let k = 0; k <= COLS; k++) { ctx.beginPath(); ctx.arc(gx + k * CS, 8 + CS * 4, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.font = '600 10px "Chakra Petch", sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#7fa3a0';
+    ctx.fillText('STANDBY', 8, benchY - 30);
+    for (const s of benchSlots) { ctx.strokeStyle = '#1f3a3d'; ctx.strokeRect(s.x - 21.5, s.y - 21.5, 43, 43); }
+  }
+  function drawHighlights(ctx, game, hl) {
+    if (!hl || hl.where !== 'board') return;
+    const c = grid.cells[hl.cell];
+    ctx.strokeStyle = '#3fd0c9'; ctx.lineWidth = 2; ctx.shadowColor = '#3fd0c9'; ctx.shadowBlur = 10;
+    ctx.strokeRect(c.x - CS / 2 + 3, c.y - CS / 2 + 3, CS - 6, CS - 6);
+    ctx.shadowBlur = 0;
+  }
+
+  const infoHTML = (u, game) => {
+    const d = u.def, m = AC.STAR_MULT[u.star];
+    return `<div class="ih"><strong>${d.name}</strong> <span class="stars">${'★'.repeat(u.star)}</span></div>
+      <div class="it">${TRAITS[d.cls].name} · ${TRAITS[d.org].name}</div>
+      <dl><dt>체력</dt><dd>${Math.round(d.hp * m)}</dd><dt>공격</dt><dd>${Math.round(d.atk * m)}</dd><dt>공속</dt><dd>${d.as}</dd><dt>사거리</dt><dd>${d.range}</dd></dl>
+      <p class="ab"><b>${d.ability.name}</b> ${d.ability.desc}</p>
+      <div class="items">${u.items.map((it) => `<span class="chip" title="${it.desc}"><i>${it.sym}</i>${it.name}</span>`).join('') || '<span class="empty">장착한 칩 없음</span>'}</div>
+      <button type="button" class="sellbtn" ${game.canSell(u) ? '' : 'disabled'}>판매 +${AC.sellValue(u)}C · 칩 반환</button>`;
+  };
+
+  new AC.ShopGame({
+    canvas: document.getElementById('cv'), W, H, grid, benchSlots,
+    defs: DEFS, traits: TRAITS, traitsOf, playerRowStart: 4, maxRounds: 15,
+    cellAllowed: (cell) => terrain[cell] !== 1,
+    shopCardHTML: (d) => `<span class="nm">${d.name}</span><span class="tr">${TRAITS[d.cls].name} · ${TRAITS[d.org].name}</span><span class="cost">${d.cost}C</span>`,
+    infoHTML, drawBackground, drawHighlights, drawUnit,
+    barStyle: { hpAlly: '#3fd0c9', hpEnemy: '#ff5d73', mana: '#8c8cff', w: 38, off: 30, back: '#05090a' },
+    fxFont: '"Chakra Petch", sans-serif',
+    onInit: (game) => {
+      gameRef = game;
+      genTerrain(1);
+      game.roster.bench[0] = AC.Roster.unit(AC.pick(DEFS.filter((d) => d.cost === 1)));
+      giveItem(1);
+    },
+    onRoundStart: (game) => {
+      if (game.round > 1) genTerrain(game.round);
+      // 벽이 된 칸의 유닛은 벤치(또는 빈 칸)로 이동
+      for (const { cell, u } of game.roster.boardUnits()) {
+        if (terrain[cell] !== 1) continue;
+        const free = grid.cells.find((c) => c.r >= 4 && terrain[c.i] !== 1 && !game.roster.board.has(c.i));
+        game.roster.board.delete(cell);
+        if (free) game.roster.board.set(free.i, u);
+        else { const b = game.roster.benchFree(); if (b >= 0) game.roster.bench[b] = u; else game.gold += AC.sellValue(u); }
+      }
+      if (game.round > 1) game.toast('회로 재배열 — 지형이 바뀌었습니다');
+    },
+    onCombatEnd: (won, game) => { if (won || game.round % 3 === 0) giveItem(1); },
+    onSell: (u) => { for (const it of u.items) if (inv.length < 6) inv.push(it); renderInv(); },
+    onCanvasClick: (pt, game) => {
+      if (selChip < 0) return false;
+      const u = game.unitAt(pt);
+      if (u) { equip(u, selChip); return true; }
+      selChip = -1; renderInv();
+      return false;
+    },
+    prepareEntities: (ents, game) => {
+      for (const e of ents) {
+        const items = e.side === 0 ? e.unit.items : e.unit.items || [];
+        for (const it of items) it.apply(e);
+      }
+    },
+    enemyGen: (r, game) => {
+      const list = game.defaultEnemy(r);
+      // 6라운드부터 적도 칩을 장착
+      for (const x of list) x.items = r >= 6 && Math.random() < Math.min(.8, (r - 4) * .12) ? [ITEMS[AC.pick(ITEM_KEYS)]] : [];
+      return list;
+    },
+    combatHooks: () => ({
+      playerShot: '#3fd0c9', enemyShot: '#ff5d73',
+      blocked: (cell) => terrain[cell] === 1,
+      asMod: (u) => (terrain[u.cell] === 3 ? 1.4 : 1),
+      dmgTakenMod: (t) => (terrain[t.cell] === 2 ? .7 : 1),
+    }),
+  });
+  renderInv();
+})();
+</script>
+</body>
+</html>
