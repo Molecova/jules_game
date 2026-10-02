@@ -29,6 +29,12 @@ header { display: grid; gap: 8px; }
 .eyebrow { font: 500 12px var(--mono); letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
 h1 { margin: 0; font: 400 clamp(30px, 5vw, 46px)/1.1 var(--display); text-wrap: balance; }
 .lead { margin: 0; max-width: 64ch; color: var(--muted); }
+.featured { display: grid; gap: 6px; padding: 22px 24px; border-radius: 6px; background: var(--surface); border: 2px solid var(--d); color: var(--fg); text-decoration: none; box-shadow: 6px 6px 0 var(--d); }
+.featured strong { font: 400 34px/1.1 var(--display); color: var(--d); }
+.featured span:not(.eyebrow) { max-width: 70ch; }
+.featured b { justify-self: start; margin-top: 6px; padding: 10px 16px; border-radius: 4px; background: var(--d); color: #fff; }
+.featured:hover { transform: translate(-1px, -1px); }
+.featured:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .concept { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
 .concept canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 7; }
@@ -69,6 +75,13 @@ td b { color: var(--k); }
     <h1>오토체스 시안 4종</h1>
     <p class="lead">같은 자동 전투 엔진 위에 보드 형태, 경제 구조, 고유 규칙, 비주얼 톤을 다르게 얹은 플레이 가능한 프로토타입입니다. 각 시안을 직접 몇 라운드 해보고 방향을 고르면 그 시안을 기준으로 본 개발을 이어갑니다.</p>
   </header>
+
+  <a class="featured" href="game/index.html">
+    <span class="eyebrow">D안 발전판 · 플레이 약 20분</span>
+    <strong>카드 원정대</strong>
+    <span>3막 지도와 갈림길, 정예·이벤트·상점·야영지, 막마다 보스, 최종 보스 흑룡. 스킬 카드를 같은 계열 유닛에게 붙여 격자 패턴 기술을 씁니다.</span>
+    <b>원정 시작 →</b>
+  </a>
 
   <div class="grid">
     <article class="concept ka">

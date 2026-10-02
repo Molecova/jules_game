@@ -217,6 +217,9 @@
         if (u.stun > 0) { u.stun -= dt; continue; }
         const asMod = this.hooks.asMod ? this.hooks.asMod(u, this) : 1;
         u.atkCd -= dt * asMod;
+        // 도발: 지정된 대상만 노린다
+        const forced = u.forcedT > 0 && u.forced && !u.forced.dead ? u.forced : null;
+        if (forced) { u.forcedT -= dt; u.target = forced; }
         if (!u.target || u.target.dead) u.target = this.nearestEnemy(u);
         const tgt = u.target;
         if (!tgt) continue;
@@ -231,11 +234,14 @@
           }
         } else {
           const near = this.nearestEnemy(u);
-          if (near && g.dist(u.cell, near.cell) <= u.range) { u.target = near; continue; }
-          const next = this.pathStep(u);
+          if (!forced && near && g.dist(u.cell, near.cell) <= u.range) { u.target = near; continue; }
+          if (u.immobile) { if (near) u.target = near; continue; }
+          const fstep = forced ? this.bfs(u, forced) : null;
+          const next = fstep !== null ? fstep : this.pathStep(u);
           if (next !== null) this.moveTo(u, next);
         }
       }
+      if (this.hooks.onTick) this.hooks.onTick(this, dt);
 
       // 투사체
       for (const p of this.projectiles) {
@@ -264,8 +270,18 @@
       }
     }
 
+    /** 전투 중 유닛 추가(소환) */
+    spawn(e) {
+      if (this.occ[e.cell]) return false;
+      this.units.push(e);
+      this.occ[e.cell] = e;
+      e.px = this.grid.cells[e.cell].x;
+      e.py = this.grid.cells[e.cell].y;
+      return true;
+    }
+
     attack(u, t) {
-      u.mana = Math.min(u.maxMana, u.mana + 10);
+      u.mana = Math.min(u.maxMana, u.mana + (u.manaPerHit || 10));
       const crit = Math.random() < u.crit;
       const dmg = u.atk * AC.rand(0.9, 1.1);
       if (u.range > 1) {

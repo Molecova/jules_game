@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>카드 원정대</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 리소 인쇄 보드게임: 종이 바탕 + 남색 잉크, 아군 파랑 · 적 분홍 · 에너지 노랑. 의도적 단일 라이트 테마 */
+:root {
+  --paper: #f4f0e6; --paper2: #ebe5d6; --card: #fffdf7; --ink: #232a3b; --muted: #6b6a73;
+  --blue: #2f6fd6; --pink: #e8436b; --yellow: #f5c400; --green: #2e9e6b; --purple: #7a4fd0; --orange: #e8643b;
+  --display: "Jua", "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--paper); }
+body { margin: 0; color: var(--ink); font: 15px/1.5 var(--body); padding: 10px 16px 28px; }
+button { font: 400 16px/1 var(--display); color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 10px 14px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
+button:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+button:focus-visible, .card:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+button:disabled { opacity: .4; cursor: default; }
+button.primary { background: var(--pink); color: #fff; }
+.muted { color: var(--muted); }
+.eyebrow { font: 400 13px var(--display); color: var(--pink); letter-spacing: .08em; }
+.app { max-width: 1040px; margin: 0 auto; display: grid; gap: 14px; }
+.app > * { min-width: 0; }
+
+/* HUD */
+.hud { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); box-shadow: 4px 4px 0 var(--ink); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+.brand { font: 400 20px var(--display); }
+.brand span { color: var(--pink); }
+.k { font-size: 12.5px; color: var(--muted); margin-right: 4px; }
+.hud b { font: 400 18px var(--display); font-variant-numeric: tabular-nums; }
+.hpwrap { display: flex; align-items: center; gap: 6px; }
+.hpbar { width: 110px; height: 12px; border: 2px solid var(--ink); border-radius: 6px; overflow: hidden; background: #fff; }
+#hpFill { height: 100%; background: var(--pink); transition: width .3s; }
+.act { font: 400 15px var(--display); }
+.relics { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.relic { width: 30px; height: 30px; padding: 0; border-radius: 50%; font-size: 14px; background: var(--yellow); box-shadow: 2px 2px 0 var(--ink); }
+#deckBtn { padding: 7px 12px; font-size: 15px; }
+
+/* 타이틀 */
+.title { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center; padding-block: 24px; }
+.title h1 { font: 400 clamp(46px, 9vw, 88px)/0.95 var(--display); margin: 0 0 14px; text-shadow: 5px 5px 0 var(--yellow); }
+.title h1 span { color: var(--pink); display: block; }
+.title .lead { font-size: 17px; max-width: 34ch; margin: 0 0 18px; }
+.title .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.title .btns button { font-size: 20px; padding: 14px 22px; }
+.howto { margin: 18px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14.5px; }
+.fan { position: relative; height: 290px; }
+.fan .card { position: absolute; left: 50%; top: 20px; cursor: default; }
+.fan .card:nth-child(1) { transform: translateX(-150%) rotate(-10deg); }
+.fan .card:nth-child(2) { transform: translateX(-50%) translateY(-12px); z-index: 1; }
+.fan .card:nth-child(3) { transform: translateX(50%) rotate(10deg); }
+.fan .card:hover { transform: none; }
+
+/* 지도 */
+#mapScreen { display: grid; gap: 12px; }
+.maphead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.maphead h2 { font: 400 28px var(--display); margin: 0; }
+.maphead p { margin: 0; color: var(--muted); }
+.mapframe { border: 2px solid var(--ink); border-radius: 14px; background: var(--card); box-shadow: 5px 5px 0 var(--ink); padding: 18px 10px; background-image: radial-gradient(circle at 1px 1px, rgba(35,42,59,.12) 1px, transparent 0); background-size: 18px 18px; }
+.mapbox { position: relative; height: min(600px, 72vh); max-width: 640px; margin: 0 auto; }
+.mapbox svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mapbox line { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 5 6; opacity: .35; vector-effect: non-scaling-stroke; }
+.mapbox line.walked { stroke-dasharray: none; opacity: 1; stroke-width: 3.5; stroke: var(--pink); }
+.mapbox line.open { opacity: .9; stroke: var(--blue); stroke-width: 3; }
+.mnode { position: absolute; transform: translate(-50%, -50%); width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; font: 400 19px var(--display); box-shadow: 3px 3px 0 var(--ink); }
+.mnode:disabled { opacity: .72; cursor: default; }
+.mnode.t-battle { background: #fff; }
+.mnode.t-elite { background: var(--pink); color: #fff; border-style: dashed; border-width: 3px; }
+.mnode.t-event { background: var(--yellow); }
+.mnode.t-shop { background: var(--green); color: #fff; }
+.mnode.t-rest { background: var(--orange); color: #fff; }
+.mnode.t-treasure { background: #d9a400; color: #fff; border-radius: 10px; }
+.mnode.t-boss { width: 76px; height: 76px; font-size: 34px; background: var(--ink); color: var(--yellow); border-radius: 18px; }
+.mnode.visited { opacity: 1; filter: grayscale(.7); }
+.mnode.here { outline: 4px solid var(--blue); outline-offset: 3px; filter: none; }
+.mnode.reach { opacity: 1; animation: bob 1.1s ease-in-out infinite; }
+.mnode.reach::after { content: ""; position: absolute; inset: -9px; border: 3px solid var(--blue); border-radius: inherit; }
+@keyframes bob { 50% { transform: translate(-50%, calc(-50% - 4px)); } }
+.maplegend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--muted); justify-content: center; }
+.maplegend span::before { content: attr(data-s); display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 5px; border: 2px solid var(--ink); border-radius: 50%; font: 400 12px var(--display); color: var(--ink); background: var(--c, #fff); vertical-align: -5px; }
+
+/* 전투 */
+.bmain { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+.board { position: relative; background: var(--paper2); border: 2px solid var(--ink); border-radius: 12px; padding: 10px; box-shadow: 5px 5px 0 var(--ink); }
+canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: auto; touch-action: none; }
+.bossbar { max-width: 420px; margin: 0 auto 8px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font: 400 16px var(--display); }
+.bb { grid-column: 1 / -1; height: 14px; border: 2px solid var(--ink); border-radius: 7px; background: #fff; overflow: hidden; }
+#bossFill { height: 100%; background: var(--pink); transition: width .2s; }
+#bossHp { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bbanner { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%) scale(.85); font: 400 48px/1 var(--display); color: var(--blue); text-shadow: 4px 4px 0 var(--ink); -webkit-text-stroke: 2px var(--ink); opacity: 0; pointer-events: none; transition: .25s; white-space: nowrap; }
+.bbanner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.bbanner.lose { color: var(--pink); }
+.bbanner.win { color: var(--yellow); }
+.bside { display: grid; gap: 12px; }
+.box { border: 2px solid var(--ink); border-radius: 10px; padding: 12px; background: var(--card); }
+.box h2 { font: 400 18px/1.1 var(--display); margin: 0 0 6px; }
+.box p { margin: 0 0 6px; font-size: 14px; }
+.bossnote { background: #fde8ed; border-left: 4px solid var(--pink); padding: 6px 8px; border-radius: 4px; }
+.box .howto { font-size: 13.5px; margin: 6px 0 0; }
+.box button { font-size: 14px; padding: 7px 10px; margin-top: 6px; }
+.sk { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 4px; font-size: 13.5px; }
+.sk li { border-left: 4px solid var(--cc); padding-left: 8px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.energy { display: flex; gap: 5px; align-items: center; margin-right: auto; }
+.orb { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); }
+.orb.off { background: transparent; }
+.energy .lbl { font: 400 18px var(--display); margin-left: 6px; }
+.hand { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; min-height: 190px; padding-top: 10px; }
+.handnote { align-self: center; }
+
+/* 카드 */
+.card { --cc: var(--ink); width: 132px; min-height: 186px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); padding: 8px 8px 7px; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 4px; position: relative; text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); font: 13px/1.35 var(--body); color: var(--ink); touch-action: none; user-select: none; transition: transform .12s; border-top: 8px solid var(--cc); }
+.card:hover { transform: translateY(-6px); }
+.card.sel { transform: translateY(-12px); box-shadow: 3px 3px 0 var(--ink), 0 0 0 4px var(--yellow); }
+.card.cant { opacity: .45; }
+.card.rare { background: linear-gradient(160deg, #fff8dd, var(--card) 45%); }
+.card .cost { position: absolute; top: -14px; left: -10px; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); display: grid; place-items: center; font: 400 17px var(--display); }
+.card .ctype { font-size: 11px; color: var(--cc); padding-left: 18px; font-weight: 700; }
+.card .nm { font: 400 16px/1.1 var(--display); }
+.card .stars { color: #c48a00; font-weight: 400; font-size: 12px; }
+.card .plus { color: var(--green); }
+.card .art { height: 50px; border-radius: 8px; border: 1.5px solid var(--ink); background: var(--cc); display: grid; place-items: center; font: 400 28px var(--display); color: #fff; }
+.card .tx { font-size: 12px; }
+.card .st { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 4px; font-variant-numeric: tabular-nums; }
+.card .price { position: absolute; right: -8px; top: -12px; background: var(--ink); color: var(--yellow); font: 400 14px var(--display); padding: 3px 8px; border-radius: 6px; }
+.card.ghost { position: fixed; pointer-events: none; z-index: 30; transform: rotate(-4deg); opacity: .92; }
+.pat { display: grid; grid-template-columns: repeat(5, 11px); grid-auto-rows: 11px; gap: 2px; justify-content: center; padding: 3px; background: var(--paper2); border-radius: 6px; border: 1.5px solid var(--ink); }
+.pat i { background: #fff; border-radius: 2px; }
+.pat i.hit { background: var(--cc); }
+.pat i.ally { background: var(--green); }
+.pat i.warn { background: var(--yellow); }
+.pat i.me { background: var(--ink); }
+.pat i.tg { box-shadow: inset 0 0 0 2px var(--ink); }
+.pat i.hit.me, .pat i.ally.me { box-shadow: inset 0 0 0 3px var(--ink); }
+
+/* 모달 */
+.modal { position: fixed; inset: 0; background: rgba(35,42,59,.55); display: grid; place-items: center; z-index: 20; padding: 16px; }
+.sheet { background: var(--paper); border: 2px solid var(--ink); border-radius: 14px; box-shadow: 6px 6px 0 var(--ink); padding: 22px; max-width: 760px; width: 100%; display: grid; gap: 12px; max-height: calc(100% - 16px); overflow: auto; }
+.sheet h3 { margin: 0; font: 400 28px/1.15 var(--display); text-wrap: balance; }
+.sheet p { margin: 0; }
+.choices { display: flex; flex-wrap: wrap; gap: 16px 12px; justify-content: center; }
+.choices.cards { padding-top: 14px; }
+.choices.col { flex-direction: column; align-items: stretch; }
+.choice { display: grid; gap: 4px; text-align: left; padding: 14px 16px; font-size: 18px; }
+.choice small { font: 14px var(--body); color: var(--muted); }
+.relicbuy { grid-template-columns: auto 1fr; align-items: center; column-gap: 10px; }
+.relicbuy small { grid-column: 2; }
+.rsym { grid-row: span 2; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); display: grid; place-items: center; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+
+/* 엔딩 */
+.ending { display: grid; gap: 16px; justify-items: start; padding-block: 30px; }
+.ending h1 { font: 400 clamp(40px, 8vw, 72px)/1 var(--display); margin: 0; text-shadow: 5px 5px 0 var(--yellow); }
+.ending dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 0; width: 100%; }
+.ending dl div { border: 2px solid var(--ink); border-radius: 10px; padding: 10px 12px; background: var(--card); }
+.ending dt { font-size: 13px; color: var(--muted); }
+.ending dd { margin: 0; font: 400 24px var(--display); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { border: 1.5px solid var(--ink); border-radius: 5px; padding: 1px 8px; background: #fff; font-size: 13px; }
+.pill.skill { border-style: dashed; }
+.pill.relic { background: var(--yellow); }
+
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 9px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 40; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; }
+
+@media (max-width: 860px) {
+  .bmain { display: contents; }
+  #battle { display: flex; flex-direction: column; gap: 12px; }
+  .board { order: 1; } .controls { order: 2; } .hand { order: 3; } .bside { order: 4; }
+  .title { grid-template-columns: minmax(0, 1fr); }
+  .fan { height: 240px; transform: scale(.85); }
+  .card { width: calc(33.3% - 8px); min-width: 98px; min-height: 172px; padding: 7px 6px 6px; }
+  .card .art { height: 36px; font-size: 22px; }
+  .card .tx { font-size: 11.5px; }
+  .pat { grid-template-columns: repeat(5, 9px); grid-auto-rows: 9px; }
+  .hand { gap: 14px 8px; }
+  .hpbar { width: 70px; }
+  .relics { margin-left: 0; }
+  .mnode { width: 38px; height: 38px; font-size: 16px; }
+  .mnode.t-boss { width: 62px; height: 62px; font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header id="hud" class="hud" hidden>
+    <span class="brand">카드 <span>원정대</span></span>
+    <div class="hpwrap"><span class="k">체력</span><div class="hpbar"><div id="hpFill"></div></div><b id="hpText"></b></div>
+    <span><span class="k">골드</span><b id="goldText"></b></span>
+    <span id="actText" class="act"></span>
+    <div id="relics" class="relics"></div>
+    <button type="button" id="deckBtn">덱</button>
+  </header>
+
+  <section id="title" class="title">
+    <div>
+      <span class="eyebrow">덱빌딩 오토배틀 로그라이크 · 약 20분</span>
+      <h1>카드<span>원정대</span></h1>
+      <p class="lead">유닛을 전장에 세우고, 스킬 카드로 기술을 새겨 넣으세요. 갈림길을 골라 세 개의 땅을 지나 화산 꼭대기의 흑룡을 쓰러뜨리는 원정입니다.</p>
+      <div class="btns"><button type="button" class="primary" id="newRun">새 원정</button><button type="button" id="continue" hidden>이어하기</button></div>
+      <ol class="howto">
+        <li>지도에서 길을 고릅니다. 전투, 정예, 이벤트, 상점, 야영지, 보물. 각 막의 끝에는 보스가 있습니다.</li>
+        <li>전투마다 덱에서 카드를 뽑고, 에너지로 유닛을 내 진영에 놓습니다.</li>
+        <li>스킬 카드는 같은 계열 유닛에게 붙입니다. 검 스킬은 검 계열에게, 마법 스킬은 마법 계열에게.</li>
+        <li>카드의 격자가 공격 범위입니다. 예: 십자 베기는 앞 2칸과 옆 1칸을 벱니다.</li>
+        <li>전투는 자동입니다. 배치와 스킬 조합이 승부를 가릅니다.</li>
+      </ol>
+    </div>
+    <div class="fan" id="fan" aria-hidden="true"></div>
+  </section>
+
+  <section id="mapScreen" hidden>
+    <div class="maphead"><h2 id="mapTitle"></h2><p id="mapSub"></p></div>
+    <div class="mapframe"><div id="mapbox" class="mapbox"><svg id="mapsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div></div>
+    <div class="maplegend">
+      <span data-s="전">전투</span><span data-s="정" style="--c:#e8436b">정예</span><span data-s="?" style="--c:#f5c400">이벤트</span>
+      <span data-s="상" style="--c:#2e9e6b">상점</span><span data-s="휴" style="--c:#e8643b">야영지</span><span data-s="보" style="--c:#d9a400">보물</span><span data-s="왕" style="--c:#f5c400">보스</span>
+    </div>
+  </section>
+
+  <section id="battle" hidden>
+    <div class="bmain">
+      <div class="board">
+        <div id="bossbar" class="bossbar" hidden><span id="bossName"></span><span id="bossHp"></span><div class="bb"><div id="bossFill"></div></div></div>
+        <canvas id="cv" aria-label="6×8 전장. 아래쪽 네 줄이 내 진영입니다."></canvas>
+        <div id="bbanner" class="bbanner"></div>
+      </div>
+      <aside class="bside"><div class="box" id="encounter"></div><div class="box" id="infoBox"></div></aside>
+    </div>
+    <div class="controls">
+      <div class="energy" id="energy"></div>
+      <button type="button" id="redraw">다시 뽑기</button>
+      <button type="button" id="auto">자동 배치</button>
+      <button type="button" id="speed">속도 ×1</button>
+      <button type="button" class="primary" id="fight">전투 시작</button>
+    </div>
+    <div class="hand" id="hand"></div>
+  </section>
+
+  <section id="ending" class="ending" hidden>
+    <span class="eyebrow">원정 기록</span>
+    <h1 id="endTitle"></h1>
+    <p id="endText"></p>
+    <dl id="endStats"></dl>
+    <div class="pills" id="endDeck"></div>
+    <button type="button" class="primary" id="again">처음으로</button>
+  </section>
+</div>
+<div id="modal" class="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="../shared/engine.js"></script>
+<script src="data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
