@@ -100,6 +100,14 @@
     if (!mids.some((n) => n.type === 'elite')) { const c = mids.filter((n) => n.row >= 2 && n.type !== 'shop'); if (c.length) AC.pick(c).type = 'elite'; }
     return { act, nodes: list };
   }
+  const ICON = {
+    battle: '<path d="M5 3l11 11M3 5l2-2M13 16l3-3M15 18l3-3M19 3L8 14M21 5l-2-2M11 16l-3-3M9 18l-3-3"/>',
+    elite: '<path d="M6 11a6 6 0 0 1 12 0v3l-2 2v3H8v-3l-2-2z"/><circle cx="9.6" cy="12" r="1.4"/><circle cx="14.4" cy="12" r="1.4"/><path d="M7 7L3 2l5 3M17 7l4-5-5 3M11 19v-2M13 19v-2"/>',
+    shop: '<path d="M9 3h6l-2 3h-2z"/><path d="M8 7h8c3 3 4 6 4 9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4c0-3 1-6 4-9z"/><path d="M13.5 11h-2.5a1.5 1.5 0 0 0 0 3h2a1.5 1.5 0 0 1 0 3H10M12 10v1M12 17v1"/>',
+    rest: '<path d="M12 2c3 4 5 6 5 9a5 5 0 0 1-10 0c0-2 1-3.5 2.5-5.5 0 2 1 3.5 2.5 3.5 0-2.5-1-4.5 0-7z"/><path d="M3 21l18-4M3 17l18 4"/>',
+    treasure: '<rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M3 10c0-4 4-6 9-6s9 2 9 6M3 14h18"/><rect x="10.5" y="12.5" width="3" height="4" rx=".6"/>',
+  };
+  const iconSvg = (type) => (ICON[type] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[type]}</svg>` : '');
   const nodeById = (id) => R.map.nodes.find((n) => n.id === id);
   function reachable() {
     if (!R.pos) return R.map.nodes.filter((n) => n.row === 0);
@@ -112,7 +120,11 @@
   // =====================================================================
   function toast(m) { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1800); }
   function show(screen) {
-    for (const id of ['title', 'mapScreen', 'battle', 'ending']) $(id).hidden = id !== screen;
+    for (const id of ['title', 'mapScreen', 'battle', 'ending']) {
+      const el = $(id), was = !el.hidden;
+      el.hidden = id !== screen;
+      if (id === screen && !was) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
+    }
     $('hud').hidden = screen === 'title' || screen === 'ending';
     if (screen !== 'title') renderHud();
     window.scrollTo(0, 0);
@@ -123,6 +135,8 @@
 
   function renderHud() {
     if (!R) return;
+    if (renderHud.lastHp != null && R.hp < renderHud.lastHp) { const w = $('hpwrap'); w.classList.remove('hurt'); void w.offsetWidth; w.classList.add('hurt'); }
+    renderHud.lastHp = R.hp;
     $('hpText').textContent = R.hp + ' / ' + R.maxHp;
     $('hpFill').style.width = (100 * R.hp) / R.maxHp + '%';
     $('goldText').textContent = R.gold;
@@ -164,7 +178,7 @@
     if (d.kind === 'unit') {
       el.innerHTML = `<span class="cost">${cost}</span><span class="ctype">${cl.full} 유닛</span>
         <span class="nm">${d.name}${c.star > 1 ? ' <b class="stars">' + '★'.repeat(c.star) + '</b>' : ''}</span>
-        <span class="art">${d.name[0]}</span>
+        <span class="art"><img src="${ART.tokenURL(d.id, 0)}" alt="" draggable="false"></span>
         <span class="tx">${d.desc || (d.range > 1 ? '원거리 ' + d.range + '칸' : '근접')} · 스킬 ${slotsOf(c)}칸</span>
         <span class="st"><span>체 ${Math.round(d.hp * m)}</span><span>공 ${Math.round(d.atk * m)}</span><span>사 ${d.range}</span></span>`;
     } else {
@@ -230,6 +244,9 @@
       }
     }
     $('mapsvg').innerHTML = svg;
+    const legend = [['battle', '#fff', '전투'], ['elite', '#e8436b', '정예'], ['event', '#f5c400', '이벤트'], ['shop', '#2e9e6b', '상점'], ['rest', '#e8643b', '야영지'], ['treasure', '#d9a400', '보물']];
+    $('maplegend').innerHTML = legend.map(([k, c, n]) => `<span><i style="--c:${c}">${iconSvg(k) || '?'}</i>${n}</span>`).join('') +
+      `<span><img src="${ART.tokenURL(ACTS[R.act].boss, 1, 'boss')}" alt="">보스</span>`;
     for (const n of R.map.nodes) {
       const p = pos(n), t = NODE_TYPES[n.type];
       const b = document.createElement('button');
@@ -237,11 +254,13 @@
       b.className = 'mnode t-' + n.type + (reach.has(n.id) ? ' reach' : '') + (visited.has(n.id) ? ' visited' : '') + (R.pos === n.id ? ' here' : '');
       b.style.left = p.x + '%';
       b.style.top = p.y + '%';
-      b.textContent = n.type === 'boss' ? BOSS_LABEL[ACTS[R.act].boss] : t.sym;
+      if (n.type === 'boss') b.innerHTML = `<img src="${ART.tokenURL(ACTS[R.act].boss, 1, 'boss')}" alt="">`;
+      else if (ICON[n.type]) b.innerHTML = iconSvg(n.type);
+      else b.textContent = t.sym;
       b.title = t.name + ' — ' + t.desc;
       b.setAttribute('aria-label', (n.row + 1) + '층 ' + t.name);
       b.disabled = !reach.has(n.id);
-      b.onclick = () => enterNode(n);
+      b.onclick = () => { SFX.play('step'); enterNode(n); };
       box.appendChild(b);
     }
   }
@@ -319,7 +338,7 @@
       for (const it of items) {
         const el = cardEl(it.c, { price: it.sold ? '판매됨 ' : it.price });
         if (it.sold || R.gold < it.price) el.classList.add('cant');
-        const buy = () => { if (it.sold) return; if (R.gold < it.price) return toast('골드가 부족합니다'); R.gold -= it.price; it.sold = true; R.deck.push(it.c); toast(CARDS[it.c.id].name + ' 구매'); renderHud(); render(); };
+        const buy = () => { if (it.sold) return; if (R.gold < it.price) return toast('골드가 부족합니다'); R.gold -= it.price; it.sold = true; R.deck.push(it.c); SFX.play('coin'); toast(CARDS[it.c.id].name + ' 구매'); renderHud(); render(); };
         el.onclick = buy; el.addEventListener('pick', buy);
         $('shc').appendChild(el);
       }
@@ -353,6 +372,7 @@
     const g = AC.randi(20, 35);
     R.gold += g;
     if (r) R.addRelic(r.id);
+    SFX.play('coin');
     renderHud();
     modal(`<span class="eyebrow">보물</span><h3>낡은 상자</h3><p>${r ? `<b>${r.name}</b> — ${r.desc}` : '빈 상자다.'}<br>골드 ${g} 획득</p><div class="row"><button type="button" class="primary" id="trOk">챙긴다</button></div>`);
     $('trOk').onclick = finishNode;
@@ -363,8 +383,9 @@
   // 전투
   // =====================================================================
   const CS = 58, COLS = 6, ROWS = 8, PLAYER_ROW = 4;
-  const W = CS * COLS + 20, H = CS * ROWS + 20;
-  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: 10, oy: 10, diag: true });
+  const M = 14; // 보드 바깥 여백
+  const W = CS * COLS + M * 2, H = CS * ROWS + M * 2;
+  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: M, oy: M, diag: true });
   const canvas = $('cv');
   const ctx = AC.setupCanvas(canvas, W, H);
   const isMine = (cell) => grid.cells[cell].r >= PLAYER_ROW;
@@ -377,7 +398,7 @@
       const def = MONSTERS[id];
       for (let t = 0; t < 60; t++) {
         const cell = grid.idx(col != null && t === 0 ? col : AC.randi(0, COLS - 1), AC.pick(rows));
-        if (!used.has(cell)) { used.add(cell); out.push({ uid: AC.uid(), def, cell, scale: 1 + floor * 0.05 }); return; }
+        if (!used.has(cell)) { used.add(cell); out.push({ uid: AC.uid(), def, cell, scale: 1 + floor * 0.05, rot: AC.rand(-0.09, 0.09) }); return; }
       }
     };
     const rowsFor = (d) => (d.range > 1 ? [0, 1] : [2, 3]);
@@ -405,13 +426,15 @@
   function startBattle(kind) {
     B = {
       kind, enemies: genEnemies(kind), hand: [], pile: [], played: [], energy: R.energy, maxEnergy: R.energy,
-      redraws: 1 + (R.has('eye') ? 1 : 0), sel: null, phase: 'prep', combat: null, scrollUsed: false, info: null, hover: null,
+      redraws: 1 + (R.has('eye') ? 1 : 0), sel: null, phase: 'prep', combat: null, scrollUsed: false, info: null, hover: null, vfx: newVfx(),
     };
     B.pile = AC.shuffle(R.deck.slice());
     drawHand(R.handSize);
+    B.justDrew = true;
     show('battle');
     $('bbanner').className = 'bbanner';
     renderBattle();
+    $('rosterBox').hidden = true;
     if (R.stats.battles === 0) toast('유닛 카드를 아래쪽 네 줄에 놓고, 스킬 카드를 같은 계열 유닛에게 붙이세요');
   }
   function drawHand(n) {
@@ -445,7 +468,10 @@
     if (!canPay(c)) return toast('에너지가 부족합니다'), false;
     const cost = costOf(c);
     pay(c);
-    B.played.push({ c, cell, skills: [], paid: cost });
+    B.played.push({ c, cell, skills: [], paid: cost, rot: AC.rand(-0.08, 0.08), placedAt: performance.now() });
+    SFX.play('place');
+    const pc = grid.cells[cell];
+    burst(pc.x, pc.y + 10, CLASSES[CARDS[c.id].cls].color, 4);
     renderBattle();
     return true;
   }
@@ -459,6 +485,8 @@
     pay(s);
     s.paid = cost;
     p.skills.push(s);
+    p.placedAt = performance.now();
+    SFX.play('attach');
     B.info = { type: 'ally', p };
     toast(CARDS[p.c.id].name + '에게 ' + d.name + ' 장착');
     renderBattle();
@@ -477,6 +505,7 @@
     if (B.phase !== 'prep') return;
     if (!canPay(c)) return toast('에너지가 부족합니다');
     B.sel = B.sel === c ? null : c;
+    SFX.play('card');
     if (B.sel) toast(CARDS[c.id].kind === 'unit' ? '내 진영의 빈 칸을 누르세요' : '빛나는 아군 유닛을 누르세요');
     renderBattle();
   }
@@ -584,6 +613,7 @@
     B.hand = [];
     drawHand(n);
     B.sel = null;
+    B.justDrew = true;
     renderBattle();
   };
   $('auto').onclick = autoDeploy;
@@ -599,7 +629,7 @@
   function makeAlly(p) {
     const d = CARDS[p.c.id];
     const e = AC.makeEntity(d, p.c.star, 0, p.cell, {
-      cls: d.cls, color: CLASSES[d.cls].color, label: d.name[0], dodge: d.dodge || 0, lifesteal: d.lifesteal || 0,
+      cls: d.cls, color: CLASSES[d.cls].color, label: d.name[0], dodge: d.dodge || 0, lifesteal: d.lifesteal || 0, artId: d.id, rot: p.rot || 0,
       manaPerHit: d.manaPerHit || 12, skills: p.skills.map((s) => ({ def: CARDS[s.id], up: s.up })), pmult: 1,
     });
     if (d.cls === 'sword' && R.has('whetstone')) e.atk *= 1.2;
@@ -616,13 +646,19 @@
   function makeFoe(x) {
     const d = x.def, k = x.scale || 1;
     const e = AC.makeEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, mana: d.mana }, 1, 1, x.cell, {
-      def: d, color: d.color, label: d.boss ? BOSS_LABEL[d.boss] : d.name[0], dodge: d.dodge || 0, lifesteal: d.lifesteal || 0,
+      def: d, color: d.color, label: d.boss ? BOSS_LABEL[d.boss] : d.name[0], dodge: d.dodge || 0, lifesteal: d.lifesteal || 0, artId: d.id, rot: x.rot || AC.rand(-0.08, 0.08), cls: monsterCls(d),
       skills: d.skills.map((id) => ({ def: CARDS[id], up: false, mana: d.mana })), pmult: ACTS[R.act].pmult, immobile: !!d.immobile,
       boss: d.boss || null, big: !!d.boss, elite: !!d.elite, manaPerHit: 10, v: d.v,
     });
     setupSkills(e, 0);
     if (e.boss) e.script = { a: 3, b: 2, c: 4, flags: {} };
     return e;
+  }
+  // 몬스터 투사체 모양: 마법형은 마력탄, 용·임프는 불덩이, 나머지 원거리는 화살
+  function monsterCls(d) {
+    if (['whelp', 'dragon', 'imp', 'salam'].includes(d.id)) return 'fire';
+    if (d.skills.some((id) => CARDS[id] && CARDS[id].cls === 'mage')) return 'mage';
+    return d.range > 1 ? 'bow' : 'melee';
   }
   const skillMana = (s) => (s.mana || s.def.mana) - (s.up ? 10 : 0);
   function setupSkills(e, mana) {
@@ -766,7 +802,7 @@
   // ---------- 보스 패턴 ----------
   function telegraph(cb, b, cells, delay, dmg, color = '#e8436b') {
     cells = cells.filter((i) => i >= 0);
-    if (cells.length) cb.tele.push({ cells, t: 0, delay, dmg, side: 0, src: b, color });
+    if (cells.length) { cb.tele.push({ cells, t: 0, delay, dmg, side: 0, src: b, color }); SFX.play('warn', 0.3); }
   }
   function summon(cb, id, n, rows) {
     for (let k = 0; k < n; k++) {
@@ -777,6 +813,7 @@
       const e = makeFoe({ def: MONSTERS[id], cell, scale: 0.6 });
       e.atk *= 0.8;
       e.summon = true;
+      e.popT = 0.35;
       if (cb.spawn(e)) cb.ring(e.px, e.py, '#e8436b', 26, 0.6);
     }
   }
@@ -847,8 +884,19 @@
         u.skillIdx = (u.skillIdx + 1) % u.skills.length;
         u.maxMana = skillMana(u.skills[u.skillIdx]);
         execSkill(cb, u, t, s);
+        const ef = s.def.effect;
+        SFX.play(['heal', 'shield', 'buff', 'haste', 'revive'].includes(ef) ? 'heal' : s.def.cls === 'mage' || ef === 'tele' ? 'magic' : 'skill', 0.08);
+        burst(u.px, u.py, u.side ? '#e8436b' : CLASSES[s.def.cls].color, 6);
         return true;
       },
+      onAttack: (u) => { if (u.range > 1) SFX.play('shoot', 0.06); },
+      onHit: (t, dmg, src, kind, crit) => {
+        t.hitT = 0.22;
+        SFX.play(crit ? 'crit' : 'hit', 0.04);
+        burst(t.px, t.py, src && !src.side ? CLASSES[src.cls] ? CLASSES[src.cls].color : '#2f6fd6' : '#e8436b', crit ? 7 : 3);
+        if (dmg >= 260) shake(3);
+      },
+      onHeal: () => SFX.play('heal', 0.15),
       asMod: (u) => (u.slowT > 0 ? 0.6 : 1),
       dmgTakenMod: (t) => (t.side === 0 && R.has('pauldron') ? 0.9 : 1),
       onTick: (cb, dt) => {
@@ -858,6 +906,9 @@
           if (tl.t >= tl.delay && !tl.done) {
             tl.done = true;
             tiles(cb, tl.cells, tl.color, 0.5);
+            SFX.play('boom', 0.1);
+            shake(tl.dmg >= 200 ? 8 : 5);
+            for (const i of tl.cells) burst(grid.cells[i].x, grid.cells[i].y, tl.color, 2);
             for (const i of tl.cells) { const v = cb.occ[i]; if (v && v.side === tl.side && !v.dead) cb.damage(tl.src, v, tl.dmg, 'spell'); }
           }
         }
@@ -866,6 +917,12 @@
       },
       onDeath: (t, src, cb) => {
         if (t.side === 1) R.stats.kills++;
+        // 딱지가 반으로 찢어진다
+        const kind = kindOf(t);
+        B.vfx.debris.push(ART.makeTear(sprite(t.artId, t.side, kind), t.px, t.py, tokenR(kind), t.rot || 0));
+        burst(t.px, t.py, t.side ? '#e8436b' : '#2f6fd6', 8);
+        SFX.play('tear', 0.05);
+        shake(t.boss ? 14 : 2.5);
         if (t.boss) {
           // 보스가 쓰러지면 부하들도 흩어진다
           for (const v of cb.alive(1)) cb.kill(v, null);
@@ -887,16 +944,44 @@
     B.info = null;
     B.phaseText = '';
     R.stats.battles++;
+    buildRoster(cb);
+    const boss = B.enemies.find((x) => x.def.boss);
+    stamp(boss ? boss.def.name : B.kind === 'elite' ? '정예 출현!' : '전투 개시!', boss ? 'boss' : '');
+    SFX.play(boss ? 'boss' : 'start');
     renderBattle();
+  }
+  // 전투 중 아군 체력·입힌 피해 실시간 표시
+  function buildRoster(cb) {
+    const allies = cb.units.filter((u) => u.side === 0);
+    $('roster').innerHTML = allies.map((u, i) => `<div class="rrow" data-i="${i}"><img src="${ART.tokenURL(u.artId, 0)}" alt=""><span class="rn">${u.def.name}</span><span class="rb"><i></i></span><span class="rv">0</span></div>`).join('');
+    const rows = [...$('roster').children];
+    B.roster = allies.map((e, i) => ({ e, row: rows[i], bar: rows[i].querySelector('i'), val: rows[i].querySelector('.rv') }));
+    $('rosterBox').hidden = false;
+  }
+  function updateRoster() {
+    if (!B || !B.roster) return;
+    for (const r of B.roster) {
+      r.bar.style.width = Math.max(0, (100 * r.e.hp) / r.e.maxHp) + '%';
+      r.val.textContent = Math.round(r.e.dmgDealt);
+      r.row.classList.toggle('torn', r.e.dead);
+    }
+  }
+  function stamp(text, cls = '') {
+    const ban = $('bbanner');
+    ban.textContent = text;
+    ban.className = 'bbanner';
+    void ban.offsetWidth;
+    ban.className = 'bbanner show ' + cls;
+    clearTimeout(stamp.t);
+    stamp.t = setTimeout(() => { if (B && B.phase === 'combat') ban.className = 'bbanner'; }, 1100);
   }
 
   function endBattle() {
     const cb = B.combat, won = cb.winner === 0;
     B.phase = 'result';
-    B.resultT = 1.4;
-    const ban = $('bbanner');
-    ban.textContent = won ? (B.kind === 'boss' ? '보스 처치!' : '승리!') : cb.winner === -1 ? '시간 초과' : '패배';
-    ban.className = 'bbanner show ' + (won ? 'win' : 'lose');
+    B.resultT = 1.7;
+    stamp(won ? (B.kind === 'boss' ? '보스 처치!' : '승리!') : cb.winner === -1 ? '시간 초과' : '패배', won ? 'win' : 'lose');
+    SFX.play(won ? 'win' : 'lose');
     renderControls();
   }
   function afterBattle() {
@@ -918,14 +1003,23 @@
     renderHud();
     if (R.hp <= 0) return ending(false);
     if (kind === 'boss') {
-      modal(`<h3>패배 — 체력 −${dmg}</h3><p>${ACTS[R.act].name}의 주인은 아직 건재하다. 남은 체력 ${R.hp}. 다시 도전하거나 숨을 고를 수 없다 — 이 길의 끝은 보스뿐이다.</p><div class="row"><button type="button" class="primary" id="retry">다시 도전</button></div>`);
+      modal(`<h3>패배 — 체력 −${dmg}</h3><p>${ACTS[R.act].name}의 주인은 아직 건재하다. 남은 체력 ${R.hp}. 이 길의 끝은 보스뿐이다. 배치를 바꿔 다시 도전하자.</p>${battleReport(cb)}<div class="row"><button type="button" class="primary" id="retry">다시 도전</button></div>`);
       $('retry').onclick = () => { closeModal(); startBattle('boss'); };
       return;
     }
-    modal(`<h3>패배 — 체력 −${dmg}</h3><p>살아남은 적 ${surv.length}명. 보상은 없지만 원정은 계속된다. 남은 체력 ${R.hp}.</p><div class="row"><button type="button" class="primary" id="lossOk">계속</button></div>`);
+    modal(`<h3>패배 — 체력 −${dmg}</h3><p>살아남은 적 ${surv.length}명. 보상은 없지만 원정은 계속된다. 남은 체력 ${R.hp}.</p>${battleReport(cb)}<div class="row"><button type="button" class="primary" id="lossOk">계속</button></div>`);
     $('lossOk').onclick = finishNode;
   }
 
+  // 전투 기록: 아군별 입힌 피해
+  function battleReport(cb) {
+    const allies = cb.units.filter((u) => u.side === 0 && !u.summon).sort((a, b) => b.dmgDealt - a.dmgDealt);
+    if (!allies.length) return '';
+    const max = Math.max(1, allies[0].dmgDealt);
+    return `<div class="report"><span class="eyebrow">전투 기록 · 입힌 피해</span>${allies.slice(0, 6).map((u, i) => `
+      <div class="rrow${u.dead ? ' torn' : ''}"><img src="${ART.tokenURL(u.artId, 0)}" alt=""><span class="rn">${u.def.name}${i === 0 && u.dmgDealt > 0 ? ' <b class="mvp">MVP</b>' : ''}${u.dead ? ' <small>찢어짐</small>' : ''}</span>
+      <span class="rb"><i style="width:${(100 * u.dmgDealt) / max}%;background:${CLASSES[u.cls].color}"></i></span><span class="rv">${Math.round(u.dmgDealt)}</span></div>`).join('')}</div>`;
+  }
   function cardChoices(rareChance) {
     const out = [];
     const want = ['unit', 'skill', Math.random() < 0.5 ? 'unit' : 'skill'];
@@ -941,9 +1035,12 @@
     if (relic) R.addRelic(relic.id);
     const bossRelics = kind === 'boss' ? [R.randomRelic(true), R.randomRelic(true), R.randomRelic(true)].filter((r, i, a) => r && a.indexOf(r) === i) : [];
     const choices = cardChoices(kind === 'boss' ? 1 : kind === 'elite' ? 0.5 : 0.22);
+    const report = B && B.combat ? battleReport(B.combat) : '';
+    SFX.play('coin');
     const stage2 = () => {
       modal(`<span class="eyebrow">보상</span><h3>${kind === 'boss' ? ACTS[R.act].name + ' 정복!' : '승리!'}</h3>
         <p>골드 +${gold}${relic ? ` · 유물 <b>${relic.name}</b> — ${relic.desc}` : ''}${R.has('grail') ? ' · 체력 +5' : ''}</p>
+        ${report}
         <p class="muted">덱에 넣을 카드를 하나 고르세요.</p><div class="choices cards" id="rw"></div>
         <div class="row"><button type="button" id="deckView">덱 보기</button><button type="button" id="skip">건너뛰기</button></div>`);
       for (const d of choices) {
@@ -986,14 +1083,18 @@
     const hand = $('hand');
     hand.innerHTML = '';
     if (B.phase !== 'prep') { hand.innerHTML = `<p class="muted handnote">${B.phase === 'combat' ? '전투 중… 유닛을 누르면 상태를 볼 수 있습니다.' : ''}</p>`; return; }
-    for (const c of B.hand) {
+    const deal = B.justDrew;
+    B.justDrew = false;
+    if (deal) SFX.play('card');
+    B.hand.forEach((c, i) => {
       const el = cardEl(c, { cost: costOf(c) });
+      if (deal) { el.classList.add('deal'); el.style.animationDelay = i * 55 + 'ms'; }
       if (c === B.sel) el.classList.add('sel');
       if (!canPay(c)) el.classList.add('cant');
       el.addEventListener('pointerdown', (ev) => startCardDrag(ev, c, el));
       el.addEventListener('pick', () => selectCard(c));
       hand.appendChild(el);
-    }
+    });
     if (!B.hand.length) hand.innerHTML = '<p class="muted handnote">손패를 모두 썼습니다. 전투를 시작하세요.</p>';
   }
   function renderEncounter() {
@@ -1011,18 +1112,18 @@
     const skillList = (sk) => sk.length ? '<ul class="sk">' + sk.map((s) => `<li style="--cc:${CLASSES[s.def ? s.def.cls : CARDS[s.id].cls].color}"><b>${s.def ? s.def.name : CARDS[s.id].name}${s.up ? '+' : ''}</b> ${s.def ? s.def.desc : CARDS[s.id].desc}</li>`).join('') + '</ul>' : '<p class="muted">스킬 없음 — 기본 공격만 합니다.</p>';
     if (inf.type === 'ally') {
       const p = inf.p, d = CARDS[p.c.id], m = AC.STAR_MULT[p.c.star];
-      box.innerHTML = `<h2>${d.name}${p.c.star > 1 ? ' ' + '★'.repeat(p.c.star) : ''}</h2><p class="muted">${CLASSES[d.cls].full} · 체력 ${Math.round(d.hp * m)} · 공격 ${Math.round(d.atk * m)} · 사거리 ${d.range}</p>
+      box.innerHTML = `<h2 class="ph"><img src="${ART.tokenURL(d.id, 0)}" alt="">${d.name}${p.c.star > 1 ? ' ' + '★'.repeat(p.c.star) : ''}</h2><p class="muted">${CLASSES[d.cls].full} · 체력 ${Math.round(d.hp * m)} · 공격 ${Math.round(d.atk * m)} · 사거리 ${d.range}</p>
         <p>스킬 ${p.skills.length} / ${slotsOf(p.c)}</p>${skillList(p.skills.map((s) => ({ def: CARDS[s.id], up: s.up })))}
         ${B.phase === 'prep' ? '<button type="button" id="unplay">손으로 되돌리기</button>' : ''}`;
       const b = $('unplay');
       if (b) b.onclick = () => unplay(p);
     } else if (inf.type === 'enemy') {
       const d = inf.en.def;
-      box.innerHTML = `<h2>${d.name}</h2><p class="muted">체력 ${Math.round(d.hp * (inf.en.scale || 1))} · 공격 ${Math.round(d.atk * (inf.en.scale || 1))} · 사거리 ${d.range}${d.armor ? ' · 피해 감소 ' + d.armor * 100 + '%' : ''}</p>
+      box.innerHTML = `<h2 class="ph"><img src="${ART.tokenURL(d.id, 1, d.boss ? 'boss' : d.elite ? 'elite' : '')}" alt="">${d.name}</h2><p class="muted">체력 ${Math.round(d.hp * (inf.en.scale || 1))} · 공격 ${Math.round(d.atk * (inf.en.scale || 1))} · 사거리 ${d.range}${d.armor ? ' · 피해 감소 ' + d.armor * 100 + '%' : ''}</p>
         ${skillList(d.skills.map((id) => ({ def: CARDS[id] })))}${d.boss ? `<p class="bossnote">${BOSS_INFO[d.boss]}</p>` : ''}`;
     } else {
       const e = inf.e;
-      box.innerHTML = `<h2>${e.def.name}${e.star > 1 ? ' ' + '★'.repeat(e.star) : ''}</h2>
+      box.innerHTML = `<h2 class="ph"><img src="${ART.tokenURL(e.artId, e.side, kindOf(e))}" alt="">${e.def.name}${e.star > 1 ? ' ' + '★'.repeat(e.star) : ''}</h2>
         <p class="muted">체력 ${Math.max(0, Math.round(e.hp))} / ${Math.round(e.maxHp)}${e.shield > 0 ? ' · 보호막 ' + Math.round(e.shield) : ''} · 공격 ${Math.round(e.atk)}</p>${skillList(e.skills)}`;
     }
   }
@@ -1035,48 +1136,183 @@
   }
 
   // ---------- 캔버스 ----------
-  function drawToken(x, y, o) {
-    const r = o.big ? 30 : 21;
-    ctx.save();
-    if (o.alpha) ctx.globalAlpha = o.alpha;
-    ctx.fillStyle = o.side ? '#e8436b' : '#2f6fd6';
-    ctx.beginPath(); ctx.arc(x + 3, y + 3, r, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = o.flash ? '#ffffff' : o.color;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = o.elite || o.big ? 3.5 : 2.5; ctx.strokeStyle = '#232a3b'; ctx.stroke();
-    if (o.big) {
-      // 왕관
-      ctx.fillStyle = '#f5c400'; ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(x - 14, y - r + 2); ctx.lineTo(x - 14, y - r - 12); ctx.lineTo(x - 7, y - r - 4); ctx.lineTo(x, y - r - 14); ctx.lineTo(x + 7, y - r - 4); ctx.lineTo(x + 14, y - r - 12); ctx.lineTo(x + 14, y - r + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    } else if (o.elite) {
-      ctx.strokeStyle = '#f5c400'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
-      ctx.beginPath(); ctx.arc(x, y, r + 5, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  const INK = '#232a3b';
+  const boardCache = {};
+  // 막마다 한 번만 그려 두는 판지 보드(종이 결, 인쇄 어긋남, 칸 모서리 표시)
+  function boardBg(act) {
+    if (boardCache[act]) return boardCache[act];
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const c = cv.getContext('2d');
+    c.scale(dpr, dpr);
+    const pal = ACTS[act].palette;
+    c.fillStyle = pal.ground; c.fillRect(0, 0, W, H);
+    for (let k = 0; k < 3200; k++) { c.fillStyle = Math.random() < 0.55 ? 'rgba(35,42,59,.06)' : 'rgba(255,255,255,.22)'; c.fillRect(Math.random() * W, Math.random() * H, 1, 1); }
+    for (const cell of grid.cells) {
+      const mine = cell.r >= PLAYER_ROW, x = cell.x - CS / 2, y = cell.y - CS / 2;
+      c.fillStyle = mine ? 'rgba(47,111,214,.10)' : 'rgba(232,67,107,.10)';
+      c.fillRect(x + 3.5, y + 3.5, CS - 4, CS - 4); // 판이 살짝 어긋난 리소 인쇄
+      c.fillStyle = (mine ? pal.mine : pal.foe)[(cell.r + cell.c) % 2];
+      c.fillRect(x + 2, y + 2, CS - 4, CS - 4);
+      c.fillStyle = 'rgba(255,255,255,.18)';
+      for (let yy = y + 6; yy < y + CS - 4; yy += 7) for (let xx = x + 6 + ((yy / 7) % 2) * 3.5; xx < x + CS - 4; xx += 7) { c.beginPath(); c.arc(xx, yy, 0.9, 0, Math.PI * 2); c.fill(); }
     }
-    ctx.fillStyle = '#fffdf7';
-    ctx.font = `${o.big ? 28 : 19}px Jua, "Gowun Dodum", sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(o.label, x, y + 1);
-    // 바라보는 방향 표시
-    if (o.dir) {
-      const [fx, fy] = o.dir, tx = x + fx * (r + 5), ty = y + fy * (r + 5);
-      ctx.fillStyle = '#232a3b';
-      ctx.beginPath(); ctx.moveTo(tx + fx * 5, ty + fy * 5); ctx.lineTo(tx - fy * 5, ty + fx * 5); ctx.lineTo(tx + fy * 5, ty - fx * 5); ctx.closePath(); ctx.fill();
+    c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1.2;
+    for (let r = 1; r < ROWS; r++) for (let col = 1; col < COLS; col++) {
+      const x = M + col * CS, y = M + r * CS;
+      c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x + 4, y); c.moveTo(x, y - 4); c.lineTo(x, y + 4); c.stroke();
     }
-    if (o.star > 1) { ctx.fillStyle = '#c48a00'; ctx.font = '11px sans-serif'; ctx.fillText('★'.repeat(o.star), x, y - r - 6); }
+    c.strokeStyle = INK; c.lineWidth = 3; c.strokeRect(M, M, CS * COLS, CS * ROWS);
+    c.lineWidth = 1; c.strokeRect(M - 6, M - 6, CS * COLS + 12, CS * ROWS + 12);
+    c.lineWidth = 3; c.setLineDash([10, 6]);
+    c.beginPath(); c.moveTo(M, M + CS * PLAYER_ROW); c.lineTo(M + CS * COLS, M + CS * PLAYER_ROW); c.stroke(); c.setLineDash([]);
+    c.fillStyle = INK;
+    for (const [x, y] of [[M - 6, M - 6], [M + CS * COLS + 6, M - 6], [M - 6, M + CS * ROWS + 6], [M + CS * COLS + 6, M + CS * ROWS + 6]]) { ART.star(c, x, y, 5); c.fill(); }
+    boardCache[act] = cv;
+    return cv;
+  }
+
+  const tokenR = (kind) => (kind === 'boss' ? 33 : kind === 'elite' ? 26 : 23);
+  const kindOf = (e) => (e.boss ? 'boss' : e.elite ? 'elite' : '');
+  const sprite = (artId, side, kind) => ART.token(artId, side, tokenR(kind), 2, kind);
+
+  function drawUnit(x, y, o) {
+    const r = tokenR(o.kind), spr = sprite(o.artId, o.side, o.kind);
+    let sq = 0, jx = 0;
+    if (o.popT > 0) { const t = 1 - o.popT / 0.35; sq = 0.2 * Math.sin(t * Math.PI * 2) * (1 - t); } // 내려칠 때 납작해졌다가 튀어오름
+    if (o.hitT > 0) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
+    if (o.glow) {
+      ctx.strokeStyle = o.glow; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y + 2, r + 7 + Math.sin(performance.now() / 160) * 2, 0, Math.PI * 2); ctx.stroke();
+    }
+    if (o.selected) { ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x - CS / 2 + 4, y - CS / 2 + 4, CS - 8, CS - 8); ctx.setLineDash([]); }
+    ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha, dim: o.dim });
+    const ty = y - (o.lift || 0);
+    if (o.kind === 'boss') {
+      ctx.fillStyle = '#f5c400'; ctx.strokeStyle = INK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x - 13, ty - r + 3); ctx.lineTo(x - 13, ty - r - 10); ctx.lineTo(x - 6, ty - r - 3); ctx.lineTo(x, ty - r - 13); ctx.lineTo(x + 6, ty - r - 3); ctx.lineTo(x + 13, ty - r - 10); ctx.lineTo(x + 13, ty - r + 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    if (o.star > 1) {
+      for (let k = 0; k < o.star; k++) { ART.star(ctx, x - (o.star - 1) * 6 + k * 12, ty - r - 1, 5.5); ctx.fillStyle = '#f5c400'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.stroke(); }
+    }
     if (o.skills && o.skills.length) {
       const n = o.skills.length;
-      o.skills.forEach((c, k) => {
-        const sx = x - (n - 1) * 6 + k * 12, sy = y + r + 7;
-        ctx.fillStyle = c; ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 1.5;
+      o.skills.forEach((col, k) => {
+        const sx = x - (n - 1) * 6.5 + k * 13, sy = ty + r + 9;
+        ctx.fillStyle = col; ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(sx, sy - 5); ctx.lineTo(sx + 5, sy); ctx.lineTo(sx, sy + 5); ctx.lineTo(sx - 5, sy); ctx.closePath(); ctx.fill(); ctx.stroke();
       });
     }
-    if (o.stun) { ctx.strokeStyle = '#f5c400'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(x, y, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
-    if (o.slow) { ctx.strokeStyle = '#6aa8ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
-    if (o.taunt) { ctx.fillStyle = '#f5c400'; ctx.font = 'bold 13px sans-serif'; ctx.fillText('!', x + r, y - r); }
-    if (o.selected) { ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x - CS / 2 + 4, y - CS / 2 + 4, CS - 8, CS - 8); ctx.setLineDash([]); }
-    if (o.glow) { ctx.strokeStyle = o.glow; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, r + 6 + Math.sin(performance.now() / 160) * 2, 0, Math.PI * 2); ctx.stroke(); }
-    ctx.restore();
+    if (o.dir) {
+      const [fx, fy] = o.dir, tx = x + fx * (r + 6), tyy = ty + fy * (r + 6) + (fy > 0 ? 3 : 0);
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.moveTo(tx + fx * 5, tyy + fy * 5); ctx.lineTo(tx - fy * 4.5, tyy + fx * 4.5); ctx.lineTo(tx + fy * 4.5, tyy - fx * 4.5); ctx.closePath(); ctx.fill();
+    }
+    if (o.stun) {
+      const t = performance.now() / 300;
+      for (let k = 0; k < 3; k++) { const a = t + (k * Math.PI * 2) / 3; ART.star(ctx, x + Math.cos(a) * r * 0.8, ty - r - 4 + Math.sin(a) * 4, 4); ctx.fillStyle = '#f5c400'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+    if (o.slow) { ctx.strokeStyle = '#6aa8ff'; ctx.lineWidth = 2.5; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.arc(x, ty, r + 4, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    if (o.taunt) {
+      ctx.fillStyle = '#f5c400'; ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x + r * 0.85, ty - r * 0.85, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = INK; ctx.font = '12px Jua, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', x + r * 0.85, ty - r * 0.85 + 1);
+    }
+  }
+  function unitOpts(e) {
+    const kind = kindOf(e), hop = e.moving ? Math.sin(Math.min(1, e.moving.t) * Math.PI) : 0;
+    return {
+      artId: e.artId, side: e.side, kind, star: e.star, flash: e.flash, hitT: e.hitT, popT: e.popT, rot: e.rot + hop * 0.12 * (e.id % 2 ? 1 : -1), lift: hop * 5,
+      stun: e.stun > 0, slow: e.slowT > 0, taunt: e.forcedT > 0, dir: e.big || !e.target || e.target.dead ? null : facing(e, e.target),
+      skills: e.side ? null : e.skills.map((s) => CLASSES[s.def.cls].color), selected: B.info && B.info.e === e,
+    };
+  }
+  function drawBar(e) {
+    const r = tokenR(kindOf(e)), w = r * 2 + 4, x = e.px - w / 2, y = e.py - r - (e.star > 1 ? 16 : 11) - (e.big ? 6 : 0);
+    const total = Math.max(e.maxHp, e.hp + e.shield), hpW = (w * Math.max(0, e.hp)) / total;
+    ctx.fillStyle = INK; roundRect(x - 1.5, y - 1.5, w + 3, 9, 3); ctx.fill();
+    ctx.fillStyle = '#fffdf7'; ctx.fillRect(x, y, w, 6);
+    ctx.fillStyle = e.side ? '#e8436b' : '#2f6fd6'; ctx.fillRect(x, y, hpW, 6);
+    if (e.shield > 0) { ctx.fillStyle = '#bfe0ff'; ctx.fillRect(x + hpW, y, (w * e.shield) / total, 6); }
+    ctx.fillStyle = 'rgba(35,42,59,.35)';
+    for (let k = 500; k < total; k += 500) ctx.fillRect(x + (w * k) / total, y, 1, 6);
+    if (e.ability && e.maxMana > 0) {
+      ctx.fillStyle = INK; ctx.fillRect(x - 1, y + 7.5, w + 2, 4);
+      ctx.fillStyle = '#f5c400'; ctx.fillRect(x, y + 8.3, (w * e.mana) / e.maxMana, 2.4);
+    }
+  }
+  function roundRect(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+  const SHOT = { mage: ['#b48cff', '#efe2ff'], holy: ['#f5c400', '#fff6c8'], fire: ['#e8643b', '#ffd36b'] };
+  function drawProjectiles(cb) {
+    for (const p of cb.projectiles) {
+      const ang = Math.atan2(p.tgt.py - p.y, p.tgt.px - p.x), style = p.src && SHOT[p.src.cls];
+      p.trail = p.trail || [];
+      p.trail.push([p.x, p.y]);
+      if (p.trail.length > 7) p.trail.shift();
+      if (style) {
+        p.trail.forEach(([x, y], i) => { ctx.globalAlpha = (i / p.trail.length) * 0.5; ctx.fillStyle = style[0]; ctx.beginPath(); ctx.arc(x, y, 2 + i * 0.6, 0, Math.PI * 2); ctx.fill(); });
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = style[0]; ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.kind === 'spell' ? 6 : 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = style[1]; ctx.beginPath(); ctx.arc(p.x - 1, p.y - 1, 2, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
+        ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(4, 0); ctx.stroke();
+        ctx.fillStyle = '#c3cbd6'; ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(2, -3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill(); ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.fillStyle = p.src && p.src.side ? '#e8436b' : '#2f6fd6'; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(-17, -4); ctx.lineTo(-10, 0); ctx.lineTo(-17, 4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+  function drawEffects(cb) {
+    for (const f of cb.fx) {
+      const k = f.t / f.life;
+      if (f.kind === 'ring') {
+        ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.color; ctx.lineWidth = 4 * (1 - k) + 1;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + k * 0.8), 0, Math.PI * 2); ctx.stroke();
+      } else if (f.kind === 'beam') {
+        ctx.globalAlpha = 1 - k;
+        ctx.strokeStyle = INK; ctx.lineWidth = 7 * (1 - k) + 2; ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.x2, f.y2); ctx.stroke();
+        ctx.strokeStyle = f.color; ctx.lineWidth = 5 * (1 - k) + 1; ctx.stroke();
+        ctx.strokeStyle = '#fffdf7'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  function drawFloaters(cb) {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    for (const f of cb.floaters) {
+      const a = 1 - Math.max(0, f.t - 0.55) / 0.35, sc = f.t < 0.12 ? 1.6 - f.t * 5 : 1;
+      const col = f.color === '#ffffff' ? '#fffdf7' : f.color === '#ffb347' ? '#f5c400' : f.color === '#c9a2ff' ? '#e2d0ff' : f.color === '#7dffa0' ? '#9cf0b4' : f.color;
+      ctx.save(); ctx.globalAlpha = Math.max(0, a); ctx.translate(f.x, f.y); ctx.scale(sc, sc);
+      ctx.font = `${f.big ? 17 : 14}px Jua, "Gowun Dodum", sans-serif`;
+      ctx.strokeStyle = INK; ctx.lineWidth = 4; ctx.strokeText(f.text, 0, 0);
+      ctx.fillStyle = col; ctx.fillText(f.text, 0, 0);
+      ctx.restore();
+    }
+  }
+  function drawTele(cb) {
+    const now = performance.now();
+    for (const tl of cb.tele) {
+      const k = Math.min(1, tl.t / tl.delay);
+      for (const i of tl.cells) {
+        const c = grid.cells[i], x = c.x - CS / 2 + 3, y = c.y - CS / 2 + 3, s = CS - 6;
+        ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
+        ctx.globalAlpha = 0.16 + 0.08 * Math.sin(now / 70); ctx.fillStyle = tl.color; ctx.fillRect(x, y, s, s);
+        ctx.globalAlpha = 0.35; ctx.strokeStyle = tl.color; ctx.lineWidth = 3;
+        for (let d = -s; d < s; d += 9) { ctx.beginPath(); ctx.moveTo(x + d + ((now / 30) % 9), y + s); ctx.lineTo(x + d + s + ((now / 30) % 9), y); ctx.stroke(); }
+        ctx.globalAlpha = 0.6; ctx.fillStyle = tl.color; ctx.fillRect(x, y + s - s * k, s, s * k);
+        ctx.restore();
+        ctx.strokeStyle = tl.color; ctx.lineWidth = 2.5; ctx.strokeRect(x, y, s, s);
+      }
+      const c0 = grid.cells[tl.cells[0]];
+      if (c0 && k < 1) {
+        ctx.fillStyle = '#f5c400'; ctx.strokeStyle = INK; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(c0.x, c0.y - 12); ctx.lineTo(c0.x + 11, c0.y + 8); ctx.lineTo(c0.x - 11, c0.y + 8); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = INK; ctx.font = '13px Jua, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', c0.x, c0.y + 2);
+      }
+    }
   }
   function fillCell(i, color, alpha, inset = 3) {
     const c = grid.cells[i];
@@ -1085,19 +1321,42 @@
     ctx.fillRect(c.x - CS / 2 + inset, c.y - CS / 2 + inset, CS - inset * 2, CS - inset * 2);
     ctx.globalAlpha = 1;
   }
+
+  // ---------- 연출 상태(종이 조각, 찢어진 딱지, 화면 흔들림) ----------
+  const newVfx = () => ({ debris: [], parts: [], shake: 0 });
+  function burst(x, y, col, n) {
+    if (!B) return;
+    for (let k = 0; k < n; k++) {
+      const a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 120;
+      B.vfx.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 16, s: 2.5 + Math.random() * 3, col: Math.random() < 0.35 ? '#fffdf7' : col, t: 0, life: 0.5 + Math.random() * 0.3 });
+    }
+  }
+  function shake(n) { if (B) B.vfx.shake = Math.min(14, Math.max(B.vfx.shake, n)); }
+  function stepVfx(dt) {
+    if (!B) return;
+    const v = B.vfx;
+    v.debris = v.debris.filter((d) => ART.stepTear(d, dt));
+    for (const p of v.parts) { p.t += dt; p.vy += 420 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.97; p.rot += p.vr * dt; }
+    v.parts = v.parts.filter((p) => p.t < p.life);
+    v.shake = Math.max(0, v.shake - dt * 30);
+    if (B.combat) for (const u of B.combat.units) { if (u.hitT > 0) u.hitT -= dt; if (u.popT > 0) u.popT -= dt; }
+  }
+  function drawVfx() {
+    for (const d of B.vfx.debris) ART.drawTear(ctx, d);
+    for (const p of B.vfx.parts) {
+      ctx.save(); ctx.globalAlpha = 1 - p.t / p.life; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.col; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.65);
+      ctx.strokeStyle = 'rgba(35,42,59,.5)'; ctx.lineWidth = 0.6; ctx.strokeRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.65);
+      ctx.restore();
+    }
+  }
+
   function draw() {
     if (!B || $('battle').hidden) return;
-    const pal = ACTS[R.act].palette;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = pal.ground; ctx.fillRect(0, 0, W, H);
-    for (const c of grid.cells) {
-      const mine = c.r >= PLAYER_ROW;
-      ctx.fillStyle = (mine ? pal.mine : pal.foe)[(c.r + c.c) % 2];
-      ctx.fillRect(c.x - CS / 2 + 2, c.y - CS / 2 + 2, CS - 4, CS - 4);
-    }
-    ctx.strokeStyle = '#232a3b'; ctx.lineWidth = 2.5;
-    ctx.strokeRect(10, 10, CS * COLS, CS * ROWS);
-    ctx.beginPath(); ctx.moveTo(10, 10 + CS * PLAYER_ROW); ctx.lineTo(10 + CS * COLS, 10 + CS * PLAYER_ROW); ctx.stroke();
+    ctx.save();
+    if (B.vfx.shake > 0.2) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
+    ctx.drawImage(boardBg(R.act), 0, 0, W, H);
 
     const prep = B.phase === 'prep';
     const sel = B.sel ? CARDS[B.sel.id] : null;
@@ -1118,37 +1377,20 @@
         let cells = [];
         if (['facing', 'self', 'line', 'selfOnly', 'targetFacing', 'target', 'single'].includes(sel.mode)) cells = skillCells(fake, t, sel, [0, -1]);
         const col = ['heal', 'shield', 'haste', 'buff'].includes(sel.effect) ? '#2e9e6b' : CLASSES[sel.cls].color;
-        for (const i of cells) fillCell(i, col, 0.35);
+        for (const i of cells) fillCell(i, col, 0.38);
       }
     }
     if (B.combat) {
       const cb = B.combat;
-      // 예고 장판
-      for (const tl of cb.tele) {
-        const k = Math.min(1, tl.t / tl.delay);
-        for (const i of tl.cells) {
-          const c = grid.cells[i];
-          fillCell(i, tl.color, 0.18 + 0.1 * Math.sin(performance.now() / 70));
-          ctx.globalAlpha = 0.55; ctx.fillStyle = tl.color;
-          const h = (CS - 6) * k;
-          ctx.fillRect(c.x - CS / 2 + 3, c.y + CS / 2 - 3 - h, CS - 6, h);
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = tl.color; ctx.lineWidth = 2; ctx.strokeRect(c.x - CS / 2 + 3, c.y - CS / 2 + 3, CS - 6, CS - 6);
-        }
-      }
+      drawTele(cb);
       for (const f of cb.fx) if (f.kind === 'tile') fillCell(f.cell, f.color, 0.6 * (1 - f.t / f.life), 2);
       const alive = cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py);
-      for (const e of alive) {
-        const o = AC.lungeOffset(e);
-        const dir = e.target && !e.target.dead ? facing(e, e.target) : null;
-        drawToken(e.px + o.x, e.py + o.y, {
-          side: e.side, color: e.color, label: e.label, star: e.star, flash: e.flash > 0, stun: e.stun > 0, slow: e.slowT > 0, taunt: e.forcedT > 0,
-          big: e.big, elite: e.elite, dir: e.big ? null : dir, skills: e.side ? null : e.skills.map((s) => CLASSES[s.def.cls].color),
-          selected: B.info && B.info.e === e,
-        });
-      }
-      for (const e of alive) AC.drawBars(ctx, e, { hpAlly: '#2f6fd6', hpEnemy: '#e8436b', mana: '#f5c400', back: '#232a3b', w: e.big ? 64 : 42, off: e.big ? 50 : 34, hpH: e.big ? 6 : 5, manaH: 3 });
-      AC.drawFx(ctx, cb, { font: 'Jua, sans-serif' });
+      for (const e of alive) { const o = AC.lungeOffset(e); drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }
+      drawVfx();
+      for (const e of alive) drawBar(e);
+      drawProjectiles(cb);
+      drawEffects(cb);
+      drawFloaters(cb);
       const boss = cb.units.find((u) => u.boss);
       if (boss) {
         $('bossbar').hidden = false;
@@ -1158,18 +1400,20 @@
       }
     } else {
       $('bossbar').hidden = true;
-      for (const x of B.enemies) {
-        const c = grid.cells[x.cell];
-        drawToken(c.x, c.y, { side: 1, color: x.def.color, label: x.def.boss ? BOSS_LABEL[x.def.boss] : x.def.name[0], big: !!x.def.boss, elite: !!x.def.elite, alpha: 0.9, selected: B.info && B.info.en === x });
-      }
-      for (const p of B.played) {
-        if (drag.dragging && drag.obj === p) continue;
-        const c = grid.cells[p.cell];
-        const glow = sel && sel.kind === 'skill' && skillFits(B.sel, p) ? CLASSES[sel.cls].color : null;
-        drawToken(c.x, c.y, { side: 0, color: CLASSES[CARDS[p.c.id].cls].color, label: CARDS[p.c.id].name[0], star: p.c.star, skills: p.skills.map((s) => CLASSES[CARDS[s.id].cls].color), glow, selected: B.info && B.info.p === p, dir: [0, -1] });
-      }
-      if (drag.dragging && drag.obj) { const p = drag.obj; drawToken(drag.pt.x, drag.pt.y, { side: 0, color: CLASSES[CARDS[p.c.id].cls].color, label: CARDS[p.c.id].name[0], star: p.c.star }); }
+      const now = performance.now();
+      const items = [
+        ...B.enemies.map((x) => ({ y: grid.cells[x.cell].y, f: () => { const c = grid.cells[x.cell]; drawUnit(c.x, c.y, { artId: x.def.id, side: 1, kind: x.def.boss ? 'boss' : x.def.elite ? 'elite' : '', rot: x.rot || 0, selected: B.info && B.info.en === x }); } })),
+        ...B.played.filter((p) => !(drag.dragging && drag.obj === p)).map((p) => ({ y: grid.cells[p.cell].y, f: () => {
+          const c = grid.cells[p.cell];
+          const glow = sel && sel.kind === 'skill' && skillFits(B.sel, p) ? CLASSES[sel.cls].color : null;
+          drawUnit(c.x, c.y, { artId: p.c.id, side: 0, star: p.c.star, rot: p.rot || 0, popT: Math.max(0, 0.35 - (now - (p.placedAt || 0)) / 1000), skills: p.skills.map((s) => CLASSES[CARDS[s.id].cls].color), glow, selected: B.info && B.info.p === p, dir: [0, -1] });
+        } })),
+      ].sort((a, b) => a.y - b.y);
+      for (const it of items) it.f();
+      drawVfx();
+      if (drag.dragging && drag.obj) { const p = drag.obj; drawUnit(drag.pt.x, drag.pt.y, { artId: p.c.id, side: 0, star: p.c.star, lift: 8, rot: -0.08 }); }
     }
+    ctx.restore();
   }
 
   // =====================================================================
@@ -1191,6 +1435,13 @@
     const fan = $('fan');
     fan.innerHTML = '';
     for (const id of ['fire', 'squire', 'cross']) fan.appendChild(cardEl({ uid: 0, id, star: 1, up: false }));
+    [['knight', 0, ''], ['archmage', 0, ''], ['slime', 1, ''], ['dragon', 1, 'boss'], ['goblin', 1, '']].forEach(([id, side, kind], i) => {
+      const img = document.createElement('img');
+      img.className = 'ftok t' + i;
+      img.src = ART.tokenURL(id, side, kind);
+      img.alt = '';
+      fan.appendChild(img);
+    });
     const s = loadSave();
     $('continue').hidden = !s;
     if (s) $('continue').textContent = `이어하기 — ${s.act}막 · 체력 ${s.hp}/${s.maxHp}`;
@@ -1198,6 +1449,10 @@
   $('newRun').onclick = () => { clearSave(); R = new Run(); R.visited = []; curNode = null; showMap(); };
   $('continue').onclick = () => { R = new Run(loadSave()); curNode = null; showMap(); };
   $('again').onclick = title;
+  const syncMute = () => { $('muteBtn').textContent = SFX.muted ? '소리 꺼짐' : '소리 켬'; $('muteBtn').setAttribute('aria-pressed', String(!SFX.muted)); };
+  $('muteBtn').onclick = () => { SFX.setMuted(!SFX.muted); syncMute(); };
+  syncMute();
+  document.addEventListener('click', (e) => { if (e.target.closest('button')) SFX.play('click'); });
   $('deckBtn').onclick = () => { rebindAfterDeck = () => {}; showDeck(); };
 
   // =====================================================================
@@ -1205,6 +1460,8 @@
   // =====================================================================
   AC.loop((dt) => {
     if (R && $('title').hidden && $('ending').hidden) R.stats.time += dt;
+    stepVfx(dt);
+    if (B && B.combat && (B.rosterT = (B.rosterT || 0) - dt) <= 0) { B.rosterT = 0.15; updateRoster(); }
     if (B && B.phase === 'combat' && B.combat) {
       let left = dt * (window.__turbo || R.speed);
       while (left > 0 && !B.combat.done) { const s = Math.min(1 / 60, left); B.combat.step(s); left -= s; }
@@ -1215,6 +1472,8 @@
       cb.floaters = cb.floaters.filter((f) => f.t < 0.9);
       for (const f of cb.fx) f.t += dt;
       cb.fx = cb.fx.filter((f) => f.t < f.life);
+      for (const p of cb.projectiles) p.done = true;
+      cb.projectiles = [];
       B.resultT -= dt;
       if (B.resultT <= 0) { B.phase = 'done'; afterBattle(); }
     }

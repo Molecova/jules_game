@@ -311,6 +311,7 @@
       }
       t.hp -= dmg;
       t.flash = 0.12;
+      if (this.hooks.onHit) this.hooks.onHit(t, dmg, src, kind, crit, this);
       t.mana = Math.min(t.maxMana, t.mana + Math.min(10, (dmg / t.maxHp) * 60));
       if (src) {
         src.dmgDealt += dmg;
@@ -327,6 +328,7 @@
       const h = Math.round(Math.min(t.maxHp - t.hp, amt));
       t.hp += h;
       if (h > 0) this.float(t.px, t.py - 16, '+' + h, '#7dffa0');
+      if (h > 0 && this.hooks.onHeal) this.hooks.onHeal(t, h, this);
     }
 
     kill(t, src) {

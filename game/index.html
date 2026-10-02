@@ -86,13 +86,16 @@ button.primary { background: var(--pink); color: #fff; }
 .mnode.reach::after { content: ""; position: absolute; inset: -9px; border: 3px solid var(--blue); border-radius: inherit; }
 @keyframes bob { 50% { transform: translate(-50%, calc(-50% - 4px)); } }
 .maplegend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--muted); justify-content: center; }
-.maplegend span::before { content: attr(data-s); display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 5px; border: 2px solid var(--ink); border-radius: 50%; font: 400 12px var(--display); color: var(--ink); background: var(--c, #fff); vertical-align: -5px; }
+.maplegend span { display: inline-flex; align-items: center; gap: 6px; }
+.maplegend i { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 2px solid var(--ink); border-radius: 50%; background: var(--c, #fff); color: var(--ink); font: 400 13px var(--display); font-style: normal; }
+.maplegend i svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.maplegend img { width: 28px; height: 28px; }
 
 /* 전투 */
-.bmain { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+.bmain { display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 16px; align-items: start; }
 .board { position: relative; background: var(--paper2); border: 2px solid var(--ink); border-radius: 12px; padding: 10px; box-shadow: 5px 5px 0 var(--ink); }
-canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: auto; touch-action: none; }
-.bossbar { max-width: 420px; margin: 0 auto 8px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font: 400 16px var(--display); }
+canvas { display: block; width: 100%; max-width: 450px; margin: 0 auto; height: auto; touch-action: none; }
+.bossbar { max-width: 450px; margin: 0 auto 8px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font: 400 16px var(--display); }
 .bb { grid-column: 1 / -1; height: 14px; border: 2px solid var(--ink); border-radius: 7px; background: #fff; overflow: hidden; }
 #bossFill { height: 100%; background: var(--pink); transition: width .2s; }
 #bossHp { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -188,6 +191,58 @@ canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: 
   .mnode { width: 38px; height: 38px; font-size: 16px; }
   .mnode.t-boss { width: 62px; height: 62px; font-size: 28px; }
 }
+
+/* ---------- 품질 패스: 딱지 그림, 도장, 애니메이션 ---------- */
+html { background: var(--paper) radial-gradient(rgba(35,42,59,.05) 1px, transparent 1px) 0 0 / 6px 6px; min-height: 100%; }
+body { background: transparent; }
+.title { min-height: calc(100vh - 60px); }
+.enter { animation: enter .35s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+button.small { padding: 7px 10px; font-size: 14px; }
+.hpwrap.hurt .hpbar { animation: hurt .6s; }
+@keyframes hurt { 20%, 60% { transform: translateX(-3px); background: #ffd0da; } 40%, 80% { transform: translateX(3px); } }
+.card .art { background: radial-gradient(rgba(255,255,255,.25) 1.2px, transparent 1.4px) 0 0 / 6px 6px, var(--cc); overflow: hidden; }
+.card .art img { width: 46px; height: 46px; filter: drop-shadow(1px 2px 0 rgba(35,42,59,.45)); transform: rotate(-4deg); transition: transform .2s; }
+.card:hover .art img { transform: rotate(4deg) scale(1.06); }
+.card.deal { animation: deal .38s cubic-bezier(.2,.9,.3,1.25) both; }
+@keyframes deal { from { opacity: 0; transform: translateY(60px) rotate(8deg) scale(.8); } }
+.sheet .choices.cards .card { animation: flip .45s ease-out both; }
+.sheet .choices.cards .card:nth-child(2) { animation-delay: .08s; } .sheet .choices.cards .card:nth-child(3) { animation-delay: .16s; }
+@keyframes flip { from { opacity: 0; transform: rotateY(80deg) translateY(10px); } }
+.bbanner { font-size: 44px; padding: 6px 22px 10px; border: 4px solid var(--ink); border-radius: 12px; background: var(--card); -webkit-text-stroke: 0; text-shadow: none; color: var(--ink); box-shadow: 5px 5px 0 var(--ink); }
+.bbanner.show { animation: stampIn .45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes stampIn { from { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(-14deg); } to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-6deg); } }
+.bbanner.win { color: var(--blue); background: #fff8d6; }
+.bbanner.lose { color: var(--pink); }
+.bbanner.boss { color: var(--yellow); background: var(--ink); border-color: var(--yellow); box-shadow: 5px 5px 0 var(--pink); }
+.ph { display: flex; align-items: center; gap: 8px; }
+.ph img { width: 40px; height: 40px; flex: none; filter: drop-shadow(1px 2px 0 rgba(35,42,59,.4)); }
+.mnode svg { display: block; margin: auto; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.mnode.t-boss { padding: 0; overflow: visible; background: transparent; border: 0; box-shadow: none; }
+.mnode.t-boss img { width: 100%; height: 100%; filter: drop-shadow(3px 4px 0 rgba(35,42,59,.5)); }
+.mnode.t-boss.reach::after { border-radius: 50%; }
+.report { display: grid; gap: 6px; padding: 10px 12px; border: 2px dashed var(--ink); border-radius: 10px; background: var(--card); }
+.rrow { display: grid; grid-template-columns: 30px 120px minmax(0, 1fr) 44px; align-items: center; gap: 8px; font-size: 14px; }
+.rrow img { width: 30px; height: 30px; }
+.rrow.torn img { filter: grayscale(.9); opacity: .6; }
+.rrow small { color: var(--pink); font-size: 11px; }
+.rb { height: 10px; border: 1.5px solid var(--ink); border-radius: 5px; overflow: hidden; background: #fff; }
+.rb i { display: block; height: 100%; }
+.rv { font: 400 15px var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+.mvp { background: var(--yellow); border: 1.5px solid var(--ink); border-radius: 4px; padding: 0 4px; font: 400 11px var(--display); }
+.fan .ftok { position: absolute; width: 84px; filter: drop-shadow(3px 5px 0 rgba(35,42,59,.35)); animation: bob2 3.2s ease-in-out infinite; }
+.fan .ftok.t0 { left: 4%; top: 182px; transform: rotate(-12deg); }
+.fan .ftok.t1 { left: 18%; top: 216px; width: 74px; animation-delay: -1s; }
+.fan .ftok.t2 { right: 6%; top: 196px; animation-delay: -2s; }
+.fan .ftok.t3 { right: 2%; top: -6px; width: 104px; animation-delay: -.5s; }
+.fan .ftok.t4 { left: 2%; top: 0; width: 70px; animation-delay: -1.6s; }
+@keyframes bob2 { 50% { translate: 0 -6px; } }
+@media (max-width: 860px) { .rrow { grid-template-columns: 26px 92px minmax(0, 1fr) 40px; font-size: 13px; } .fan .ftok { width: 60px; } .fan .ftok.t3 { width: 76px; } }
+.roster { display: grid; gap: 6px; }
+.roster .rrow { grid-template-columns: 30px 96px minmax(0, 1fr) 46px; }
+.roster .rb i { background: var(--blue); transition: width .15s; }
+.roster .rrow.torn { opacity: .55; }
+.roster .rrow.torn .rn::after { content: " 찢어짐"; color: var(--pink); font-size: 11px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -195,10 +250,11 @@ canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: 
 <div class="app">
   <header id="hud" class="hud" hidden>
     <span class="brand">카드 <span>원정대</span></span>
-    <div class="hpwrap"><span class="k">체력</span><div class="hpbar"><div id="hpFill"></div></div><b id="hpText"></b></div>
+    <div class="hpwrap" id="hpwrap"><span class="k">체력</span><div class="hpbar"><div id="hpFill"></div></div><b id="hpText"></b></div>
     <span><span class="k">골드</span><b id="goldText"></b></span>
     <span id="actText" class="act"></span>
     <div id="relics" class="relics"></div>
+    <button type="button" id="muteBtn" class="small" aria-pressed="true">소리 켬</button>
     <button type="button" id="deckBtn">덱</button>
   </header>
 
@@ -222,10 +278,7 @@ canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: 
   <section id="mapScreen" hidden>
     <div class="maphead"><h2 id="mapTitle"></h2><p id="mapSub"></p></div>
     <div class="mapframe"><div id="mapbox" class="mapbox"><svg id="mapsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div></div>
-    <div class="maplegend">
-      <span data-s="전">전투</span><span data-s="정" style="--c:#e8436b">정예</span><span data-s="?" style="--c:#f5c400">이벤트</span>
-      <span data-s="상" style="--c:#2e9e6b">상점</span><span data-s="휴" style="--c:#e8643b">야영지</span><span data-s="보" style="--c:#d9a400">보물</span><span data-s="왕" style="--c:#f5c400">보스</span>
-    </div>
+    <div class="maplegend" id="maplegend"></div>
   </section>
 
   <section id="battle" hidden>
@@ -235,7 +288,7 @@ canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: 
         <canvas id="cv" aria-label="6×8 전장. 아래쪽 네 줄이 내 진영입니다."></canvas>
         <div id="bbanner" class="bbanner"></div>
       </div>
-      <aside class="bside"><div class="box" id="encounter"></div><div class="box" id="infoBox"></div></aside>
+      <aside class="bside"><div class="box" id="encounter"></div><div class="box" id="rosterBox" hidden><h2>아군 상황</h2><div id="roster" class="roster"></div></div><div class="box" id="infoBox"></div></aside>
     </div>
     <div class="controls">
       <div class="energy" id="energy"></div>
@@ -261,6 +314,8 @@ canvas { display: block; width: 100%; max-width: 420px; margin: 0 auto; height: 
 
 <script src="../shared/engine.js"></script>
 <script src="data.js"></script>
+<script src="art.js"></script>
+<script src="sfx.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
