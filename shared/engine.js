@@ -262,7 +262,8 @@
       for (const f of this.fx) f.t += dt;
       this.fx = this.fx.filter((f) => f.t < f.life);
 
-      const a0 = this.alive(0).length, a1 = this.alive(1).length;
+      // 설치물(바리케이드 등)은 승패 판정에서 제외
+      const a0 = this.units.filter((u) => !u.dead && u.side === 0 && !u.object).length, a1 = this.alive(1).length;
       if (a0 === 0 || a1 === 0 || this.t >= this.maxTime) {
         this.done = true;
         this.winner = a1 === 0 && a0 > 0 ? 0 : a0 === 0 && a1 > 0 ? 1 : -1; // -1: 시간초과(무승부)
@@ -298,9 +299,11 @@
       if (t.dead) return 0;
       if (kind === 'atk' && Math.random() < t.dodge) {
         this.float(t.px, t.py - 18, 'MISS', '#bbb');
+        if (this.hooks.onDodge) this.hooks.onDodge(t, src, this);
         return 0;
       }
-      if (crit) dmg *= 1.75;
+      if (crit) dmg *= (src && src.critDmg) || 1.75;
+      if (this.hooks.dmgDealtMod && src) dmg *= this.hooks.dmgDealtMod(src, t, kind, this);
       dmg *= 1 - t.armor;
       if (this.hooks.dmgTakenMod) dmg *= this.hooks.dmgTakenMod(t, this, src, kind);
       dmg = Math.max(1, Math.round(dmg));
@@ -317,7 +320,7 @@
         src.dmgDealt += dmg;
         if (src.lifesteal && !src.dead) src.hp = Math.min(src.maxHp, src.hp + dmg * src.lifesteal);
       }
-      const col = kind === 'spell' ? '#c9a2ff' : crit ? '#ffb347' : '#ffffff';
+      const col = (this.hooks.floatColor && this.hooks.floatColor(kind, crit)) || (kind === 'spell' ? '#c9a2ff' : crit ? '#ffb347' : '#ffffff');
       if (dmg > 0) this.float(t.px + AC.rand(-8, 8), t.py - 16, String(dmg), col, crit || kind === 'spell');
       if (t.hp <= 0) this.kill(t, src);
       return dmg;

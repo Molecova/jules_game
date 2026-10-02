@@ -167,8 +167,8 @@ canvas { display: block; width: 100%; max-width: 450px; margin: 0 auto; height: 
 .ending dl div { border: 2px solid var(--ink); border-radius: 10px; padding: 10px 12px; background: var(--card); }
 .ending dt { font-size: 13px; color: var(--muted); }
 .ending dd { margin: 0; font: 400 24px var(--display); }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { border: 1.5px solid var(--ink); border-radius: 5px; padding: 1px 8px; background: #fff; font-size: 13px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pill { white-space: nowrap; border: 1.5px solid var(--ink); border-radius: 5px; padding: 1px 8px; background: #fff; font-size: 13px; }
 .pill.skill { border-style: dashed; }
 .pill.relic { background: var(--yellow); }
 
@@ -178,7 +178,7 @@ canvas { display: block; width: 100%; max-width: 450px; margin: 0 auto; height: 
 @media (max-width: 860px) {
   .bmain { display: contents; }
   #battle { display: flex; flex-direction: column; gap: 12px; }
-  .board { order: 1; } .controls { order: 2; } .hand { order: 3; } .bside { order: 4; }
+  .board { order: 1; } .controls { order: 2; } .traywrap { order: 3; } .usedrow { order: 4; } .hand { order: 5; } .bside { order: 6; }
   .title { grid-template-columns: minmax(0, 1fr); }
   .fan { height: 240px; transform: scale(.85); }
   .card { width: calc(33.3% - 8px); min-width: 98px; min-height: 172px; padding: 7px 6px 6px; }
@@ -243,6 +243,120 @@ button.small { padding: 7px 10px; font-size: 14px; }
 .roster .rb i { background: var(--blue); transition: width .15s; }
 .roster .rrow.torn { opacity: .55; }
 .roster .rrow.torn .rn::after { content: " 찢어짐"; color: var(--pink); font-size: 11px; }
+
+/* ---------- v3: 편성 · 도감 · 대기석 · 전술 카드 ---------- */
+.coin b::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff2b0, #f5c400 55%, #c49a00); border: 1.5px solid var(--ink); margin-right: 4px; vertical-align: -1px; }
+.card .tier { letter-spacing: -1px; font-size: 9px; color: var(--cc); margin-left: 2px; }
+.card.t2 { box-shadow: 3px 3px 0 var(--ink), inset 0 0 0 2px #c3cbd6; }
+.card.t3 { box-shadow: 3px 3px 0 var(--ink), inset 0 0 0 2px #f5c400; background: linear-gradient(160deg, #fff6d0, var(--card) 45%); }
+.card .lv { font: 400 12px var(--display); background: var(--yellow); border: 1.5px solid var(--ink); border-radius: 4px; padding: 0 4px; }
+.card .art img { width: 62px; height: 62px; transform: rotate(-3deg); }
+.card.unit .art { height: 62px; }
+.card .wart, .card .tart { background: radial-gradient(rgba(35,42,59,.08) 1.2px, transparent 1.4px) 0 0 / 6px 6px, var(--paper2); }
+.card .wart img, .card .tart img { width: 54px; height: 54px; filter: drop-shadow(1px 2px 0 rgba(35,42,59,.35)); }
+.card.tactic { --cc: #9a6a3a; background: linear-gradient(180deg, #fbf3e0, #f4e8cc); }
+.card.tactic .cost { background: radial-gradient(circle at 35% 35%, #fff2b0, #f5c400 55%, #c49a00); }
+.card .chipimg { width: 26px; height: 26px; vertical-align: -7px; margin-right: 3px; }
+.card .owner { position: absolute; left: 8px; bottom: -10px; background: var(--ink); color: var(--paper); font: 400 11px var(--display); padding: 1px 6px; border-radius: 4px; }
+.card.mini { width: 112px; min-height: 0; transform: none !important; cursor: default; }
+.card.mini .tx { font-size: 11px; }
+.orb { background: radial-gradient(circle at 35% 30%, #fff6c8, #f5c400 50%, #b48a00); box-shadow: inset 0 -2px 0 rgba(0,0,0,.15); }
+.dcount { font: 400 16px var(--display); padding: 6px 10px; border: 2px dashed var(--ink); border-radius: 8px; }
+.traywrap { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 12px; background: #e9dcc0; box-shadow: inset 0 3px 0 rgba(0,0,0,.08); min-height: 98px; }
+.traylabel { writing-mode: vertical-rl; font: 400 14px var(--display); color: var(--muted); }
+.tray { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.traydisc { display: grid; justify-items: center; gap: 2px; padding: 2px 4px 4px; border: 0; background: transparent; box-shadow: none; font: 400 12px var(--display); touch-action: none; }
+.traydisc img { width: 70px; height: 70px; filter: drop-shadow(2px 3px 0 rgba(35,42,59,.25)); pointer-events: none; }
+.traydisc b { font-weight: 400; color: #a87a00; }
+.traydisc:hover:not(:disabled) { transform: translateY(-3px); box-shadow: none; }
+.traydisc.sel img { filter: drop-shadow(0 0 0 #f5c400) drop-shadow(0 0 6px #f5c400); }
+.usedrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 0; }
+.usedrow:empty { display: none; }
+.usedtc { font-size: 13px; padding: 4px 8px; box-shadow: 2px 2px 0 var(--ink); background: #fbf3e0; }
+.dragghost { position: fixed; width: 60px; height: 60px; pointer-events: none; z-index: 40; transform: rotate(-6deg); filter: drop-shadow(3px 6px 0 rgba(35,42,59,.35)); }
+.syn { display: grid; grid-template-columns: 26px 1fr auto; gap: 2px 8px; align-items: center; padding: 4px 0; opacity: .55; }
+.syn.on { opacity: 1; }
+.syn .sb { grid-row: span 2; width: 26px; height: 26px; border-radius: 6px; background: var(--cc); color: #fff; display: grid; place-items: center; font: 400 13px var(--display); border: 1.5px solid var(--ink); }
+.syn .th { display: flex; gap: 3px; }
+.syn .th i { font: 400 11px var(--display); font-style: normal; border: 1.5px solid var(--ink); border-radius: 3px; padding: 0 4px; }
+.syn .th i.on { background: var(--cc); color: #fff; }
+.syn small { grid-column: 2 / -1; font-size: 12px; color: var(--muted); }
+.passive { font-size: 13px; background: #fff8d6; border-left: 4px solid var(--yellow); padding: 4px 8px; border-radius: 4px; }
+.lv { font: 400 13px var(--display); background: var(--yellow); border: 1.5px solid var(--ink); border-radius: 4px; padding: 0 5px; }
+.lvup { background: #fff8d6; border: 2px dashed #c49a00; border-radius: 8px; padding: 6px 10px; }
+.sheet.wide { max-width: 980px; }
+.party { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+.pname { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.pslot { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; align-items: start; padding: 8px; border: 2px solid var(--ink); border-radius: 12px; background: var(--card); border-top: 6px solid var(--cc); cursor: default; }
+.pslot.ok { box-shadow: 0 0 0 4px var(--yellow); cursor: pointer; }
+.pslot.no { opacity: .45; }
+.discwrap { position: relative; width: 112px; height: 112px; }
+.discwrap img { width: 112px; height: 112px; }
+.slot { position: absolute; width: 28px; height: 28px; padding: 0; border-radius: 50%; font: 400 16px var(--display); box-shadow: none; background: rgba(255,253,247,.75); border: 2px dashed var(--ink); color: var(--muted); }
+.slot.full { background: transparent; border-color: transparent; }
+.slot.full:hover { border-color: var(--pink); background: rgba(232,67,107,.15); }
+.slot.s0 { left: 17px; top: 65px; } .slot.s1 { left: 58px; top: 65px; } .slot.w { left: 69px; top: 20px; }
+.pinfo { display: grid; gap: 2px; font-size: 13px; }
+.pinfo b { font: 400 17px var(--display); }
+.pinfo small { font-size: 12px; }
+.xpbar { height: 6px; border: 1.5px solid var(--ink); border-radius: 3px; background: #fff; overflow: hidden; }
+.xpbar i { display: block; height: 100%; background: var(--yellow); }
+button.tiny { font-size: 12px; padding: 4px 8px; box-shadow: 2px 2px 0 var(--ink); justify-self: start; margin-top: 4px; }
+.invwrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.invwrap h4, .sheet h4 { margin: 6px 0; font: 400 17px var(--display); }
+.inv { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; min-height: 64px; border: 2px dashed var(--ink); border-radius: 10px; background: #efe6d2; }
+.piece { display: grid; justify-items: center; gap: 1px; width: 70px; padding: 4px 2px; font: 400 11px var(--body); background: transparent; border: 2px solid transparent; box-shadow: none; touch-action: none; }
+.piece img { width: 40px; height: 40px; pointer-events: none; }
+.piece.weapon img { width: 46px; height: 46px; }
+.piece.on { border-color: var(--yellow); background: #fff8d6; }
+.piece:hover:not(:disabled) { box-shadow: none; }
+.selcard:empty { display: none; }
+.deckrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.starts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.startopt { display: grid; gap: 6px; text-align: left; padding: 12px; font-size: 18px; }
+.startopt.on, .choice.on { background: #fff8d6; box-shadow: 3px 3px 0 var(--ink), 0 0 0 4px var(--yellow); }
+.startopt .discs { display: flex; }
+.startopt .discs img { width: 70px; height: 70px; margin-right: -10px; }
+.startopt small { font: 14px var(--body); }
+.diffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.codexhead { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.codexhead h2 { font: 400 32px var(--display); margin: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font-size: 15px; padding: 8px 12px; }
+.tab small { font: 12px var(--body); color: var(--muted); }
+.tab.on { background: var(--ink); color: var(--paper); }
+.tab.on small { color: #cfd3dc; }
+.cfilter { display: flex; flex-wrap: wrap; gap: 6px; }
+.cfilter[hidden] { display: none; }
+.chipbtn { font-size: 13px; padding: 5px 10px; box-shadow: 2px 2px 0 var(--ink); border-left: 6px solid var(--cc); }
+.chipbtn.on { background: #fff8d6; }
+.codexgrid { display: flex; flex-wrap: wrap; gap: 16px 12px; padding-top: 12px; }
+.codexgrid.monster, .codexgrid.boss, .codexgrid.relic, .codexgrid.rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.codexgrid .card { cursor: default; }
+.codexgrid .card:hover { transform: none; }
+.unseen { filter: grayscale(.55); opacity: .8; }
+.unseen::after { content: "미발견"; position: absolute; right: 6px; bottom: 6px; font: 400 11px var(--display); background: var(--ink); color: var(--paper); padding: 1px 6px; border-radius: 4px; }
+.centry { position: relative; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); }
+.centry.wide { grid-template-columns: 1fr; grid-column: 1 / -1; }
+.centry img { width: 64px; height: 64px; }
+.centry b { font: 400 17px var(--display); }
+.centry small { display: block; font-size: 12px; color: var(--muted); }
+.centry p { margin: 4px 0 0; font-size: 13px; }
+.centry .tag { font: 400 11px var(--display); background: var(--pink); color: #fff; border-radius: 4px; padding: 0 5px; }
+.centry .tag.boss { background: var(--ink); color: var(--yellow); }
+.centry.elite { border-color: var(--pink); }
+.rsym.big { width: 48px; height: 48px; font: 400 20px var(--display); border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); display: grid; place-items: center; }
+h3.span { grid-column: 1 / -1; margin: 10px 0 0; font: 400 22px var(--display); }
+.enddisc { width: 76px; height: 76px; }
+.mnode.t-forge { background: #7a8494; color: #fff; }
+.svc button { font-size: 14px; }
+@media (max-width: 860px) {
+  .invwrap { grid-template-columns: 1fr; }
+  .party { grid-template-columns: 1fr; }
+  .traydisc img { width: 58px; height: 58px; }
+  .card.mini { width: 100px; }
+  .codexgrid .card { width: calc(50% - 8px); }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -251,28 +365,36 @@ button.small { padding: 7px 10px; font-size: 14px; }
   <header id="hud" class="hud" hidden>
     <span class="brand">카드 <span>원정대</span></span>
     <div class="hpwrap" id="hpwrap"><span class="k">체력</span><div class="hpbar"><div id="hpFill"></div></div><b id="hpText"></b></div>
-    <span><span class="k">골드</span><b id="goldText"></b></span>
+    <span class="coin"><span class="k">골드</span><b id="goldText"></b></span>
     <span id="actText" class="act"></span>
     <div id="relics" class="relics"></div>
+    <button type="button" id="partyBtn" class="small">편성</button>
+    <button type="button" id="hudCodex" class="small">도감</button>
     <button type="button" id="muteBtn" class="small" aria-pressed="true">소리 켬</button>
-    <button type="button" id="deckBtn">덱</button>
   </header>
 
   <section id="title" class="title">
     <div>
-      <span class="eyebrow">덱빌딩 오토배틀 로그라이크 · 약 20분</span>
+      <span class="eyebrow">보드게임 오토배틀 로그라이크 · 약 20분</span>
       <h1>카드<span>원정대</span></h1>
-      <p class="lead">유닛을 전장에 세우고, 스킬 카드로 기술을 새겨 넣으세요. 갈림길을 골라 세 개의 땅을 지나 화산 꼭대기의 흑룡을 쓰러뜨리는 원정입니다.</p>
-      <div class="btns"><button type="button" class="primary" id="newRun">새 원정</button><button type="button" id="continue" hidden>이어하기</button></div>
+      <p class="lead">종이 딱지 원정대를 꾸리고, 플라스틱 스킬 칩과 무기 미니어처를 딱지 위에 올려 강화하세요. 갈림길을 골라 세 개의 땅을 지나 화산 꼭대기의 흑룡을 쓰러뜨리는 원정입니다.</p>
+      <div class="btns"><button type="button" class="primary" id="newRun">새 원정</button><button type="button" id="continue" hidden>이어하기</button><button type="button" id="codexBtn">도감</button></div>
       <ol class="howto">
-        <li>지도에서 길을 고릅니다. 전투, 정예, 이벤트, 상점, 야영지, 보물. 각 막의 끝에는 보스가 있습니다.</li>
-        <li>전투마다 덱에서 카드를 뽑고, 에너지로 유닛을 내 진영에 놓습니다.</li>
-        <li>스킬 카드는 같은 계열 유닛에게 붙입니다. 검 스킬은 검 계열에게, 마법 스킬은 마법 계열에게.</li>
-        <li>카드의 격자가 공격 범위입니다. 예: 십자 베기는 앞 2칸과 옆 1칸을 벱니다.</li>
-        <li>전투는 자동입니다. 배치와 스킬 조합이 승부를 가릅니다.</li>
+        <li>시작 부대와 난이도를 고르고, 지도에서 길을 고릅니다. 각 막의 끝에는 보스가 있습니다.</li>
+        <li>딱지(유닛) 31종, 계열 6개. 같은 계열 딱지를 2명·4명 내보내면 시너지가 켜집니다.</li>
+        <li>딱지마다 스킬 칩 2개와 무기 1개를 올립니다. 칩의 격자가 공격 범위입니다.</li>
+        <li>전투 전에 딱지를 배치하고 전술 카드를 씁니다. 전투는 자동입니다.</li>
+        <li>이기면 경험치를 얻어 레벨이 오르고, 딱지 테두리에 금색 핀이 꽂힙니다.</li>
       </ol>
     </div>
     <div class="fan" id="fan" aria-hidden="true"></div>
+  </section>
+
+  <section id="codex" hidden>
+    <div class="codexhead" id="codexHead"></div>
+    <div class="tabs" id="codexTabs" role="tablist"></div>
+    <div class="cfilter" id="codexFilter"></div>
+    <div class="codexgrid" id="codexGrid"></div>
   </section>
 
   <section id="mapScreen" hidden>
@@ -288,15 +410,24 @@ button.small { padding: 7px 10px; font-size: 14px; }
         <canvas id="cv" aria-label="6×8 전장. 아래쪽 네 줄이 내 진영입니다."></canvas>
         <div id="bbanner" class="bbanner"></div>
       </div>
-      <aside class="bside"><div class="box" id="encounter"></div><div class="box" id="rosterBox" hidden><h2>아군 상황</h2><div id="roster" class="roster"></div></div><div class="box" id="infoBox"></div></aside>
+      <aside class="bside">
+        <div class="box" id="encounter"></div>
+        <div class="box" id="rosterBox" hidden><h2>아군 상황</h2><div id="roster" class="roster"></div></div>
+        <div class="box" id="synBox"></div>
+        <div class="box" id="infoBox"></div>
+      </aside>
     </div>
     <div class="controls">
+      <span class="dcount" id="deployCount"></span>
       <div class="energy" id="energy"></div>
+      <button type="button" id="prepParty">편성</button>
       <button type="button" id="redraw">다시 뽑기</button>
       <button type="button" id="auto">자동 배치</button>
       <button type="button" id="speed">속도 ×1</button>
       <button type="button" class="primary" id="fight">전투 시작</button>
     </div>
+    <div class="traywrap"><span class="traylabel">대기석</span><div class="tray" id="tray"></div></div>
+    <div class="usedrow" id="usedTactics"></div>
     <div class="hand" id="hand"></div>
   </section>
 
@@ -316,6 +447,8 @@ button.small { padding: 7px 10px; font-size: 14px; }
 <script src="data.js"></script>
 <script src="art.js"></script>
 <script src="sfx.js"></script>
+<script src="battle.js"></script>
+<script src="ui.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

@@ -247,6 +247,273 @@
     dragon: (c) => { bg(c, '#5a3b4a', 'rgba(255,255,255,.1)'); flame(c, 18, 84, 0.8); flame(c, 82, 84, 0.8); dragonHead(c, '#2b2f3f', '#c9c4b8', '#ff8a3b', true); },
   };
 
+  // ---------- 추가 초상화 (v3) ----------
+  const STEELD = '#8a93a3', RED = '#a8323b';
+  function mask(c, col) { rr(c, 32, 50, 36, 14, 6); fs(c, col); }
+  function bandana(c, col) { c.beginPath(); c.arc(50, 44, 19, Math.PI, 0); c.closePath(); fs(c, col); poly(c, [[66, 38], [80, 44], [72, 50]]); fs(c, col); }
+  function topknot(c, col) { circ(c, 50, 26, 6); fs(c, col); }
+  function spiderBody(c) {
+    for (const s of [-1, 1]) for (let k = 0; k < 4; k++) { const y = 46 + k * 9; line(c, [[50 + s * 14, y], [50 + s * 30, y - 10], [50 + s * 40, y + 6]], 3.5); }
+    ell(c, 50, 68, 18, 16); fs(c, '#4b3b5a'); circ(c, 50, 46, 13); fs(c, '#5d4b6b');
+    c.fillStyle = '#e8436b'; for (const [x, y] of [[44, 44], [56, 44], [47, 39], [53, 39]]) { circ(c, x, y, 2.4); c.fill(); }
+    poly(c, [[44, 56], [46, 62], [48, 56]]); fs(c, WHITE, 1.2); poly(c, [[56, 56], [54, 62], [52, 56]]); fs(c, WHITE, 1.2);
+    c.fillStyle = '#e8436b'; rr(c, 46, 66, 8, 10, 3); c.fill();
+  }
+  function boarHead(c) {
+    poly(c, [[30, 34], [26, 18], [40, 28]]); fs(c, '#5d3b1e'); poly(c, [[70, 34], [74, 18], [60, 28]]); fs(c, '#5d3b1e');
+    ell(c, 50, 50, 25, 22); fs(c, '#7a4a2e');
+    poly(c, [[38, 26], [44, 18], [50, 26], [56, 18], [62, 26]]); fs(c, '#4b2b1a', 2);
+    ell(c, 50, 62, 12, 9); fs(c, '#c9886a'); c.fillStyle = INK; ell(c, 46, 62, 2, 3); c.fill(); ell(c, 54, 62, 2, 3); c.fill();
+    c.beginPath(); c.moveTo(38, 66); c.quadraticCurveTo(30, 62, 32, 52); ink(c, 6); c.stroke(); c.strokeStyle = WHITE; c.lineWidth = 3.5; c.stroke();
+    c.beginPath(); c.moveTo(62, 66); c.quadraticCurveTo(70, 62, 68, 52); ink(c, 6); c.stroke(); c.strokeStyle = WHITE; c.lineWidth = 3.5; c.stroke();
+    face(c, { y: 46, eyes: 'angry', mouth: 'none', blush: false });
+  }
+  function batShape(c) {
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(50, 50); c.lineTo(50 + s * 44, 32); c.lineTo(50 + s * 38, 50); c.lineTo(50 + s * 30, 46); c.lineTo(50 + s * 24, 60); c.closePath(); fs(c, '#3b2b4a'); }
+    poly(c, [[40, 40], [38, 24], [46, 36]]); fs(c, '#4b3b5a'); poly(c, [[60, 40], [62, 24], [54, 36]]); fs(c, '#4b3b5a');
+    circ(c, 50, 50, 15); fs(c, '#4b3b5a');
+    face(c, { y: 48, eyes: 'glow', eyeColor: '#ff5d5d', mouth: 'fang', blush: false });
+  }
+  function harpyHead(c) {
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(50 + s * 12, 60); c.quadraticCurveTo(50 + s * 46, 40, 50 + s * 44, 80); c.quadraticCurveTo(50 + s * 30, 70, 50 + s * 14, 76); c.closePath(); fs(c, '#c08a5a'); for (let k = 0; k < 3; k++) line(c, [[50 + s * (24 + k * 6), 60 + k * 4], [50 + s * (28 + k * 6), 74]], 1.5); }
+    shoulders(c, '#c08a5a'); wildHair(c, '#7a4a2e'); head(c); face(c, { eyes: 'angry', mouth: 'smile' });
+  }
+  function golemHead(c, col, glow) {
+    rr(c, 24, 26, 52, 48, 10); fs(c, col);
+    line(c, [[30, 40], [40, 46], [36, 60]], 2, 'rgba(35,42,59,.5)'); line(c, [[66, 34], [60, 50], [70, 62]], 2, 'rgba(35,42,59,.5)');
+    if (glow) { c.save(); c.shadowColor = glow; c.shadowBlur = 8; c.fillStyle = glow; rr(c, 36, 42, 9, 6, 2); c.fill(); rr(c, 55, 42, 9, 6, 2); c.fill(); rr(c, 40, 58, 20, 4, 2); c.fill(); c.restore(); }
+    else face(c, { y: 46, eyes: 'dot', mouth: 'flat', blush: false });
+  }
+  function barricadeArt(c) {
+    for (let k = 0; k < 4; k++) { rr(c, 18 + k * 17, 22, 13, 62, 3); fs(c, ['#b07a46', '#9a6a3a', '#b88550', '#a07040'][k]); poly(c, [[18 + k * 17, 22], [24.5 + k * 17, 12], [31 + k * 17, 22]]); fs(c, '#c9945a'); }
+    rr(c, 12, 38, 76, 10, 3); fs(c, '#8a5a2e'); rr(c, 12, 62, 76, 10, 3); fs(c, '#8a5a2e');
+    c.fillStyle = STEELD; for (const x of [24, 41, 58, 75]) { circ(c, x, 43, 2); c.fill(); circ(c, x, 67, 2); c.fill(); }
+  }
+  Object.assign(PORTRAITS, {
+    merc: (c) => { bg(c, '#9ab4d8'); blade(c, 76, 94, 0.3, 46, 7, STEELD); shoulders(c, '#6b5a3a'); head(c, '#e8b88a'); face(c, { eyes: 'angry', mouth: 'flat' }); line(c, [[56, 44], [62, 54]], 2, '#a8323b'); bandana(c, '#a8323b'); },
+    duelist: (c) => { bg(c, '#a8c0e8'); blade(c, 78, 96, 0.5, 52, 4, STEELD); shoulders(c, '#2f4f8a', GOLD); head(c); face(c, { eyes: 'dot', mouth: 'smile' }); c.beginPath(); c.moveTo(28, 38); c.quadraticCurveTo(50, 22, 74, 36); c.lineTo(70, 40); c.quadraticCurveTo(50, 32, 32, 40); c.closePath(); fs(c, '#2b2f3f'); c.beginPath(); c.moveTo(66, 34); c.quadraticCurveTo(84, 18, 88, 30); c.quadraticCurveTo(78, 28, 70, 38); c.closePath(); fs(c, PINK); },
+    blademaster: (c) => { bg(c, '#6f8fd0'); blade(c, 26, 96, -0.35, 52, 6); blade(c, 76, 96, 0.35, 52, 6); shoulders(c, '#1f2a4a', '#e8e3d6'); head(c); face(c, { eyes: 'angry', mouth: 'flat' }); wildHair(c, '#232a3b'); topknot(c, '#232a3b'); line(c, [[32, 40], [68, 40]], 4, '#e8436b'); },
+    shieldman: (c) => { bg(c, '#b8bfcc'); shoulders(c, '#5b6475'); head(c); face(c, {}); kettle(c, STEELD); shield(c, 50, 76, 18, '#7a8494', 'band'); },
+    warden: (c) => { bg(c, '#a0a8b8'); shoulders(c, '#3b4250', GOLD); greathelm(c, '#9aa3b2', '#2f6fd6'); shield(c, 28, 76, 15, '#5b6475', 'cross'); },
+    hammer: (c) => { bg(c, '#c4b8a8'); hammer(c, 76, 96, 0.3, STEELD); shoulders(c, '#6b5a4a'); head(c, '#e8b88a', 50, 48, 19); face(c, { eyes: 'angry', mouth: 'grin' }); beard(c, '#8a5a3a'); kettle(c, '#7a8494'); },
+    juggernaut: (c) => { bg(c, '#8f97a6'); c.beginPath(); c.moveTo(6, 102); c.quadraticCurveTo(8, 60, 50, 60); c.quadraticCurveTo(92, 60, 94, 102); c.closePath(); fs(c, '#5b6475'); for (const x of [22, 78]) { circ(c, x, 70, 10); fs(c, '#7a8494'); } rr(c, 30, 22, 40, 44, 12); fs(c, '#7a8494'); c.save(); c.shadowColor = '#6ae0ff'; c.shadowBlur = 6; c.fillStyle = '#6ae0ff'; rr(c, 36, 40, 28, 5, 2); c.fill(); c.restore(); for (let k = 0; k < 3; k++) line(c, [[40 + k * 10, 50], [40 + k * 10, 60]], 2); },
+    hunter: (c) => { bg(c, '#9fd0a8'); bow(c, 82, 64, 28); shoulders(c, '#6b5a3a'); head(c); face(c, { eyes: 'dot', mouth: 'smile' }); brimhat(c, '#3b7a5a'); c.save(); c.translate(22, 80); poly(c, [[0, 0], [-10, -16], [4, -10], [12, -20], [8, -4]]); fs(c, '#8a6a3a', 2); c.restore(); },
+    venom: (c) => { bg(c, '#a8d890'); bow(c, 80, 62, 28, '#3b5a2e'); shoulders(c, '#3b5a2e'); hood(c, '#5d7a3a'); mask(c, '#2b3b2a'); face(c, { y: 50, eyes: 'angry', mouth: 'none', blush: false }); hoodRim(c, '#5d7a3a'); c.save(); c.globalAlpha = 0.7; c.fillStyle = '#9bff8a'; for (const [x, y] of [[20, 70], [24, 84], [16, 58]]) { circ(c, x, y, 3); c.fill(); } c.restore(); },
+    pyro: (c) => { bg(c, '#f2b48a'); flame(c, 78, 80, 1, '#e8643b'); shoulders(c, '#a8323b', GOLD); head(c); face(c, { eyes: 'happy', mouth: 'grin' }); wildHair(c, '#e8643b'); },
+    cryo: (c) => { bg(c, '#b4d8f0'); staff(c, 80, 98, 24, '#bfe8ff'); shoulders(c, '#3b6b9a', WHITE); head(c, '#f3dcc8'); face(c, { eyes: 'dot', mouth: 'smile' }); c.beginPath(); c.moveTo(30, 40); c.quadraticCurveTo(50, 18, 70, 40); c.lineTo(70, 66); c.lineTo(64, 50); c.quadraticCurveTo(50, 36, 36, 50); c.lineTo(30, 66); c.closePath(); fs(c, '#dff2ff'); for (const x of [38, 50, 62]) { c.fillStyle = '#6ab0e8'; star(c, x, 30 + Math.abs(x - 50) * 0.3, 3); c.fill(); } },
+    summoner: (c) => { bg(c, '#a898c8'); c.save(); c.globalAlpha = 0.5; circ(c, 50, 86, 30); c.strokeStyle = '#d68bff'; c.lineWidth = 3; c.stroke(); c.restore(); book(c, 26, 82); shoulders(c, '#4b3b6b', '#d68bff'); head(c); face(c, { eyes: 'glow', eyeColor: '#d68bff', mouth: 'flat', blush: false }); wizard(c, '#4b3b6b', '#d68bff'); },
+    acolyte: (c) => { bg(c, '#f2e2a8'); shoulders(c, '#efe4cf', GOLD); head(c); face(c, { eyes: 'happy', mouth: 'smile' }); c.beginPath(); c.arc(50, 44, 20, Math.PI, 0); c.closePath(); fs(c, '#8a6a3a'); c.save(); c.globalAlpha = 0.85; c.beginPath(); c.ellipse(50, 22, 14, 4, 0, 0, Math.PI * 2); c.strokeStyle = GOLD; c.lineWidth = 3; c.stroke(); c.restore(); },
+    monk: (c) => { bg(c, '#f0c88a'); shoulders(c, '#e8643b', GOLD); head(c, '#e8b88a', 50, 48, 19); face(c, { eyes: 'happy', mouth: 'flat' }); for (const x of [44, 50, 56]) { circ(c, x, 31, 1.6); c.fillStyle = INK; c.fill(); } for (let k = 0; k < 7; k++) { circ(c, 34 + k * 5.3, 70 + Math.sin(k / 6 * Math.PI) * 6, 3); fs(c, '#8a5a3a', 1.2); } },
+    bishop: (c) => { bg(c, '#f0dc98'); staff(c, 80, 98, 18, GOLD); shoulders(c, '#efe4cf', GOLD); head(c); face(c, { eyes: 'dot', mouth: 'none' }); beard(c, '#f4f0e6', true); mitre(c, '#efe4cf', GOLD); },
+    thief: (c) => { bg(c, '#d89a9a'); dagger(c, 76, 88, 0.6); shoulders(c, '#3b2b3b'); head(c); face(c, { eyes: 'dot', mouth: 'smile' }); mask(c, '#2b2f3f'); c.fillStyle = WHITE; circ(c, 43, 55, 1.5); c.fill(); circ(c, 57, 55, 1.5); c.fill(); bandana(c, '#a8323b'); },
+    assassin: (c) => { bg(c, '#8a5a6a', 'rgba(255,255,255,.12)'); dagger(c, 24, 90, -0.6); dagger(c, 76, 90, 0.6); shoulders(c, '#2b2340'); hood(c, '#3b2b3b', SKIN, true); face(c, { y: 52, eyes: 'glow', eyeColor: '#ff8a8a', mouth: 'none', blush: false }); hoodRim(c, '#3b2b3b'); },
+    poisoner: (c) => { bg(c, '#a8b890'); dagger(c, 76, 90, 0.5); shoulders(c, '#3b4a2e'); hood(c, '#4b5a3a', '#d8c8a8'); face(c, { y: 54, eyes: 'angry', mouth: 'grin', blush: false }); hoodRim(c, '#4b5a3a'); rr(c, 18, 70, 12, 16, 4); fs(c, '#9bff8a', 2); },
+    ninja: (c) => { bg(c, '#6a5a7a', 'rgba(255,255,255,.12)'); blade(c, 74, 30, 0.6, 30, 5, STEELD, true); shoulders(c, '#232a3b'); head(c, '#232a3b', 50, 48, 19); rr(c, 34, 42, 32, 12, 5); fs(c, SKIN, 2); face(c, { y: 48, eyes: 'angry', mouth: 'none', blush: false }); line(c, [[66, 40], [84, 34], [80, 46]], 3, '#a8323b'); },
+    shadowlord: (c) => { bg(c, '#4a2b3b', 'rgba(255,255,255,.1)'); blade(c, 78, 98, 0.35, 54, 8, '#3b2b3b'); shoulders(c, '#1f1a2a', '#a8323b'); horns(c, '#3b2b3b'); hood(c, '#2b1f2b', SKIN, true); face(c, { y: 52, eyes: 'glow', eyeColor: '#ff4d6d', mouth: 'none', blush: false }); hoodRim(c, '#2b1f2b'); crown(c, '#a8323b', 22); },
+    bandit: (c) => { bg(c, '#d8b890'); blade(c, 76, 94, 0.4, 40, 7, STEELD); shoulders(c, '#6b4a2e'); head(c, '#e8b88a'); face(c, { eyes: 'angry', mouth: 'grin', blush: false }); mask(c, '#8a5a3a'); bandana(c, '#3b4a6b'); },
+    spider: (c) => { bg(c, '#c8b8d8'); spiderBody(c); },
+    boar: (c) => { bg(c, '#d8b89a'); boarHead(c); },
+    banditchief: (c) => { bg(c, '#e0b870'); axe(c, 78, 94, 0.4); shoulders(c, '#5d3b1e', GOLD); head(c, '#e8b88a', 50, 48, 19); face(c, { eyes: 'angry', mouth: 'grin', blush: false }); beard(c, '#3b2b1e'); line(c, [[36, 44], [50, 50]], 5); circ(c, 43, 48, 4); fs(c, INK, 1); brimhat(c, '#3b2b1e'); },
+    slimeking: (c) => { bg(c, '#bfe3a8'); slime(c, '#3f9a4f'); crown(c, GOLD, 26); },
+    bat: (c) => { bg(c, '#b8a8c8'); batShape(c); },
+    zombie: (c) => { bg(c, '#b8c4a0'); shoulders(c, '#5a4a3a'); head(c, '#9fb38a', 50, 48, 19); face(c, { eyes: 'hollow', mouth: 'o', blush: false }); line(c, [[38, 36], [46, 42], [42, 46]], 2); rr(c, 54, 34, 10, 4, 1); fs(c, '#efe4cf', 1.2); },
+    cultist: (c) => { bg(c, '#b88a9a'); shoulders(c, '#4a1f2b'); hood(c, '#6b2b3b', '#1b1f2c', true); face(c, { y: 52, eyes: 'glow', eyeColor: '#ffd36b', mouth: 'none', blush: false }); hoodRim(c, '#6b2b3b'); c.fillStyle = GOLD; star(c, 50, 30, 5); c.fill(); ink(c, 1.5); c.stroke(); },
+    banshee: (c) => { bg(c, '#a8c0d8', 'rgba(255,255,255,.18)'); ghost(c, '#d8e8f2'); c.beginPath(); c.moveTo(20, 40); c.quadraticCurveTo(30, 20, 50, 18); c.quadraticCurveTo(70, 20, 80, 40); c.quadraticCurveTo(84, 70, 76, 80); c.lineTo(72, 46); c.quadraticCurveTo(50, 28, 28, 46); c.lineTo(24, 80); c.quadraticCurveTo(16, 70, 20, 40); c.closePath(); fs(c, '#8ab0c8'); ell(c, 50, 58, 6, 8); fs(c, INK, 1); },
+    vampire: (c) => { bg(c, '#a83b4b', 'rgba(255,255,255,.12)'); c.beginPath(); c.moveTo(8, 102); c.lineTo(16, 50); c.quadraticCurveTo(30, 60, 36, 74); c.lineTo(64, 74); c.quadraticCurveTo(70, 60, 84, 50); c.lineTo(92, 102); c.closePath(); fs(c, '#2b1f2b'); shoulders(c, '#1f1a2a', '#e8436b'); head(c, '#e8e0e8'); c.beginPath(); c.moveTo(32, 40); c.quadraticCurveTo(50, 22, 68, 40); c.lineTo(50, 34); c.closePath(); fs(c, '#232a3b'); face(c, { eyes: 'glow', eyeColor: '#ff4d6d', mouth: 'fang', blush: false }); },
+    magmagolem: (c) => { bg(c, '#e8a070'); golemHead(c, '#5a3b2e', '#ffb347'); line(c, [[30, 40], [40, 46], [36, 60]], 2.5, '#ff8a3b'); line(c, [[66, 34], [60, 50], [70, 62]], 2.5, '#ff8a3b'); },
+    harpy: (c) => { bg(c, '#e8d0a8'); harpyHead(c); },
+    firecult: (c) => { bg(c, '#e8a890'); staff(c, 80, 98, 22, '#ff8a3b'); shoulders(c, '#8a2b1e', GOLD); hood(c, '#b0402b'); face(c, { y: 54, eyes: 'angry', mouth: 'flat', blush: false }); hoodRim(c, '#b0402b'); flame(c, 50, 22, 0.55); },
+    demonknight: (c) => { bg(c, '#7a3b4b', 'rgba(255,255,255,.1)'); blade(c, 78, 98, 0.3, 54, 9, '#4a1f2b'); shoulders(c, '#2b1f2b', '#e8436b'); horns(c, '#1f1a2a'); rr(c, 31, 27, 38, 42, 15); fs(c, '#4a1f2b'); c.save(); c.shadowColor = '#ffb347'; c.shadowBlur = 8; c.fillStyle = '#ffb347'; poly(c, [[36, 46], [48, 48], [38, 52]]); c.fill(); poly(c, [[64, 46], [52, 48], [62, 52]]); c.fill(); c.restore(); },
+    hawk: (c) => { bg(c, '#d8c8a8'); for (const s of [-1, 1]) { c.beginPath(); c.moveTo(50, 56); c.quadraticCurveTo(50 + s * 30, 30, 50 + s * 46, 46); c.quadraticCurveTo(50 + s * 30, 56, 50 + s * 20, 70); c.closePath(); fs(c, '#8a6a3a'); } ell(c, 50, 62, 14, 18); fs(c, '#a8865a'); circ(c, 50, 42, 13); fs(c, '#efe4cf'); poly(c, [[46, 46], [54, 46], [50, 56]]); fs(c, GOLD, 2); c.fillStyle = INK; circ(c, 45, 40, 2.2); c.fill(); circ(c, 55, 40, 2.2); c.fill(); },
+    stonegolem: (c) => { bg(c, '#c8ccd4'); golemHead(c, '#8a8f99', '#9bff8a'); },
+    barricade: (c) => { bg(c, '#e0d0b0'); barricadeArt(c); },
+  });
+
+  // ---------- 플라스틱 부품 ----------
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (v) => Math.max(0, Math.min(255, Math.round(v + amt * 255)));
+    return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join('');
+  }
+  // 흰색 아이콘(스킬 칩 표면 인쇄) : 좌표 −1..1
+  function icon(c, name, s) {
+    c.save(); c.scale(s, s);
+    c.strokeStyle = WHITE; c.fillStyle = WHITE; c.lineWidth = 0.22; c.lineCap = 'round'; c.lineJoin = 'round';
+    const L = (pts) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.stroke(); };
+    const F = (pts) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.fill(); };
+    switch (name) {
+      case 'slash': L([[-0.6, 0.6], [0.6, -0.6]]); L([[-0.2, 0.7], [0.7, -0.2]]); break;
+      case 'spear': L([[-0.6, 0.6], [0.4, -0.4]]); F([[0.25, -0.65], [0.7, -0.7], [0.65, -0.25]]); break;
+      case 'drop': c.beginPath(); c.moveTo(0, -0.75); c.quadraticCurveTo(0.6, 0.05, 0.5, 0.3); c.arc(0, 0.3, 0.5, 0, Math.PI); c.quadraticCurveTo(-0.6, 0.05, 0, -0.75); c.fill(); break;
+      case 'whirl': c.beginPath(); c.arc(0, 0, 0.55, 0.3, Math.PI * 1.7); c.stroke(); F([[0.55, -0.6], [0.75, -0.15], [0.3, -0.25]]); break;
+      case 'shield': F([[-0.55, -0.6], [0.55, -0.6], [0.55, 0], [0, 0.7], [-0.55, 0]]); break;
+      case 'fist': c.beginPath(); c.roundRect ? c.roundRect(-0.5, -0.45, 1, 0.9, 0.25) : c.rect(-0.5, -0.45, 1, 0.9); c.fill(); break;
+      case 'quake': L([[-0.7, 0.2], [-0.35, -0.3], [0, 0.25], [0.35, -0.3], [0.7, 0.2]]); L([[-0.6, 0.6], [0.6, 0.6]]); break;
+      case 'eye': c.beginPath(); c.ellipse(0, 0, 0.7, 0.4, 0, 0, Math.PI * 2); c.stroke(); c.beginPath(); c.arc(0, 0, 0.2, 0, Math.PI * 2); c.fill(); break;
+      case 'star': star(c, 0, 0, 0.75); c.fill(); break;
+      case 'arrow': L([[-0.6, 0.6], [0.5, -0.5]]); F([[0.2, -0.65], [0.7, -0.7], [0.65, -0.2]]); L([[-0.6, 0.6], [-0.65, 0.25]]); L([[-0.6, 0.6], [-0.25, 0.65]]); break;
+      case 'skull': c.beginPath(); c.arc(0, -0.1, 0.5, 0, Math.PI * 2); c.fill(); c.fillRect(-0.3, 0.2, 0.6, 0.4); c.fillStyle = INK; c.beginPath(); c.arc(-0.18, -0.1, 0.13, 0, Math.PI * 2); c.arc(0.18, -0.1, 0.13, 0, Math.PI * 2); c.fill(); break;
+      case 'target': c.beginPath(); c.arc(0, 0, 0.6, 0, Math.PI * 2); c.stroke(); c.beginPath(); c.arc(0, 0, 0.2, 0, Math.PI * 2); c.fill(); break;
+      case 'fire': c.beginPath(); c.moveTo(0, -0.75); c.quadraticCurveTo(0.6, -0.1, 0.45, 0.35); c.quadraticCurveTo(0, 0.85, -0.45, 0.35); c.quadraticCurveTo(-0.6, -0.1, 0, -0.75); c.fill(); break;
+      case 'ice': for (let k = 0; k < 3; k++) { const a = (k * Math.PI) / 3; L([[Math.cos(a) * 0.7, Math.sin(a) * 0.7], [-Math.cos(a) * 0.7, -Math.sin(a) * 0.7]]); } break;
+      case 'bolt': F([[0.15, -0.8], [-0.45, 0.1], [-0.05, 0.1], [-0.2, 0.8], [0.45, -0.15], [0.05, -0.15]]); break;
+      case 'heart': c.beginPath(); c.moveTo(0, 0.65); c.bezierCurveTo(-0.9, 0, -0.5, -0.75, 0, -0.3); c.bezierCurveTo(0.5, -0.75, 0.9, 0, 0, 0.65); c.fill(); break;
+      case 'cross': c.fillRect(-0.15, -0.7, 0.3, 1.4); c.fillRect(-0.55, -0.35, 1.1, 0.3); break;
+      case 'dagger': F([[-0.08, -0.75], [0.12, -0.75], [0.12, 0.25], [-0.08, 0.25]]); c.fillRect(-0.35, 0.25, 0.7, 0.14); c.fillRect(-0.06, 0.39, 0.16, 0.35); break;
+      case 'wind': L([[-0.7, -0.3], [0.3, -0.3]]); c.beginPath(); c.arc(0.3, -0.5, 0.2, Math.PI / 2, -Math.PI); c.stroke(); L([[-0.7, 0.2], [0.5, 0.2]]); L([[-0.5, 0.55], [0.1, 0.55]]); break;
+      default: star(c, 0, 0, 0.6); c.fill();
+    }
+    c.restore();
+  }
+  /** 플라스틱 육각 스킬 칩 */
+  function drawChip(c, x, y, r, col, iconName, up) {
+    const hex = (cx, cy, rr2) => { c.beginPath(); for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; const px = cx + Math.cos(a) * rr2, py = cy + Math.sin(a) * rr2; k ? c.lineTo(px, py) : c.moveTo(px, py); } c.closePath(); };
+    const th = Math.max(1.6, r * 0.28);
+    c.save();
+    c.fillStyle = 'rgba(35,42,59,.3)'; hex(x + 1, y + th + 1.2, r); c.fill();
+    hex(x, y + th, r); c.fillStyle = shade(col, -0.22); c.fill(); c.strokeStyle = INK; c.lineWidth = Math.max(1, r * 0.13); c.stroke();
+    hex(x, y, r);
+    const g = c.createLinearGradient(x - r, y - r, x + r, y + r);
+    g.addColorStop(0, shade(col, 0.22)); g.addColorStop(0.55, col); g.addColorStop(1, shade(col, -0.1));
+    c.fillStyle = g; c.fill(); c.stroke();
+    // 광택
+    c.save(); hex(x, y, r); c.clip();
+    c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(x - r * 0.3, y - r * 0.55, r * 0.75, r * 0.32, -0.4, 0, Math.PI * 2); c.fill();
+    c.restore();
+    c.translate(x, y + r * 0.04); icon(c, iconName, r * 0.62);
+    c.restore();
+    if (up) { c.save(); c.fillStyle = '#2e9e6b'; c.strokeStyle = INK; c.lineWidth = 1; c.beginPath(); c.arc(x + r * 0.78, y - r * 0.7, r * 0.36, 0, Math.PI * 2); c.fill(); c.stroke(); c.strokeStyle = WHITE; c.lineWidth = Math.max(1, r * 0.12); c.beginPath(); c.moveTo(x + r * 0.78 - r * 0.2, y - r * 0.7); c.lineTo(x + r * 0.78 + r * 0.2, y - r * 0.7); c.moveTo(x + r * 0.78, y - r * 0.9); c.lineTo(x + r * 0.78, y - r * 0.5); c.stroke(); c.restore(); }
+  }
+  /** 플라스틱 무기 미니어처 (좌표: 세로로 −1..1, s 배) */
+  function plastic(c, col, w) {
+    const g = c.createLinearGradient(-1, -1, 1, 1);
+    g.addColorStop(0, shade(col, 0.25)); g.addColorStop(0.5, col); g.addColorStop(1, shade(col, -0.18));
+    c.fillStyle = g; c.fill(); c.strokeStyle = INK; c.lineWidth = w; c.stroke();
+  }
+  function weaponShape(c, shape, col, w) {
+    const P = (pts) => poly(c, pts);
+    const shine = (pts) => { c.save(); c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = w * 1.1; c.stroke(); c.restore(); };
+    switch (shape) {
+      case 'sword': P([[-0.12, 0.35], [-0.12, -0.8], [0, -1], [0.12, -0.8], [0.12, 0.35]]); plastic(c, col, w); rr(c, -0.38, 0.32, 0.76, 0.14, 0.05); plastic(c, col, w); rr(c, -0.08, 0.46, 0.16, 0.4, 0.05); plastic(c, col, w); circ(c, 0, 0.92, 0.1); plastic(c, col, w); shine([[-0.04, 0.25], [-0.04, -0.75]]); break;
+      case 'greatsword': P([[-0.2, 0.3], [-0.2, -0.75], [0, -1], [0.2, -0.75], [0.2, 0.3]]); plastic(c, col, w); rr(c, -0.45, 0.28, 0.9, 0.16, 0.05); plastic(c, col, w); rr(c, -0.09, 0.44, 0.18, 0.5, 0.05); plastic(c, col, w); shine([[-0.08, 0.2], [-0.08, -0.7]]); break;
+      case 'dagger': P([[-0.12, 0.1], [-0.12, -0.6], [0, -0.85], [0.12, -0.6], [0.12, 0.1]]); plastic(c, col, w); rr(c, -0.3, 0.08, 0.6, 0.13, 0.05); plastic(c, col, w); rr(c, -0.08, 0.21, 0.16, 0.38, 0.05); plastic(c, col, w); shine([[-0.04, 0], [-0.04, -0.55]]); break;
+      case 'twin': c.save(); c.rotate(-0.3); weaponShape(c, 'dagger', col, w); c.restore(); c.save(); c.rotate(0.3); weaponShape(c, 'dagger', col, w); c.restore(); break;
+      case 'shield': c.beginPath(); c.moveTo(-0.65, -0.7); c.lineTo(0.65, -0.7); c.lineTo(0.65, 0); c.quadraticCurveTo(0.55, 0.65, 0, 0.9); c.quadraticCurveTo(-0.55, 0.65, -0.65, 0); c.closePath(); plastic(c, col, w); circ(c, 0, -0.05, 0.2); plastic(c, shade(col, 0.15), w); shine([[-0.5, -0.55], [-0.5, 0]]); break;
+      case 'tower': rr(c, -0.6, -0.9, 1.2, 1.8, 0.25); plastic(c, col, w); line(c, [[0, -0.7], [0, 0.7]], w); line(c, [[-0.4, -0.2], [0.4, -0.2]], w); shine([[-0.45, -0.75], [-0.45, 0.5]]); break;
+      case 'hammer': rr(c, -0.08, -0.5, 0.16, 1.4, 0.05); plastic(c, col, w); rr(c, -0.5, -0.9, 1, 0.45, 0.1); plastic(c, col, w); shine([[-0.4, -0.82], [0.3, -0.82]]); break;
+      case 'mace': rr(c, -0.08, -0.4, 0.16, 1.3, 0.05); plastic(c, col, w); circ(c, 0, -0.62, 0.32); plastic(c, col, w); for (let k = 0; k < 6; k++) { const a = (k * Math.PI) / 3; P([[Math.cos(a) * 0.3, -0.62 + Math.sin(a) * 0.3], [Math.cos(a + 0.25) * 0.5, -0.62 + Math.sin(a + 0.25) * 0.5], [Math.cos(a + 0.5) * 0.3, -0.62 + Math.sin(a + 0.5) * 0.3]]); plastic(c, col, w * 0.7); } break;
+      case 'bow': c.beginPath(); c.arc(-0.55, 0, 1, -0.95, 0.95); c.lineWidth = 0.32; c.strokeStyle = INK; c.stroke(); c.lineWidth = 0.18; c.strokeStyle = col; c.stroke(); line(c, [[-0.55 + Math.cos(0.95), -Math.sin(0.95)], [-0.55 + Math.cos(0.95), Math.sin(0.95)]], w * 0.6); break;
+      case 'crossbow': rr(c, -0.1, -0.4, 0.2, 1.3, 0.05); plastic(c, col, w); c.beginPath(); c.moveTo(-0.8, -0.2); c.quadraticCurveTo(0, -0.8, 0.8, -0.2); c.lineWidth = 0.3; c.strokeStyle = INK; c.stroke(); c.lineWidth = 0.16; c.strokeStyle = col; c.stroke(); line(c, [[-0.8, -0.2], [0.8, -0.2]], w * 0.6); break;
+      case 'wand': rr(c, -0.07, -0.5, 0.14, 1.4, 0.05); plastic(c, col, w); star(c, 0, -0.7, 0.32); plastic(c, '#f5c400', w); break;
+      case 'staff': rr(c, -0.08, -0.6, 0.16, 1.6, 0.05); plastic(c, col, w); circ(c, 0, -0.78, 0.26); plastic(c, '#6ae0ff', w); break;
+      case 'orb': circ(c, 0, -0.1, 0.62); plastic(c, col, w); rr(c, -0.4, 0.45, 0.8, 0.35, 0.1); plastic(c, shade(col, -0.2), w); c.fillStyle = 'rgba(255,255,255,.7)'; circ(c, -0.2, -0.3, 0.15); c.fill(); break;
+      case 'book': rr(c, -0.65, -0.75, 1.3, 1.5, 0.12); plastic(c, col, w); rr(c, -0.5, -0.6, 1, 1.2, 0.08); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = w; c.stroke(); line(c, [[0, -0.4], [0, 0.4]], w); line(c, [[-0.25, -0.15], [0.25, -0.15]], w); break;
+      case 'grail': c.beginPath(); c.moveTo(-0.55, -0.8); c.lineTo(0.55, -0.8); c.quadraticCurveTo(0.55, 0, 0, 0.1); c.quadraticCurveTo(-0.55, 0, -0.55, -0.8); c.closePath(); plastic(c, col, w); rr(c, -0.08, 0.1, 0.16, 0.5, 0.04); plastic(c, col, w); rr(c, -0.45, 0.6, 0.9, 0.22, 0.08); plastic(c, col, w); break;
+      case 'armor': c.beginPath(); c.moveTo(-0.7, -0.6); c.lineTo(-0.3, -0.8); c.quadraticCurveTo(0, -0.55, 0.3, -0.8); c.lineTo(0.7, -0.6); c.lineTo(0.55, 0.8); c.lineTo(-0.55, 0.8); c.closePath(); plastic(c, col, w); line(c, [[0, -0.55], [0, 0.7]], w); break;
+      case 'cloak': c.beginPath(); c.moveTo(-0.3, -0.85); c.lineTo(0.3, -0.85); c.quadraticCurveTo(0.9, 0.3, 0.7, 0.9); c.lineTo(-0.7, 0.9); c.quadraticCurveTo(-0.9, 0.3, -0.3, -0.85); c.closePath(); plastic(c, col, w); break;
+      case 'ring': c.beginPath(); c.arc(0, 0.15, 0.6, 0, Math.PI * 2); c.lineWidth = 0.34; c.strokeStyle = INK; c.stroke(); c.lineWidth = 0.2; c.strokeStyle = col; c.stroke(); P([[0, -0.85], [0.3, -0.5], [0, -0.3], [-0.3, -0.5]]); plastic(c, '#6ae0ff', w); break;
+      case 'charm': circ(c, 0, 0.1, 0.55); plastic(c, col, w); c.fillStyle = WHITE; star(c, 0, 0.1, 0.32); c.fill(); line(c, [[0, -0.45], [0, -0.9]], w); break;
+      case 'tooth': c.beginPath(); c.moveTo(-0.4, -0.9); c.quadraticCurveTo(0.5, -0.8, 0.35, 0.1); c.quadraticCurveTo(0.1, 0.7, 0, 0.95); c.quadraticCurveTo(-0.3, 0.2, -0.4, -0.9); c.closePath(); plastic(c, col, w); shine([[-0.25, -0.7], [-0.15, 0.1]]); break;
+      default: circ(c, 0, 0, 0.6); plastic(c, col, w);
+    }
+  }
+  const TIER_PLASTIC = ['', null, null, '#e0b020'];
+  function weaponColor(wp) { return wp.tier === 3 ? TIER_PLASTIC[3] : (global.GD && global.GD.CLASSES[wp.cls] ? global.GD.CLASSES[wp.cls].plastic : '#9aa3b2'); }
+  function drawWeapon(c, x, y, s, wp, rot = 0.6, up) {
+    c.save(); c.translate(x + s * 0.08, y + s * 0.12); c.rotate(rot); c.scale(s, s);
+    c.globalAlpha = 0.3; c.fillStyle = INK; weaponShape(c, wp.shape, INK, 0.1); c.globalAlpha = 1;
+    c.restore();
+    c.save(); c.translate(x, y); c.rotate(rot); c.scale(s, s);
+    weaponShape(c, wp.shape, weaponColor(wp), 0.12);
+    c.restore();
+    if (up) { c.save(); c.fillStyle = '#2e9e6b'; c.strokeStyle = INK; c.lineWidth = 1; c.beginPath(); c.arc(x - s * 0.5, y + s * 0.6, s * 0.22, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = WHITE; c.font = `${Math.round(s * 0.36)}px sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('+', x - s * 0.5, y + s * 0.62); c.restore(); }
+  }
+  /** 레벨 핀(금색 플라스틱 압정) */
+  function drawPegs(c, x, y, r, level) {
+    for (let k = 0; k < level; k++) {
+      const a = Math.PI * (1.06 + k * 0.11), px = x + Math.cos(a) * r * 0.93, py = y + Math.sin(a) * r * 0.93, pr = Math.max(2, r * 0.13);
+      c.fillStyle = '#9a7a10'; c.beginPath(); c.arc(px, py + pr * 0.45, pr, 0, Math.PI * 2); c.fill();
+      const g = c.createRadialGradient(px - pr * 0.4, py - pr * 0.4, pr * 0.1, px, py, pr);
+      g.addColorStop(0, '#fff2b0'); g.addColorStop(0.5, '#f5c400'); g.addColorStop(1, '#c49a00');
+      c.fillStyle = g; c.beginPath(); c.arc(px, py, pr, 0, Math.PI * 2); c.fill(); c.strokeStyle = INK; c.lineWidth = Math.max(0.8, r * 0.04); c.stroke();
+    }
+  }
+  /** 딱지 위에 올라간 장비: lo = { skills: [{cls, icon, up}], weapon: {...weapon, up}, level } */
+  function drawLoadout(c, x, y, r, lo) {
+    if (!lo) return;
+    if (lo.level > 1) drawPegs(c, x, y, r, lo.level - 1);
+    if (lo.weapon) drawWeapon(c, x + r * 0.78, y - r * 0.5, r * 0.62, lo.weapon, 0.55, lo.weapon.up);
+    (lo.skills || []).forEach((s, i) => {
+      const cx = x + (i === 0 ? -0.5 : 0.5) * r, cy = y + r * 0.62;
+      drawChip(c, cx, cy, r * 0.34, s.col, s.icon, s.up);
+    });
+  }
+  const discCache = new Map();
+  /** 딱지 + 장비 합성 이미지(카드·편성·도감용) */
+  function discURL(id, side, kind, lo, px = 96) {
+    const key = [id, side, kind || '', JSON.stringify(lo || null), px].join('|');
+    if (discCache.has(key)) return discCache.get(key);
+    const S = px, cv = document.createElement('canvas');
+    cv.width = cv.height = S * 2;
+    const c = cv.getContext('2d');
+    c.scale(2, 2);
+    const r = S * 0.36;
+    drawToken(c, token(id, side, r, 2, kind), S * 0.46, S * 0.48, r, {});
+    drawLoadout(c, S * 0.46, S * 0.48, r, lo);
+    const url = cv.toDataURL();
+    discCache.set(key, url);
+    return url;
+  }
+  const pieceCache = new Map();
+  function chipURL(col, iconName, up, px = 40) {
+    const key = ['chip', col, iconName, up, px].join('|');
+    if (pieceCache.has(key)) return pieceCache.get(key);
+    const cv = document.createElement('canvas'); cv.width = cv.height = px * 2;
+    const c = cv.getContext('2d'); c.scale(2, 2);
+    drawChip(c, px / 2, px / 2 - px * 0.06, px * 0.38, col, iconName, up);
+    const url = cv.toDataURL(); pieceCache.set(key, url); return url;
+  }
+  function weaponURL(wp, up, px = 48) {
+    const key = ['wp', wp.id, up, px].join('|');
+    if (pieceCache.has(key)) return pieceCache.get(key);
+    const cv = document.createElement('canvas'); cv.width = cv.height = px * 2;
+    const c = cv.getContext('2d'); c.scale(2, 2);
+    drawWeapon(c, px / 2, px / 2, px * 0.4, wp, 0.5, up);
+    const url = cv.toDataURL(); pieceCache.set(key, url); return url;
+  }
+  // 전술 카드 그림
+  const TACTIC_ART = {
+    bandage: (c) => { c.save(); c.translate(50, 50); c.rotate(-0.6); rr(c, -34, -12, 68, 24, 10); fs(c, '#f4e8d0'); for (let k = -2; k <= 2; k++) { circ(c, k * 6, 0, 1.4); c.fillStyle = '#c9b48a'; c.fill(); } rr(c, -10, -12, 20, 24, 3); fs(c, '#e8d8b8', 2); c.restore(); },
+    charge: (c) => { line(c, [[30, 86], [30, 16]], 5); poly(c, [[32, 16], [78, 28], [32, 44]]); fs(c, '#e8436b'); line(c, [[44, 26], [60, 30]], 2, WHITE); },
+    molotov: (c) => { rr(c, 36, 40, 28, 44, 10); fs(c, '#8fd1ad'); rr(c, 44, 28, 12, 14, 3); fs(c, '#6b9a7a'); flame(c, 50, 22, 0.8); rr(c, 36, 58, 28, 10, 2); fs(c, '#efe4cf', 2); },
+    barricade: (c) => { barricadeArt(c); },
+    beartrap: (c) => { circ(c, 50, 58, 30); fs(c, '#8a93a3'); circ(c, 50, 58, 20); fs(c, '#c9c4b8'); for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; poly(c, [[50 + Math.cos(a) * 20, 58 + Math.sin(a) * 20], [50 + Math.cos(a + 0.2) * 31, 58 + Math.sin(a + 0.2) * 31], [50 + Math.cos(a + 0.4) * 20, 58 + Math.sin(a + 0.4) * 20]]); fs(c, '#c3cbd6', 1.5); } line(c, [[50, 28], [50, 12]], 3); },
+    scout: (c) => { ell(c, 50, 52, 34, 20); fs(c, WHITE); circ(c, 50, 52, 13); fs(c, '#2e9e6b'); circ(c, 50, 52, 6); c.fillStyle = INK; c.fill(); },
+    warcry: (c) => { c.beginPath(); c.moveTo(22, 64); c.quadraticCurveTo(40, 30, 78, 26); c.lineTo(80, 44); c.quadraticCurveTo(50, 50, 30, 74); c.closePath(); fs(c, '#efe4cf'); for (const k of [0, 1, 2]) { c.beginPath(); c.arc(84, 34, 8 + k * 7, -0.7, 0.7); ink(c, 2.5); c.stroke(); } },
+    reinforce: (c) => { drawToken(c, token('merc', 0, 26, 2), 50, 50, 26, {}); },
+    manapotion: (c) => { circ(c, 50, 60, 24); fs(c, '#6ab0e8'); rr(c, 42, 22, 16, 18, 3); fs(c, '#c9c4b8'); c.fillStyle = 'rgba(255,255,255,.6)'; circ(c, 42, 54, 5); c.fill(); },
+    oath: (c) => { shield(c, 50, 44, 26, '#2f6fd6', 'cross'); },
+    voodoo: (c) => { circ(c, 50, 34, 14); fs(c, '#c9945a'); rr(c, 36, 46, 28, 34, 8); fs(c, '#c9945a'); line(c, [[24, 54], [76, 54]], 6, '#c9945a'); line(c, [[40, 30], [60, 40]], 2); line(c, [[60, 30], [40, 40]], 2); line(c, [[56, 60], [80, 40]], 2.5, STEELD); circ(c, 80, 40, 3); c.fillStyle = '#e8436b'; c.fill(); },
+    net: (c) => { for (let k = 0; k < 6; k++) { line(c, [[16 + k * 14, 16], [16 + k * 14 + 8, 86]], 2); line(c, [[14, 20 + k * 13], [86, 16 + k * 13 + 6]], 2); } },
+    caltrops: (c) => { for (const [x, y] of [[32, 40], [64, 34], [50, 64], [28, 72], [74, 70]]) { c.save(); c.translate(x, y); for (let k = 0; k < 3; k++) { c.rotate((Math.PI * 2) / 3); poly(c, [[-3, 0], [0, -12], [3, 0]]); fs(c, STEELD, 1.5); } c.restore(); } },
+    holywater: (c) => { c.beginPath(); c.moveTo(38, 30); c.lineTo(62, 30); c.lineTo(70, 82); c.lineTo(30, 82); c.closePath(); fs(c, '#bfe0ff'); rr(c, 42, 18, 16, 14, 3); fs(c, GOLD); line(c, [[50, 46], [50, 70]], 4, GOLD); line(c, [[42, 54], [58, 54]], 4, GOLD); },
+    counter: (c) => { shield(c, 50, 44, 24, '#9a6a3a'); for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; poly(c, [[50 + Math.cos(a) * 26, 50 + Math.sin(a) * 26], [50 + Math.cos(a + 0.12) * 38, 50 + Math.sin(a + 0.12) * 38], [50 + Math.cos(a + 0.24) * 26, 50 + Math.sin(a + 0.24) * 26]]); fs(c, STEELD, 1.5); } },
+    coin: (c) => { circ(c, 50, 54, 28); fs(c, GOLD); circ(c, 50, 54, 20); ink(c, 2); c.stroke(); c.fillStyle = INK; c.font = 'bold 22px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('G', 50, 55); },
+    poisoncloud: (c) => { c.save(); c.globalAlpha = 0.85; for (const [x, y, r] of [[36, 52, 18], [56, 42, 20], [64, 62, 16], [44, 66, 14]]) { circ(c, x, y, r); fs(c, '#9bd88a', 2); } c.restore(); skull(c, '#efe9dc'); },
+    bomb: (c) => { circ(c, 46, 58, 26); fs(c, '#2b2f3f'); c.fillStyle = 'rgba(255,255,255,.4)'; circ(c, 36, 48, 6); c.fill(); rr(c, 56, 28, 12, 10, 2); fs(c, '#8a93a3'); flame(c, 70, 20, 0.5); },
+    focus: (c) => { circ(c, 50, 50, 32); fs(c, WHITE); circ(c, 50, 50, 22); fs(c, '#e8436b'); circ(c, 50, 50, 12); fs(c, WHITE); circ(c, 50, 50, 4); c.fillStyle = INK; c.fill(); },
+    sacrifice: (c) => { c.beginPath(); c.moveTo(50, 16); c.quadraticCurveTo(76, 50, 70, 64); c.arc(50, 64, 20, 0, Math.PI); c.quadraticCurveTo(24, 50, 50, 16); c.closePath(); fs(c, '#c0392b'); c.fillStyle = 'rgba(255,255,255,.5)'; circ(c, 42, 58, 5); c.fill(); },
+    smokescreen: (c) => { for (const [x, y, r] of [[32, 56, 18], [52, 44, 22], [70, 58, 18], [50, 66, 18]]) { circ(c, x, y, r); fs(c, '#c9cfd8', 2); } },
+  };
+  function tacticURL(id, px = 64) {
+    const key = ['tc', id, px].join('|');
+    if (pieceCache.has(key)) return pieceCache.get(key);
+    const cv = document.createElement('canvas'); cv.width = cv.height = px * 2;
+    const c = cv.getContext('2d'); c.scale((px * 2) / 100, (px * 2) / 100);
+    (TACTIC_ART[id] || ((cc) => { star(cc, 50, 50, 30); fs(cc, GOLD); }))(c);
+    const url = cv.toDataURL(); pieceCache.set(key, url); return url;
+  }
+
   // ---------- 딱지 토큰 굽기 ----------
   const cache = new Map();
   const portraitCache = new Map();
@@ -393,5 +660,5 @@
     return url;
   }
 
-  global.ART = { PORTRAITS, portrait, token, drawToken, makeTear, stepTear, drawTear, tokenURL, star };
+  global.ART = { PORTRAITS, portrait, token, drawToken, makeTear, stepTear, drawTear, tokenURL, star, icon, shade, drawChip, drawWeapon, drawPegs, drawLoadout, discURL, chipURL, weaponURL, tacticURL, TACTIC_ART };
 })(window);
