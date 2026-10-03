@@ -260,7 +260,7 @@
     if (n.k === 'boss') {
       if (R.act >= 3) return victory();
       R.act++; R.map = genMap(R.act); R.pos = null; R.path = [];
-      toast(`${R.act}막 ${ACTS[R.act].name}에 들어섰습니다`);
+      ui.actIntro = true;
     }
     showMap();
   }
@@ -417,6 +417,7 @@
   }
   function show(screen) {
     ui.screen = screen;
+    $('phone').dataset.act = R ? R.act : '';
     for (const s of ['title', 'map', 'play', 'over']) $('scr-' + s).hidden = s !== screen;
     $('hud').hidden = !(screen === 'map' || screen === 'play');
     closeSheet();
@@ -493,6 +494,7 @@
     const rc = reachable();
     if (!mapPick || !rc.includes(mapPick)) mapPick = rc[0];
     renderMap();
+    if (ui.actIntro) { ui.actIntro = false; const p = phoneRect(); stampAt(p.width / 2, p.height * 0.4, `${R.act}막 · ${ACTS[R.act].name}`, 'act'); SFX.play('boss'); }
   }
   function renderMap() {
     if (ui.screen !== 'map') return;
@@ -897,23 +899,56 @@
 
   const INK = '#232a3b';
   const boardCache = {};
+  // 막마다 다른 판: 1막 풀밭(나무 테), 2막 돌바닥(금 간 석판), 3막 화산(용암 틈)
+  const ACT_LOOK = {
+    1: { ground: '#5f8a4a', frame: '#7a5530', frameHi: '#a77a4a', mine: ['#dcebc8', '#cfe2b8'], foe: ['#e8dcc0', '#dfcfae'], line: '#232a3b', deco: 'grass' },
+    2: { ground: '#4a4658', frame: '#3b3848', frameHi: '#6b6780', mine: ['#d5d9e4', '#c8cddb'], foe: ['#ddd0dc', '#cfc0cf'], line: '#232a3b', deco: 'stone' },
+    3: { ground: '#2b2220', frame: '#1c1514', frameHi: '#5a2a1c', mine: ['#ecd3b0', '#e2c49c'], foe: ['#e0a88a', '#d6967a'], line: '#ffd36b', deco: 'lava' },
+  };
   function boardBg(act) {
     if (boardCache[act]) return boardCache[act];
+    const L = ACT_LOOK[act] || ACT_LOOK[1];
     const cv = document.createElement('canvas');
     cv.width = W * 2; cv.height = H * 2;
     const c = cv.getContext('2d'); c.scale(2, 2);
-    const pal = ACTS[act].palette;
-    c.fillStyle = pal.ground; c.fillRect(0, 0, W, H);
-    for (let k = 0; k < 2400; k++) { c.fillStyle = Math.random() < 0.55 ? 'rgba(35,42,59,.06)' : 'rgba(255,255,255,.22)'; c.fillRect(Math.random() * W, Math.random() * H, 1, 1); }
+    let seed = act * 9301 + 49297; const rr = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    // 테두리(판 받침)
+    c.fillStyle = L.frame; c.fillRect(0, 0, W, H);
+    c.strokeStyle = L.frameHi; c.lineWidth = 2; c.strokeRect(2, 2, W - 4, H - 4);
+    if (L.deco === 'grass') for (let k = 0; k < 40; k++) { const y = rr() * H; c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, y); c.lineTo(M, y + 2); c.moveTo(W - M, y); c.lineTo(W, y + 2); c.stroke(); }
+    // 바닥(칸 사이 틈)
+    c.fillStyle = L.ground; c.fillRect(M, M, CS * COLS, CS * ROWS);
+    if (L.deco === 'lava') {
+      c.save(); c.shadowColor = '#ff6a1a'; c.shadowBlur = 8; c.strokeStyle = '#ff8a2a'; c.lineWidth = 3;
+      for (let r = 0; r <= ROWS; r++) { c.beginPath(); c.moveTo(M, M + r * CS); c.lineTo(M + COLS * CS, M + r * CS); c.stroke(); }
+      for (let q = 0; q <= COLS; q++) { c.beginPath(); c.moveTo(M + q * CS, M); c.lineTo(M + q * CS, M + ROWS * CS); c.stroke(); }
+      c.restore();
+    }
     for (const cell of grid.cells) {
-      const mine = cell.r >= PLAYER_ROW, x = cell.x - CS / 2, y = cell.y - CS / 2;
-      c.fillStyle = (mine ? pal.mine : pal.foe)[(cell.r + cell.c) % 2];
-      c.fillRect(x + 2, y + 2, CS - 4, CS - 4);
-      c.fillStyle = 'rgba(255,255,255,.18)';
-      for (let yy = y + 6; yy < y + CS - 4; yy += 7) for (let xx = x + 6 + ((yy / 7) % 2) * 3.5; xx < x + CS - 4; xx += 7) { c.beginPath(); c.arc(xx, yy, 0.9, 0, Math.PI * 2); c.fill(); }
+      const mine = cell.r >= PLAYER_ROW, x = cell.x - CS / 2 + 2, y = cell.y - CS / 2 + 2, s = CS - 4;
+      c.fillStyle = (mine ? L.mine : L.foe)[(cell.r + cell.c) % 2];
+      c.fillRect(x, y, s, s);
+      c.save(); c.beginPath(); c.rect(x, y, s, s); c.clip();
+      if (L.deco === 'grass') {
+        // 풀잎·작은 꽃
+        for (let k = 0; k < 9; k++) { const gx = x + rr() * s, gy = y + 6 + rr() * (s - 8); c.strokeStyle = mine ? 'rgba(70,120,50,.35)' : 'rgba(120,100,50,.3)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 2, gy - 5); c.moveTo(gx, gy); c.lineTo(gx + 2, gy - 4); c.stroke(); }
+        if (rr() < 0.35) { const fx = x + 8 + rr() * (s - 16), fy = y + 8 + rr() * (s - 16); c.fillStyle = rr() < 0.5 ? '#fff6c8' : '#ffd0da'; for (let a = 0; a < 5; a++) { c.beginPath(); c.arc(fx + Math.cos(a * 1.26) * 2.2, fy + Math.sin(a * 1.26) * 2.2, 1.6, 0, 7); c.fill(); } c.fillStyle = '#f5c400'; c.beginPath(); c.arc(fx, fy, 1.2, 0, 7); c.fill(); }
+      } else if (L.deco === 'stone') {
+        // 석판 모서리 음영 + 금
+        c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(x, y, s, 3); c.fillRect(x, y, 3, s);
+        c.fillStyle = 'rgba(35,42,59,.18)'; c.fillRect(x, y + s - 3, s, 3); c.fillRect(x + s - 3, y, 3, s);
+        if (rr() < 0.6) { c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1; c.beginPath(); let px = x + rr() * s, py = y + rr() * s; c.moveTo(px, py); for (let k = 0; k < 4; k++) { px += (rr() - 0.5) * 18; py += (rr() - 0.5) * 18; c.lineTo(px, py); } c.stroke(); }
+        if (rr() < 0.15) { c.fillStyle = 'rgba(80,110,70,.35)'; c.beginPath(); c.arc(x + rr() * s, y + s - 4, 5, 0, 7); c.fill(); }
+      } else {
+        // 그을린 자국과 불씨
+        const g = c.createRadialGradient(x + s / 2, y + s / 2, 4, x + s / 2, y + s / 2, s * 0.75); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(80,30,10,.28)'); c.fillStyle = g; c.fillRect(x, y, s, s);
+        if (rr() < 0.5) { c.strokeStyle = 'rgba(90,40,20,.45)'; c.lineWidth = 1.2; c.beginPath(); let px = x + rr() * s, py = y + rr() * s; c.moveTo(px, py); for (let k = 0; k < 3; k++) { px += (rr() - 0.5) * 16; py += (rr() - 0.5) * 16; c.lineTo(px, py); } c.stroke(); }
+        for (let k = 0; k < 2; k++) if (rr() < 0.5) { c.fillStyle = 'rgba(255,140,40,.55)'; c.beginPath(); c.arc(x + rr() * s, y + rr() * s, 1.2, 0, 7); c.fill(); }
+      }
+      c.restore();
     }
     c.strokeStyle = INK; c.lineWidth = 3; c.strokeRect(M, M, CS * COLS, CS * ROWS);
-    c.lineWidth = 3; c.setLineDash([10, 6]);
+    c.strokeStyle = L.line; c.lineWidth = 3; c.setLineDash([10, 6]);
     c.beginPath(); c.moveTo(M, M + CS * PLAYER_ROW); c.lineTo(M + CS * COLS, M + CS * PLAYER_ROW); c.stroke(); c.setLineDash([]);
     boardCache[act] = cv;
     return cv;
@@ -1347,6 +1382,6 @@
   // 테스트·밸런스용 진입점
   window.__g = {
     get R() { return R; }, set R(v) { R = v; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
-    renderPlay, openCodex, openMenu, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, bossUnits,
+    renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, bossUnits,
   };
 })();

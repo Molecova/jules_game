@@ -312,7 +312,7 @@
       if (t.shield > 0) {
         const a = Math.min(t.shield, dmg);
         t.shield -= a;
-        dmg -= a;
+        dmg = Math.round(dmg - a); // 보호막이 소수여도 피해 숫자는 정수로
       }
       t.hp -= dmg;
       t.flash = 0.12;

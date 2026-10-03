@@ -218,7 +218,7 @@
     }
     function cleanse(t) { const st = t.st; delete st.burn; delete st.poison; delete st.bleed; delete st.slow; delete st.weak; delete st.vuln; t.stun = 0; }
     const H = (u) => (u && u.healMult) || 1;
-    function giveShield(a, amt, src) { a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
+    function giveShield(a, amt, src) { amt = Math.round(amt); a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
     const lowestAlly = (cb, side, needHurt) => cb.alive(side).filter((x) => !x.object && (!needHurt || x.hp < x.maxHp)).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
 
     // ---------- 스킬 ----------
