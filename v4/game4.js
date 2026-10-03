@@ -3,7 +3,7 @@
   'use strict';
   const GD = window.GD, V = window.V4, ART = window.ART, SFX = window.SFX;
   const { MONSTERS, ACTS, BOSS_INFO } = GD;
-  const { CLS, SYN, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, RELICS, NODE, STARTS, DIFF } = V;
+  const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, RELICS, NODE, STARTS, DIFF } = V;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const rnd = (n) => Math.floor(Math.random() * n);
@@ -351,7 +351,7 @@
     B.phase = 'result'; B.won = won;
     const kind = R.node.k;
     if (won) {
-      const g = 1 + (has('goldtooth') ? 2 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0);
+      const g = 1 + (has('goldtooth') ? 2 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2][battleApi.synergyCounts(R.board).ttiers.company || 0];
       R.gold += g; R.stats.goldEarned += g; R.stats.wins++; R.streak++;
       if (kind === 'elite') R.stats.elites++;
       if (kind === 'boss') R.stats.bosses++;
@@ -470,10 +470,42 @@
     return '<div class="pat" aria-hidden="true">' + g.map((v) => `<i class="${v}"></i>`).join('') + '</div>';
   }
   function synHTML(cards) {
-    const { counts } = battleApi.synergyCounts(cards);
-    return Object.keys(SYN).map((k) => { const th = SYN[k].th, act = th.filter((t) => counts[k] >= t).length, nx = th.find((t) => counts[k] < t);
-      return `<button class="pill${act ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}"><i>${CLS[k].short}</i>${CLS[k].name} ${counts[k]}<small>/${nx || th[2]}</small></button>`; }).join('');
+    const sc = battleApi.synergyCounts(cards);
+    const cls = Object.keys(SYN).map((k) => { const th = SYN[k].th, act = th.filter((t) => sc.counts[k] >= t).length, nx = th.find((t) => sc.counts[k] < t);
+      return `<button class="pill${act ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}"><i>${CLS[k].short}</i>${CLS[k].name} ${sc.counts[k]}<small>/${nx || th[th.length - 1]}</small></button>`; });
+    const trKeys = Object.keys(TRAITS).filter((k) => sc.tcounts[k] > 0).sort((a, b) => sc.tcounts[b] - sc.tcounts[a]);
+    const trPill = (k) => {
+      const T = TRAITS[k], on = sc.ttiers[k] > 0, need = T.kind === 'combo' ? T.members.length : (T.th.find((t) => sc.tcounts[k] < t) || T.th[T.th.length - 1]);
+      return `<button class="pill tr${on ? ' on' : ''}" data-tr="${k}" style="--c:${T.col}"><i>${T.short}</i>${T.name} ${sc.tcounts[k]}<small>/${need}</small></button>`;
+    };
+    // 켜진 특성 → 클래스 → 아직 모자란 특성 순
+    return `<button class="pill all" data-allsyn>시너지</button>` + [...trKeys.filter((k) => sc.ttiers[k] > 0).map(trPill), ...cls, ...trKeys.filter((k) => !sc.ttiers[k]).map(trPill)].join('');
   }
+  // 시너지 전체 목록(도감·시트 공용). cards 가 있으면 진행도와 보유 표시
+  function synList(cards) {
+    const sc = cards ? battleApi.synergyCounts(cards) : null;
+    const owned = cards ? new Set(allUnits().map((u) => u.id)) : null;
+    const block = (key, name, col, short, kindTxt, lines, members, tier, n, need) => {
+      const ms = members.map((id) => { const d = DEF['unit:' + id]; const st = !cards ? '' : cards.some((c) => c.id === id) ? 'on' : owned.has(id) ? 'own' : 'off';
+        return `<span class="sm ${st}"><img src="${ART.tokenURL(id, 0, d.cls)}" alt=""><small>${d.name}</small></span>`; }).join('');
+      return `<div class="cx synrow"><div><b><span class="sico" style="--c:${col}">${short}</span>${name}</b> <small class="tg">${kindTxt}${cards ? ` · ${n}/${need}` : ''}</small>
+        ${lines.map((l, i) => `<small class="${cards && tier > i ? 'act' : ''}">${l}</small>`).join('')}<div class="sms">${ms}</div></div></div>`;
+    };
+    let out = '';
+    for (const [k, T] of Object.entries(TRAITS)) {
+      const lines = T.kind === 'combo' ? T.desc : T.desc.map((d, i) => `(${T.th[i]}) ${d}`);
+      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : '기본 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
+    }
+    for (const [k, S] of Object.entries(SYN)) {
+      out += block(k, CLS[k].name, CLS[k].col, CLS[k].short, '클래스 · ' + S.th.join('/') + '명', S.desc.map((d, i) => `(${S.th[i]}) ${d}`), UNITS.filter((u) => u.cls === k).map((u) => u.id), sc ? sc.tiers[k] : 0, sc ? sc.counts[k] : 0, sc ? S.th.find((x) => sc.counts[k] < x) || S.th[S.th.length - 1] : S.th[0]);
+    }
+    return out;
+  }
+  function openSynSheet() {
+    openSheet(`<span class="eyebrow">시너지 · 출전한 딱지 기준(같은 유닛은 한 번만 셈)</span><h2>시너지 전체</h2><div class="synlist">${synList(R.board)}</div><button class="btn" data-close>닫기</button>`);
+    $('sheetIn').onclick = (e) => { if (e.target.closest('[data-close]')) closeSheet(); };
+  }
+
 
   // =====================================================================
   // 지도 화면
@@ -542,14 +574,14 @@
     renderHud();
     const combat = !!B;
     $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('foebox').hidden = !combat;
-    $('syn').innerHTML = synHTML(R.board) + `<span class="deploy">출전 <b>${R.board.length}/${deployMax()}</b></span>`;
+    $('syn').innerHTML = synHTML(R.board);
     if (combat) { renderBattlePanel(); fitBoard(); return; }
     renderPrep();
     fitBoard();
   }
   function renderPrep() {
     const s = ui.sel;
-    $('benchN').textContent = `${R.bench.filter(Boolean).length}/${benchSize()}`;
+    $('benchN').innerHTML = `${R.bench.filter(Boolean).length}/${benchSize()}</b> · 출전 <b>${R.board.length}/${deployMax()}`;
     $('benchHint').textContent = !s ? '탭해서 고르기' : s.from === 'shop' ? '구매 버튼으로 삽니다' : s.c.kind === 'unit' ? '보드 칸을 탭하면 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지를 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
     $('bench').innerHTML = R.bench.map((c, i) => {
@@ -577,7 +609,7 @@
       const d = def(c), n = owned(c.kind, c.id);
       return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
         <span class="cost">${d.t}</span><span class="cl">${CLS[d.cls].short}</span>
-        <img src="${imgOf(c, 84)}" alt=""><b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2 합성' : '보유 ' + n}</span>` : ''}</button>`;
+        <img src="${imgOf(c, 84)}" alt="">${c.kind === 'unit' ? `<span class="trs">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].short}</i>`).join('')}</span>` : ''}<b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2 합성' : '보유 ' + n}</span>` : ''}</button>`;
     }).join('');
     $('lvBtn').innerHTML = R.lv >= 8 ? '최대 레벨' : `레벨업 <small>4골드 · 경험치 +4</small>`;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
@@ -599,7 +631,7 @@
     const btns = shop
       ? `<button class="btn pri" data-act="buy" ${R.gold < d.t ? 'disabled' : ''}>구매 · ${d.t}골드${n >= 2 ? ' → ★2' : ''}</button><button class="btn" data-act="close">닫기</button>`
       : `<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button>`;
-    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
+    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
 
@@ -689,11 +721,11 @@
       if (!x) { rows += `<div class="urow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
       const sd = def(x);
       const open = ui.openInfo === 's' + k;
-      rows += `<div class="urow${open ? ' open' : ''}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(30, (sd.mana || 80) - (x.star - 1) * 8)}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${esc(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span></span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
+      rows += `<div class="urow${open ? ' open' : ''}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(20, Math.round(Math.max(30, (sd.mana || 80) - (x.star - 1) * 8) * (e.manaCost || 1)))}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${esc(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span></span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
     }
     if (c.item) { const it = def(c.item), open = ui.openInfo === 'item'; rows += `<div class="urow${open ? ' open' : ''}" data-info="item" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}${open ? `<span class="uinfo">${esc(it.desc)}<br><span class="meta">${CLS[it.cls].name} 아이템 · ${it.t}등급 · ★2 수치 ×1.6 · ★3 ×2.5</span></span>` : ''}</span><button class="x" data-un="item" aria-label="${it.name} 빼기">빼기</button></div>`; }
     else rows += `<div class="urow empty"><span>빈 아이템 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
-    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸을 탭하면 설명</p></div></div>
+    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급 · ${d.traits.map((t) => TRAITS[t].name).join(' · ')}${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸을 탭하면 설명</p></div></div>
       <div class="ustats">${stats}</div>
       ${rows}
       <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button></div>`;
@@ -811,7 +843,12 @@
   }
   $('statBtn').onclick = openStats;
 
-  $('syn').addEventListener('click', (e) => { const b = e.target.closest('[data-syn]'); if (!b) return; const k = b.dataset.syn; toast(`${CLS[k].name} ${SYN[k].th.join('/')}: ${SYN[k].desc.join(' → ')}`); });
+  $('syn').addEventListener('click', (e) => {
+    if (e.target.closest('[data-allsyn]')) return openSynSheet();
+    const t = e.target.closest('[data-tr]');
+    if (t) { const T = TRAITS[t.dataset.tr]; return toast(`${T.name}(${T.members.map((m) => DEF['unit:' + m].name).join('·')}): ${T.kind === 'combo' ? T.desc[0] : T.th.map((n, i) => n + '명 ' + T.desc[i]).join(' → ')}`); }
+    const b = e.target.closest('[data-syn]'); if (!b) return; const k = b.dataset.syn; toast(`${CLS[k].name} ${SYN[k].th.join('/')}: ${SYN[k].desc.join(' → ')}`);
+  });
 
   // =====================================================================
   // 보드 캔버스
@@ -1361,6 +1398,7 @@
         <p><b>상점 단계</b> 칸에 들어가면 내 진영과 상점 세 줄이 보입니다. 적 배치는 ‘적 필드 보기’로 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
         <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 흰색 · 2 녹색 · 3 파랑 · 4 보라 · 5 노랑. 딱지 테두리 색은 클래스(전사 파랑 · 궁수 초록 · 마법사 보라).</p>
+        <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 시너지 줄의 ‘시너지’ 버튼으로 전체 목록을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 2개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 아이템에 따라 역할이 바뀝니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
@@ -1375,10 +1413,11 @@
     const render = () => {
       let list = '';
       if (tab === 'relic') list = Object.entries(RELICS).map(([k, r]) => `<div class="cx"><div><b>${r.name}</b><small>${r.desc}</small></div></div>`).join('');
+      else if (tab === 'syn') list = synList(null);
       else list = POOL[tab].slice().sort((a, b) => (CORDER.indexOf(a.cls) - CORDER.indexOf(b.cls)) || a.t - b.t).map((d) => {
         const c = mk(tab, d.id);
-        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.trait}` : tab === 'skill' ? d.desc : `${d.desc}<br><i>${d.feel}</i>`;
-        return `<div class="cx"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
+        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? d.desc : `${d.desc}<br><i>${d.feel}</i>`;
+        return `<div class="cx k-${tab} tier${d.t}" style="--tc:var(--t${d.t})"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
       }).join('');
       $('codexList').innerHTML = list;
       document.querySelectorAll('[data-cx]').forEach((b) => b.classList.toggle('on', b.dataset.cx === tab));

@@ -61,7 +61,24 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .bstamp.win { color: var(--ok); border-color: var(--ok); }
 .bstamp.lose { color: var(--stamp); border-color: var(--stamp); }
 @keyframes bst { to { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1); } }
-.syn { flex: none; display: flex; gap: 6px; align-items: center; padding: 6px var(--g) 0; height: 32px; }
+.syn { flex: none; display: flex; gap: 5px; align-items: center; padding: 6px var(--g) 0; height: 32px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.syn::-webkit-scrollbar { display: none; }
+.syn .pill { flex: none; }
+.pill.all { background: var(--ink); color: var(--paper); padding: 2px 10px; }
+.pill.tr:not(.on) { opacity: .75; border-style: dashed; }
+.synlist { display: grid; gap: 6px; }
+.synrow > div { display: grid; gap: 1px; }
+.synrow small.act { color: var(--ink); font-weight: 700; }
+.sico { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--c); color: #fff; font: 400 10px/18px var(--display); text-align: center; margin-right: 5px; vertical-align: 1px; }
+.sms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.sm { display: grid; justify-items: center; width: 52px; }
+.sm img { width: 34px !important; height: 34px !important; }
+.sm small { font-size: 9px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52px; text-align: center; }
+.sm.off { opacity: .35; } .sm.own { opacity: .7; } .sm.on img { filter: drop-shadow(0 0 3px var(--gold)); }
+.cx.tier1, .cx.tier2, .cx.tier3, .cx.tier4, .cx.tier5 { background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); }
+.cx.k-item { border-width: 3px; border-radius: 3px; } .cx.k-unit { border-radius: 14px; }
+.trs { position: absolute; left: 2px; top: 17px; display: flex; flex-direction: column; gap: 1px; pointer-events: none; }
+.trs i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); color: #fff; font: 400 8px/14px var(--display); text-align: center; font-style: normal; border: 1px solid var(--ink); }
 .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--card); font-weight: 600; font-size: 12px; white-space: nowrap; }
 .pill i { width: 18px; height: 18px; border-radius: 50%; background: var(--c); color: #fff; font: 400 10px/18px var(--display); text-align: center; font-style: normal; }
 .pill small { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
@@ -457,7 +474,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
   <div class="sheet" id="sheet" hidden><div class="in" id="sheetIn"></div></div>
   <div class="codex" id="codex" hidden>
     <div class="cxhead"><h2>도감</h2><button class="btn" data-cxclose style="flex:none">닫기</button></div>
-    <div class="cxtabs"><button data-cx="unit" class="on">유닛</button><button data-cx="skill">스킬</button><button data-cx="item">아이템</button><button data-cx="relic">유물</button></div>
+    <div class="cxtabs"><button data-cx="unit" class="on">유닛</button><button data-cx="skill">스킬</button><button data-cx="item">아이템</button><button data-cx="syn">시너지</button><button data-cx="relic">유물</button></div>
     <div class="cxlist" id="codexList"></div>
   </div>
   <div class="toast" id="toast" role="status"></div>

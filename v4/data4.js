@@ -87,6 +87,31 @@
     I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.35, mana: 30 }, 'echo', '스킬 위력 +35%, 마나 30으로 시작. 2번 시전마다 한 번 더', '폭딜'),
   ];
 
+  // 특성 시너지 10종: 유닛마다 2개. kind 'count' = 정해진 수만큼 모이면, 'combo' = 지정한 유닛이 전부 모이면
+  const TRAITS = {
+    knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'count', th: [2, 3], members: ['squire', 'warden', 'blademaster'],
+      desc: ['기사 받는 피해 −15%', '기사 받는 피해 −30%'] },
+    novice: { name: '견습', short: '견', col: '#8a9a5b', kind: 'combo', members: ['squire', 'archer', 'apprentice'],
+      desc: ['견습 셋이 모이면 모든 아군 피해 +15%, 스킬 마나 −15%, 받는 피해 −15%'] },
+    guardian: { name: '수호자', short: '수', col: '#5b6475', kind: 'count', th: [2, 4], members: ['shieldman', 'warden', 'acolyte', 'monk'],
+      desc: ['전투 시작 시 모든 아군 보호막 150', '모든 아군 보호막 400, 수호자 받는 피해 −10%'] },
+    company: { name: '용병단', short: '용', col: '#b07a2a', kind: 'count', th: [2, 3], members: ['merc', 'duelist', 'crossbow'],
+      desc: ['승리하면 골드 +1', '승리하면 골드 +2, 용병단 공격 속도 +20%'] },
+    marksman: { name: '명사수', short: '명', col: '#2e7d5b', kind: 'count', th: [2, 3, 4], members: ['venom', 'crossbow', 'ranger', 'ninja'],
+      desc: ['명사수 치명타 +15%', '명사수 치명타 +25%, 치명 피해 +40%', '명사수 치명타 +25%, 치명 피해 +40%, 사거리 +1'] },
+    wild: { name: '야생', short: '야', col: '#5fa043', kind: 'count', th: [2, 4], members: ['archer', 'venom', 'hunter', 'acolyte'],
+      desc: ['모든 아군 초당 체력 1% 재생', '모든 아군 초당 체력 2% 재생, 소환물 체력·공격 +60%'] },
+    arcane: { name: '비전', short: '비', col: '#6a4fc0', kind: 'count', th: [2, 4], members: ['monk', 'cryo', 'archmage', 'bishop'],
+      desc: ['비전 유닛 마나 +25로 시작', '비전 유닛 마나 +25로 시작, 모든 아군 마나 획득 +30%'] },
+    stars: { name: '별의 인도', short: '별', col: '#c48a00', kind: 'combo', members: ['cryo', 'ninja', 'bishop'],
+      desc: ['셋이 모이면 모든 아군 치명타 +20%, 치명 피해 +50%'] },
+    mentor: { name: '스승과 제자', short: '스', col: '#a8508a', kind: 'combo', members: ['archmage', 'apprentice'],
+      desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 스킬 마나 −30%'] },
+    veteran: { name: '베테랑', short: '베', col: '#a8323b', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'merc', 'duelist', 'hunter', 'ranger', 'blademaster'],
+      desc: ['베테랑 공격력 +15%', '베테랑 공격력 +30%', '베테랑 공격력 +50%, 적을 쓰러뜨리면 체력 15% 회복'] },
+  };
+  for (const u of UNITS) u.traits = Object.keys(TRAITS).filter((k) => TRAITS[k].members.includes(u.id));
+
   const DEF = {};
   for (const d of [...UNITS, ...SKILLS, ...ITEMS]) DEF[d.kind + ':' + d.id] = d;
 
@@ -142,5 +167,5 @@
     normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1, phoenix: false },
   };
 
-  global.V4 = { CLS, SYN, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, BENCH, RELICS, NODE, STARTS, DIFF };
+  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, BENCH, RELICS, NODE, STARTS, DIFF };
 })(window);

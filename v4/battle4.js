@@ -95,7 +95,14 @@
       for (const c of cards) { if (seen.has(c.id)) continue; seen.add(c.id); counts[def('unit', c.id).cls]++; }
       const tiers = {};
       for (const k in counts) tiers[k] = V.SYN[k].th.filter((t) => counts[k] >= t).length;
-      return { counts, tiers };
+      // 특성 시너지: 'count' 는 단계 수, 'combo' 는 전원이 모이면 1
+      const tcounts = {}, ttiers = {};
+      for (const [k, T] of Object.entries(V.TRAITS)) {
+        const n = T.members.filter((m) => seen.has(m)).length;
+        tcounts[k] = n;
+        ttiers[k] = T.kind === 'combo' ? (n === T.members.length ? 1 : 0) : T.th.filter((x) => n >= x).length;
+      }
+      return { counts, tiers, tcounts, ttiers };
     }
 
     // ---------- 전투 개체 ----------
@@ -107,8 +114,9 @@
       return e;
     }
     const skillMana = (s) => Math.max(30, (s.def.mana || 80) - (s.star - 1) * 8);
+    const costOf = (u, s) => Math.max(20, Math.round(skillMana(s) * (u.manaCost || 1)));
     function setupSkills(e, mana) {
-      if (e.skills.length) { e.ability = { type: 'skill' }; e.skillIdx = 0; e.maxMana = skillMana(e.skills[0]); e.mana = Math.min(e.maxMana - 1, mana); }
+      if (e.skills.length) { e.ability = { type: 'skill' }; e.skillIdx = 0; e.maxMana = costOf(e, e.skills[0]); e.mana = Math.min(e.maxMana - 1, mana); }
       else { e.ability = null; e.maxMana = 0; e.mana = 0; }
     }
     function wpArt(it) { return { id: 'v4' + it.id, shape: it.shape, cls: V.CLS[it.cls].art, tier: it.t >= 3 ? 3 : it.t }; }
@@ -143,6 +151,18 @@
       if (t.arc && cls === 'arc') { e.as *= [1, 1.2, 1.4, 1.6][t.arc]; if (t.arc >= 3) e.range += 1; }
       if (t.mag) e.spell *= t.mag >= 2 ? 1.35 : 1.15;
       if (t.mag >= 3 && cls === 'mag') mana = Math.max(mana, 30);
+      // 특성 시너지
+      const T = syn.ttiers || {}, my = (k) => d.traits.includes(k);
+      if (T.knight && my('knight')) e.armor += [0, 0.15, 0.3][T.knight];
+      if (T.novice) { e.dmgMul = (e.dmgMul || 1) * 1.15; e.manaCost = (e.manaCost || 1) * 0.85; e.armor += 0.15; }
+      if (T.guardian) { e.synShield = [0, 150, 400][T.guardian]; if (T.guardian >= 2 && my('guardian')) e.armor += 0.1; }
+      if (T.company >= 2 && my('company')) e.as *= 1.2;
+      if (T.marksman && my('marksman')) { e.crit += [0, 0.15, 0.25, 0.25][T.marksman]; if (T.marksman >= 2) e.critDmg += 0.4; if (T.marksman >= 3) e.range += 1; }
+      if (T.wild) { e.regen = [0, 0.01, 0.02][T.wild]; e.wildSummon = T.wild >= 2; }
+      if (T.arcane) { if (my('arcane')) mana += 25; if (T.arcane >= 2) e.manaPerHit *= 1.3; }
+      if (T.stars) { e.crit += 0.2; e.critDmg += 0.5; }
+      if (T.mentor) { if (d.id === 'apprentice') e.spell *= 2; if (d.id === 'archmage') e.manaCost = (e.manaCost || 1) * 0.7; }
+      if (T.veteran && my('veteran')) { e.atk *= [1, 1.15, 1.3, 1.5][T.veteran]; if (T.veteran >= 3) e.vetHeal = true; }
       // 유물
       if (cls === 'war' && has('whetstone')) e.atk *= 1.15;
       if (cls === 'arc' && has('feather')) e.as *= 1.15;
@@ -181,7 +201,7 @@
     }
     function makeSummon(id, cell, side, owner) {
       const d = MONSTERS[id];
-      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.5 : 1) : 1;
+      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.5 : 1) * (owner.wildSummon ? 1.6 : 1) : 1;
       const e = baseEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, side, cell, {
         def: d, artId: d.id, cls: 'melee', summon: true, skills: [], procs: new Set(), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, pow: k, spell: 1,
       });
@@ -459,6 +479,7 @@
         if (u.side !== 0 || u.dead || u.summon) continue;
         const p = u.passive;
         if (p === 'startShield') giveShield(u, 220 * u.healMult, u);
+        if (u.synShield) giveShield(u, u.synShield, null);
         if (p === 'hawk' || u.ifx === 'hawkFocus') {
           const cell = grid.neighbors[u.cell].find((n) => !cb.occ[n]);
           if (cell !== undefined) cb.spawn(makeSummon('hawk', cell, 0, u));
@@ -492,7 +513,7 @@
         onCast: (u, t, cb) => {
           const s = u.skills[u.skillIdx];
           u.skillIdx = (u.skillIdx + 1) % u.skills.length;
-          u.maxMana = u.side ? u.maxMana : skillMana(u.skills[u.skillIdx]);
+          u.maxMana = u.side ? u.maxMana : costOf(u, u.skills[u.skillIdx]);
           execSkill(cb, u, t, s);
           if (u.side === 0) {
             if (u.passive === 'scholar') u.mana = Math.min(u.maxMana, 15);
@@ -515,6 +536,7 @@
         dmgDealtMod: (src, t, kind, cb) => {
           let m = 1;
           if (src.st && src.st.weak > 0) m *= 0.7;
+          if (src.dmgMul) m *= src.dmgMul;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + 0.08 * (src.focusN || 0);
           return m;
         },
@@ -603,6 +625,7 @@
                 if (s.t <= 0) delete st[key];
               }
               if (u.dead) continue;
+              if (u.regen > 0 && u.hp < u.maxHp) { const h = Math.min(u.maxHp - u.hp, u.maxHp * u.regen * 0.5); u.hp += h; u.healDone = (u.healDone || 0) + h; }
               if (u.passive === 'healAura') for (const a of cb.units) if (!a.dead && a.side === u.side && !a.object && grid.dist(a.cell, u.cell) <= 1) { const h = Math.min(a.maxHp - a.hp, a.maxHp * 0.005 * u.healMult); a.hp += h; u.healDone = (u.healDone || 0) + h; }
             }
           }
@@ -629,6 +652,7 @@
           if (t.side === 1 && src && src.side === 0) {
             if (src.passive === 'bounty' && (cb.bountyN || 0) < 2) { cb.bountyN = (cb.bountyN || 0) + 1; cb.goldBonus += 1; cb.float(t.px, t.py - 34, '+1골드', '#f5c400', true); }
             if (src.passive === 'killHeal') cb.heal(src, src.maxHp * 0.1, src);
+            if (src.vetHeal) cb.heal(src, src.maxHp * 0.15, src);
           }
           if (t.boss) { for (const v of cb.alive(1)) cb.kill(v, null); cb.tele = []; }
         },
