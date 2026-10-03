@@ -469,17 +469,23 @@
     }
     return '<div class="pat" aria-hidden="true">' + g.map((v) => `<i class="${v}"></i>`).join('') + '</div>';
   }
+  // 시너지 줄: 작은 패 모양 칩(글자 + 현재/다음 단계). 켜진 것 → 모자란 것 순, 한 줄에 들어가는 만큼만
   function synHTML(cards) {
-    const sc = battleApi.synergyCounts(cards);
-    const cls = Object.keys(SYN).map((k) => { const th = SYN[k].th, act = th.filter((t) => sc.counts[k] >= t).length, nx = th.find((t) => sc.counts[k] < t);
-      return `<button class="pill${act ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}"><i>${CLS[k].short}</i>${CLS[k].name} ${sc.counts[k]}<small>/${nx || th[th.length - 1]}</small></button>`; });
-    const trKeys = Object.keys(TRAITS).filter((k) => sc.tcounts[k] > 0).sort((a, b) => sc.tcounts[b] - sc.tcounts[a]);
-    const trPill = (k) => {
-      const T = TRAITS[k], on = sc.ttiers[k] > 0, need = T.kind === 'combo' ? T.members.length : (T.th.find((t) => sc.tcounts[k] < t) || T.th[T.th.length - 1]);
-      return `<button class="pill tr${on ? ' on' : ''}" data-tr="${k}" style="--c:${T.col}"><i>${T.short}</i>${T.name} ${sc.tcounts[k]}<small>/${need}</small></button>`;
-    };
-    // 켜진 특성 → 클래스 → 아직 모자란 특성 순
-    return `<button class="pill all" data-allsyn>시너지</button>` + [...trKeys.filter((k) => sc.ttiers[k] > 0).map(trPill), ...cls, ...trKeys.filter((k) => !sc.ttiers[k]).map(trPill)].join('');
+    const sc = battleApi.synergyCounts(cards), items = [];
+    for (const k of Object.keys(SYN)) {
+      const n = sc.counts[k]; if (!n) continue;
+      const th = SYN[k].th, tier = sc.tiers[k];
+      items.push({ on: tier, n, html: `<button class="sc cls${tier ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}" aria-label="${CLS[k].name} ${n}"><b>${CLS[k].short}</b><small>${n}/${th.find((t) => n < t) || th[th.length - 1]}</small></button>` });
+    }
+    for (const [k, T] of Object.entries(TRAITS)) {
+      const n = sc.tcounts[k]; if (!n) continue;
+      const tier = sc.ttiers[k], need = T.kind === 'combo' ? T.members.length : (T.th.find((t) => n < t) || T.th[T.th.length - 1]);
+      items.push({ on: tier, n: n / need, html: `<button class="sc${tier ? ' on' : ''}${T.kind === 'combo' ? ' combo' : ''}" data-tr="${k}" style="--c:${T.col}" aria-label="${T.name} ${n}/${need}"><b>${T.short}</b><small>${n}/${need}</small></button>` });
+    }
+    items.sort((a, b) => (b.on > 0) - (a.on > 0) || b.on - a.on || b.n - a.n);
+    const max = Math.max(4, Math.floor(($('syn').clientWidth - 32 - 48) / 36));
+    const more = items.length > max ? `<span class="scmore">+${items.length - max}</span>` : '';
+    return `<button class="sc all" data-allsyn>시너지<br>전체</button>` + items.slice(0, max).map((x) => x.html).join('') + more;
   }
   // 시너지 전체 목록(도감·시트 공용). cards 가 있으면 진행도와 보유 표시
   function synList(cards) {
@@ -609,7 +615,7 @@
       const d = def(c), n = owned(c.kind, c.id);
       return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
         <span class="cost">${d.t}</span><span class="cl">${CLS[d.cls].short}</span>
-        <img src="${imgOf(c, 84)}" alt="">${c.kind === 'unit' ? `<span class="trs">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].short}</i>`).join('')}</span>` : ''}<b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2 합성' : '보유 ' + n}</span>` : ''}</button>`;
+        <img src="${imgOf(c, 84)}" alt="">${c.kind === 'unit' ? `<span class="trn">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span>` : ''}<b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}</button>`;
     }).join('');
     $('lvBtn').innerHTML = R.lv >= 8 ? '최대 레벨' : `레벨업 <small>4골드 · 경험치 +4</small>`;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
@@ -1237,7 +1243,7 @@
   function closeSheet() { $('sheet').hidden = true; }
   function cardTile(c, i) {
     const d = def(c);
-    return `<button class="pickcard k-${c.kind} tier${d.t}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}</small><span class="pd">${esc(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
+    return `<button class="pickcard k-${c.kind} tier${d.t}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}</small><span class="pd">${esc(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
   }
   function pickReward(title, sub, cards, done) {
     if (!cards.length) return done();
