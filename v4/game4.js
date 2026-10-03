@@ -148,6 +148,7 @@
     fixBench();
     R.stats.merges++;
     if (has('glue')) R.gold += 2;
+    if (has('shard')) addXp(2);
     if (!quiet) fxMerge(keep);
     for (const c of back) toBench(c);
     for (const c of back) tryMerge(c.kind, c.id, c.star, quiet);
@@ -201,12 +202,13 @@
   }
   function levelUp(quiet) {
     if (R.lv >= 8) { if (!quiet) toast('최대 레벨'); return false; }
-    if (R.gold < 4) { if (!quiet) toast('골드가 모자라요'); return false; }
-    R.gold -= 4;
+    if (R.gold < lvCost()) { if (!quiet) toast('골드가 모자라요'); return false; }
+    R.gold -= lvCost();
     if (addXp(4) && !quiet) { toast(`원정대 Lv${R.lv} · 출전 ${deployMax()}명`); SFX.play('win'); }
     if (!quiet) renderPlay();
     return true;
   }
+  function lvCost() { return has('anvil') ? 3 : 4; }
   const canEquip = (chip, u) => { const d = def(chip); return d.cls === 'any' || d.cls === def(u).cls; };
   function equip(chip, benchI, u, quiet) {
     if (!canEquip(chip, u)) { if (!quiet) toast(`${CLS[def(chip).cls].name} 전용이에요`); return false; }
@@ -234,7 +236,8 @@
     const intMax = 5 + (has('vault') ? 2 : 0);
     const interest = Math.min(intMax, Math.floor(R.gold / 10));
     const st = R.streak >= 8 ? 3 : R.streak >= 5 ? 2 : R.streak >= 3 ? 1 : 0;
-    return { base: 5, interest, streak: st, total: 5 + interest + st };
+    const base = 5 + (has('crown') ? 1 : 0) + (DIFF[R.diff || 'normal'].income || 0);
+    return { base, interest, streak: st, total: base + interest + st };
   }
   function enterNode(n, quiet) {
     R.round++;
@@ -249,7 +252,7 @@
     if (quiet) return inc;
     ui.sel = null; ui.tab = 'unit'; ui.showFoe = false;
     showPlay();
-    if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 5 · 이자 ${inc.interest}${inc.streak ? ' · 연승 ' + inc.streak : ''})`);
+    if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest}${inc.streak ? ' · 연승 ' + inc.streak : ''})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
     if (n.k === 'camp') openCamp(); else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
     else if (n.k === 'shop') toast('암시장: 상점 등급 확률 +1, 다시 뽑기 3번 무료');
@@ -284,14 +287,14 @@
     if (kind === 'boss') {
       const boss = MONSTERS[R.map.boss];
       put(boss.id, [1], 2);
-      const adds = { gobking: ['goblin', 'goblin'], slimeking: ['slime', 'slime'], lich: ['skel', 'skelarch'], vampire: ['bat', 'bat', 'cultist'], dragon: ['imp', 'imp', 'salam'] }[boss.boss];
+      const adds = { gobking: ['goblin', 'goblin'], slimeking: ['slime', 'slime'], lich: ['skel', 'skelarch'], vampire: ['bat', 'bat', 'cultist'], dragon: ['imp', 'imp', 'salam'], surt: ['imp', 'salam', 'firecult'] }[boss.boss];
       for (const id of adds) put(id, rowsFor(MONSTERS[id]));
     } else if (kind === 'elite') {
       for (const id of AC.pick(A.elites)) put(id, rowsFor(MONSTERS[id]));
       const extra = Math.floor((R.round - 3) / 4);
       for (let k = 0; k < extra; k++) { const id = AC.pick(A.normal.filter((x) => MONSTERS[x].v <= 1.5)); put(id, rowsFor(MONSTERS[id])); }
     } else {
-      let budget = (t.b0 || 2.2) + (t.bK || 0.3) * R.round;
+      let budget = (t.b0 || 2.2) + (t.bK || 0.4) * R.round;
       while (budget > 0.4 && out.length < 9) {
         const opts = A.normal.filter((id) => MONSTERS[id].v <= budget + 0.5);
         if (!opts.length) break;
@@ -330,7 +333,8 @@
     B.combat = cb;
     while (!cb.done) cb.step(1 / 30);
     const won = judge(cb);
-    const r = { won, gold: cb.goldBonus || 0, t: cb.t };
+    const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
+    const r = { won, gold: cb.goldBonus || 0, t: cb.t, hpLeft: al.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, al.reduce((x, u) => x + u.maxHp, 0)) };
     B = null;
     return r;
   }
@@ -351,7 +355,7 @@
     B.phase = 'result'; B.won = won;
     const kind = R.node.k;
     if (won) {
-      const g = 1 + (has('goldtooth') ? 2 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2][battleApi.synergyCounts(R.board).ttiers.company || 0];
+      const g = 1 + (has('goldtooth') ? 2 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2, 3][battleApi.synergyCounts(R.board).ttiers.company || 0];
       R.gold += g; R.stats.goldEarned += g; R.stats.wins++; R.streak++;
       if (kind === 'elite') R.stats.elites++;
       if (kind === 'boss') R.stats.bosses++;
@@ -634,7 +638,7 @@
         <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
         <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}</button>`;
     }).join('');
-    $('lvBtn').textContent = R.lv >= 8 ? 'MAX' : '▲ 4골드'; $('lvBtn').disabled = R.lv >= 8;
+    $('lvBtn').textContent = R.lv >= 8 ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= 8;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
   }
   function renderDetail(s, el) {
@@ -845,8 +849,9 @@
     else { ui.sel = null; renderPlay(); }
   };
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
-  $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 5 · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
+  $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 ${inc.base} · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
   $('lvBtn').onclick = () => levelUp();
+  $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
   $('spdSeg').onclick = (e) => { const b = e.target.closest('[data-spd]'); if (!b || !B) return; B.speed = ui.speed = +b.dataset.spd; SFX.play('click'); renderBattlePanel(); };
   $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 30); B.skipping = false; B.vfx = newVfx(); };
@@ -1349,8 +1354,64 @@
       { label: '피를 바친다', desc: '골드 −5, 유물 1개', disabled: R.gold < 5, go: () => { R.gold -= 5; relicPick('수상한 제단', () => renderPlay()); } },
       { label: '그냥 떠난다', go: () => {} },
     ]),
+    () => choice('신비한 샘', '맑은 물에서 빛이 일렁입니다', [
+      { label: '마신다', desc: '경험치 +3, 골드 +1', go: () => { R.gold += 1; if (addXp(3)) toast(`원정대 Lv${R.lv}`); } },
+      { label: '병에 담는다', desc: '무작위 2등급 스킬 칩', go: () => { const c = rollCard('skill', 2); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+    ]),
+    () => {
+      const cand = R.board.filter((u) => u.star === 1 && def(u).t <= 2 && (R.pool[keyOf('unit', u.id)] || 0) >= 2);
+      choice('훈련 교관', '“한 명만 제대로 가르쳐 주지.”', [
+        { label: '특훈 (5골드)', desc: cand.length ? '출전 중인 ★1 유닛(1·2등급) 하나가 ★2로' : '특훈할 ★1 유닛(1·2등급)이 보드에 없어요', disabled: R.gold < 5 || !cand.length, go: () => {
+          const u = pick(cand); R.gold -= 5; take(u); take(u); u.star = 2; toast(`${def(u).name} ★★ 특훈 완료`); tryMerge('unit', u.id, 2);
+        } },
+        { label: '구경만 한다', desc: '경험치 +2', go: () => { if (addXp(2)) toast(`원정대 Lv${R.lv}`); } },
+      ]);
+    },
+    () => choice('폐허의 서고', '먼지 쌓인 책이 가득합니다', [
+      { label: '밤새 읽는다', desc: '경험치 +6, 골드 −2', disabled: R.gold < 2, go: () => { R.gold -= 2; if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
+      { label: '희귀본을 챙긴다', desc: '골드 +5', go: () => { R.gold += 5; } },
+    ]),
+    () => choice('쓰러진 기사', '낡은 갑옷 곁에 검이 꽂혀 있습니다', [
+      { label: '장비를 챙긴다', desc: `무작위 ${Math.min(4, R.act + 1)}등급 아이템`, go: () => { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '묻어 준다', desc: '경험치 +3, 골드 +2', go: () => { R.gold += 2; if (addXp(3)) toast(`원정대 Lv${R.lv}`); } },
+    ]),
+    () => choice('좀도둑', '누군가 지갑을 낚아채 달아납니다!', [
+      { label: '쫓아간다', desc: '반반 확률로 골드 +6, 아니면 −2', go: () => { if (Math.random() < 0.5) { R.gold += 6; toast('잡았다! +6골드'); SFX.play('coin'); } else { R.gold = Math.max(0, R.gold - 2); toast('놓쳤다… −2골드'); } } },
+      { label: '내버려 둔다', desc: '골드 −2, 경험치 +2', go: () => { R.gold = Math.max(0, R.gold - 2); if (addXp(2)) toast(`원정대 Lv${R.lv}`); } },
+    ]),
+    () => choice('용병 길드 게시판', '“실력자 구함. 계약금 선불.”', [
+      { label: `계약한다 (${R.act + 5}골드)`, desc: `무작위 ${Math.min(5, R.act + 2)}등급 유닛`, disabled: R.gold < R.act + 5, go: () => { R.gold -= R.act + 5; const c = rollCard('unit', Math.min(5, R.act + 2)); if (c) { take(c); gain(c); toast(`${def(c).name} 합류`); } } },
+      { label: '게시판 뒤 쪽지를 본다', desc: '다음 다시 뽑기 2번 무료', go: () => { R.freeRolls = (R.freeRolls || 0) + 2; } },
+    ]),
   ];
   function openEvent() { pick(EVENTS)(); }
+
+  // ---------- 최고 기록 ----------
+  const BEST_KEY = 'cardExpeditionV4Best';
+  function loadBest() { try { return JSON.parse(localStorage.getItem(BEST_KEY)) || null; } catch (e) { return null; } }
+  function saveBest(win) {
+    if (!R || R.bestSaved) return;
+    R.bestSaved = true;
+    const b = loadBest() || { runs: 0, clears: {}, act: 0, round: 0 };
+    b.runs++;
+    if (win) b.clears[R.diff] = (b.clears[R.diff] || 0) + 1;
+    if (R.round > b.round) { b.round = R.round; b.act = R.act; }
+    try { localStorage.setItem(BEST_KEY, JSON.stringify(b)); } catch (e) { /* 저장 불가 */ }
+  }
+  function bestText() {
+    const b = loadBest(); if (!b || !b.runs) return '';
+    const cl = Object.entries(b.clears).filter(([, n]) => n).map(([k, n]) => `${DIFF[k] ? DIFF[k].name : k} ${n}번`).join(' · ');
+    return `원정 ${b.runs}번 · 최고 ${b.act}막 라운드 ${b.round}${cl ? ' · 완수 ' + cl : ''}`;
+  }
+  // ---------- 상점 확률 ----------
+  function openOdds() {
+    const cur = oddsLv(), rows = [3, 4, 5, 6, 7, 8].map((lv) => `<tr class="${lv === Math.min(8, cur) ? 'on' : ''}"><th>Lv${lv}</th>${ODDS[lv].map((p) => `<td>${p ? p + '%' : '·'}</td>`).join('')}</tr>`).join('');
+    openSheet(`<span class="eyebrow">상점 확률 · 원정대 Lv${R.lv}${cur !== R.lv ? ` (확률은 Lv${cur} 기준)` : ''}</span><h2>등급별로 나올 확률</h2>
+      <table class="odds"><thead><tr><th></th>${[1, 2, 3, 4, 5].map((t) => `<th><i style="--tc:var(--t${t})"></i>${t}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
+      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < 8 ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 3등급, 아이템은 4등급까지 나옵니다.</p>
+      <button class="btn" data-close>닫기</button>`);
+    $('sheetIn').onclick = (e) => { if (e.target.closest('[data-close]')) closeSheet(); };
+  }
 
   // =====================================================================
   // 타이틀 · 출정 · 게임 오버 · 저장
@@ -1363,6 +1424,7 @@
     show('title');
     const s = loadSave();
     $('contBtn').hidden = !s;
+    const bt = bestText(); $('bestRec').hidden = !bt; $('bestRec').textContent = bt;
     if (s) $('contBtn').innerHTML = `이어하기 <small>${s.act}막 · 라운드 ${s.round} · Lv${s.lv}</small>`;
     const fan = $('fan');
     if (!fan.children.length) {
@@ -1392,14 +1454,17 @@
     clearSave();
     show('over');
     const n = R.node || R.lastNode || {};
-    $('overStamp').textContent = win ? '흑룡 토벌!' : '원정 실패';
+    const boss = R.map && MONSTERS[R.map.boss];
+    $('overStamp').textContent = win ? '원정 완수!' : '원정 실패';
     $('overStamp').className = 'bigstamp' + (win ? ' win' : '');
-    $('overText').textContent = win ? '아자르가 쓰러지고 화산이 잠잠해졌습니다. 원정대의 이름이 노래로 남을 것입니다.'
+    $('overText').textContent = win ? `${boss ? boss.name : '화산의 주인'}이(가) 쓰러지고 화산이 잠잠해졌습니다. 원정대의 이름이 노래로 남을 것입니다.`
       : `${R.act}막 ${ACTS[R.act].name}${n.k ? ', ' + NODE[n.k].name : ''}에서 쓰러졌습니다.${R.diff === 'normal' ? ' 불사조 깃털 유물이 있으면 한 번은 버틸 수 있습니다.' : ''}`;
     const m = Math.floor(R.stats.time / 60);
     $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === 5 ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / 18`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
     $('overTeam').innerHTML = R.board.map((u) => `<img src="${imgOf(u, 80)}" alt="${def(u).name}">`).join('') + R.relics.map((k) => `<span class="rpill">${RELICS[k].name}</span>`).join('');
     ui.tearUnit = R.board[0] ? R.board[0].id : 'squire';
+    ui.winBoss = boss ? boss.id : 'dragon';
+    saveBest(win);
     ui.tearT = 99;
   }
   function gameOver() { SFX.play('lose'); endScreen(false); }
@@ -1410,7 +1475,7 @@
       if (!ui.tear || ui.tearT > 2.6) { ui.tear = ART.makeTear(ART.token(ui.tearUnit || 'squire', 0, 60, 2, clsOfArt(ui.tearUnit || 'squire')), 180, 120, 60, 0); ui.tear.life = 1.6; ui.tearT = 0; }
       ui.tearT += 1 / 60; ART.stepTear(ui.tear, 1 / 60);
       c.clearRect(0, 0, 360, 300);
-      if ($('overStamp').classList.contains('win')) ART.drawToken(c, ART.token('dragon', 1, 60, 2, 'boss'), 180, 130, 60, { rot: 0.3, dim: true });
+      if ($('overStamp').classList.contains('win')) ART.drawToken(c, ART.token(ui.winBoss || 'dragon', 1, 60, 2, 'boss'), 180, 130, 60, { rot: 0.3, dim: true });
       else if (ui.tearT < 0.35) ART.drawToken(c, ART.token(ui.tearUnit || 'squire', 0, 60, 2, clsOfArt(ui.tearUnit || 'squire')), 180, 120, 60, { lift: 6 * Math.sin(ui.tearT * 30) });
       else ART.drawTear(c, ui.tear);
     }
@@ -1466,7 +1531,12 @@
   }
   document.querySelectorAll('[data-menu]').forEach((b) => (b.onclick = openMenu));
   $('newBtn').onclick = setupRun;
-  $('contBtn').onclick = () => { const s = loadSave(); if (!s) return; R = s; fixBench(); showMap(); };
+  $('contBtn').onclick = () => {
+    const s = loadSave(); if (!s) return; R = s;
+    // 카드가 늘어난 판에서 이전 저장을 이어 할 때: 새 카드 몫을 풀에 채운다
+    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) if (R.pool[keyOf(d.kind, d.id)] == null) R.pool[keyOf(d.kind, d.id)] = POOL_N[d.t];
+    fixBench(); showMap();
+  };
   $('codexBtn').onclick = openCodex;
   $('overNew').onclick = () => { title(); setupRun(); };
   $('overTitle').onclick = title;

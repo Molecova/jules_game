@@ -41,6 +41,7 @@
       if (st.armor) s.armor += st.armor * k;
       if (st.range) s.range += st.range;
       if (st.crit) s.crit += st.crit * k;
+      if (st.dodge) s.dodge += st.dodge * Math.min(k, 1.6);
       if (st.lifesteal) s.lifesteal += st.lifesteal * k;
       if (st.spell) s.spell *= 1 + st.spell * k;
       if (st.heal) s.heal *= 1 + st.heal * k;
@@ -144,21 +145,26 @@
       if (s.fx === 'spellSlow') e.procs.add('spellSlow');
       if (s.fx === 'spellBurn') e.procs.add('spellBurn');
       if (s.fx === 'bloodrage') e.procs.add('cleaveHit');
+      if (s.fx === 'burnHit' || p === 'burnHit') e.procs.add('burnHit');
+      if (s.fx === 'thorns') e.thorns += 0.3 * Math.min(1.6, s.fxK);
+      if (s.fx === 'headshot') e.critDmg += 0.6 * Math.min(1.6, s.fxK);
+      if (p === 'frenzy') e.lifesteal += 0.15;
       // 시너지
       if (t.war && cls === 'war') e.maxHp *= t.war >= 2 ? 1.3 : 1.15;
       if (t.war >= 2 && cls === 'war') e.armor += 0.1;
       if (t.war >= 3) e.armor += 0.15;
       if (t.arc && cls === 'arc') { e.as *= [1, 1.2, 1.4, 1.6][t.arc]; if (t.arc >= 3) e.range += 1; }
-      if (t.mag) e.spell *= t.mag >= 2 ? 1.35 : 1.15;
+      if (t.mag) { e.spell *= [1, 1.2, 1.4, 1.5][t.mag]; if (cls === 'mag') e.manaPerHit *= 1.25; }
       if (t.mag >= 3 && cls === 'mag') mana = Math.max(mana, 30);
       // 특성 시너지
       const T = syn.ttiers || {}, my = (k) => d.traits.includes(k);
-      if (T.knight && my('knight')) e.armor += [0, 0.15, 0.3][T.knight];
+      if (T.knight && my('knight')) { e.armor += [0, 0.15, 0.3, 0.4][T.knight]; if (T.knight >= 3) e.maxHp *= 1.15; }
       if (T.novice) { e.dmgMul = (e.dmgMul || 1) * 1.15; e.manaCost = (e.manaCost || 1) * 0.85; e.armor += 0.15; }
-      if (T.guardian) { e.synShield = [0, 150, 400][T.guardian]; if (T.guardian >= 2 && my('guardian')) e.armor += 0.1; }
-      if (T.company >= 2 && my('company')) e.as *= 1.2;
+      if (T.guardian) { e.synShield = [0, 150, 400, 700][T.guardian]; if (T.guardian >= 2 && my('guardian')) e.armor += T.guardian >= 3 ? 0.2 : 0.1; }
+      if (T.company >= 2 && my('company')) e.as *= T.company >= 3 ? 1.35 : 1.2;
       if (T.marksman && my('marksman')) { e.crit += [0, 0.15, 0.25, 0.25][T.marksman]; if (T.marksman >= 2) e.critDmg += 0.4; if (T.marksman >= 3) e.range += 1; }
-      if (T.wild) { e.regen = [0, 0.01, 0.02][T.wild]; e.wildSummon = T.wild >= 2; }
+      if (T.wild) { e.regen = [0, 0.01, 0.02, 0.03][T.wild]; e.wildSummon = [1, 1, 1.6, 2.2][T.wild]; }
+      if (T.flame) { if (my('flame')) { e.procs.add('burnHit'); if (T.flame >= 2) e.atk *= 1.2; } if (T.flame >= 2) e.burnBoost = 1.6; }
       if (T.arcane) { if (my('arcane')) mana += 25; if (T.arcane >= 2) e.manaPerHit *= 1.3; }
       if (T.stars) { e.crit += 0.2; e.critDmg += 0.5; }
       if (T.mentor) { if (d.id === 'apprentice') e.spell *= 2; if (d.id === 'archmage') e.manaCost = (e.manaCost || 1) * 0.7; }
@@ -171,6 +177,10 @@
       if (has('pauldron')) e.armor += 0.08;
       if (has('thornmail')) e.thorns += 0.1;
       if (has('horn')) mana += 20;
+      if (has('bloodstone')) e.lifesteal += 0.08;
+      if (has('lens')) e.crit += 0.1;
+      if (has('tome')) e.manaPerHit *= 1.25;
+      if (has('victoryhorn') && R().streak >= 3) e.atk *= 1.12;
       e.armor = Math.min(0.7, e.armor);
       e.maxHp = Math.round(e.maxHp); e.hp = e.maxHp;
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
@@ -182,9 +192,9 @@
     function foeMul(d) {
       const r = R(), n = r.round, t = global.__tune || {}, df = V.DIFF[r.diff || 'normal'].foe;
       const role = d.boss ? 'boss' : d.elite ? 'elite' : 'normal';
-      const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.72][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.85 : 1);
-      const hp = ((t.hp0 || 1.2) + (t.hpK || 0.15) * n) * ({ normal: 1, elite: t.eliteHp || 0.82, boss: t.bossHp || 0.95 }[role]) * bossK * df;
-      const atk = ((t.atk0 || 1) + (t.atkK || 0.08) * n) * ({ normal: 1, elite: t.eliteAtk || 0.9, boss: t.bossAtk || 0.95 }[role]) * Math.sqrt(bossK) * df;
+      const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.72][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.75 : 1);
+      const hp = ((t.hp0 || 1.2) + (t.hpK || 0.2) * n) * ({ normal: t.normHp || 1, elite: t.eliteHp || 0.82, boss: t.bossHp || 0.95 }[role]) * bossK * df;
+      const atk = ((t.atk0 || 1) + (t.atkK || 0.095) * n) * ({ normal: t.normAtk || 1, elite: t.eliteAtk || 0.9, boss: t.bossAtk || 0.95 }[role]) * Math.sqrt(bossK) * df;
       return { hp, atk, pow: atk };
     }
     function makeFoe(x) {
@@ -201,7 +211,7 @@
     }
     function makeSummon(id, cell, side, owner) {
       const d = MONSTERS[id];
-      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.5 : 1) * (owner.wildSummon ? 1.6 : 1) : 1;
+      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.5 : 1) * (owner.wildSummon || 1) : 1;
       const e = baseEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, side, cell, {
         def: d, artId: d.id, cls: 'melee', summon: true, skills: [], procs: new Set(), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, pow: k, spell: 1,
       });
@@ -210,7 +220,7 @@
       return e;
     }
     function monsterCls(d) {
-      if (['whelp', 'dragon', 'imp', 'salam', 'magmagolem'].includes(d.id)) return 'fire';
+      if (['whelp', 'dragon', 'imp', 'salam', 'magmagolem', 'surt'].includes(d.id)) return 'fire';
       if ((d.skills || []).some((id) => ['fire', 'chain', 'ice', 'light'].includes(id))) return 'mage';
       return d.range > 1 ? 'bow' : 'melee';
     }
@@ -218,7 +228,7 @@
     // ---------- 상태이상 ----------
     function dotMult(src, key) {
       if (!src || src.side !== 0) return 1;
-      if (key === 'burn' && has('ember')) return 1.6;
+      if (key === 'burn') return (has('ember') ? 1.6 : 1) * (src.burnBoost || 1);
       if (key === 'poison' && has('venomgland')) return 1.6;
       if (key === 'bleed' && has('hook')) return 1.6;
       return 1;
@@ -449,6 +459,16 @@
           fx.shake(4);
         }
         if (ratio < 0.5 && !f.bats) { f.bats = true; say('박쥐들아!'); summonFoe(cb, 'bat', 3, enemyRows, 0.8); b.as *= 1.25; }
+      } else if (b.boss === 'surt') {
+        if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.4; b.thorns = 0.2; say('불의 갑옷!'); cb.ring(b.px, b.py, '#ff8a3b', 80, 1); fx.shake(8); env.phase('2페이즈 · 분노'); s.c = 2; }
+        if (s.a <= 0) {
+          s.a = f.rage ? 5 : 6;
+          const col = grid.cells[AC.pick(foes).cell].c, cells = [];
+          for (let r = PLAYER_ROW; r < ROWS; r++) cells.push(grid.idx(col, r));
+          say('대지 균열'); telegraph(cb, b, cells, 1.4, 170, '#e8643b', { burn: { dps: 30, dur: 3 } });
+        }
+        if (s.b <= 0) { s.b = 8; if (cb.alive(1).length < 6) { say('타올라라!'); summonFoe(cb, 'imp', 2, enemyRows, 0.8); } }
+        if (f.rage && s.c <= 0) { s.c = 4; say('화염 고리'); telegraph(cb, b, grid.neighbors[b.cell], 1.0, 190, '#ff8a3b'); }
       } else if (b.boss === 'dragon') {
         if (ratio < 0.7 && !f.w1) { f.w1 = true; say('새끼들아!'); summonFoe(cb, 'whelp', 1, enemyRows); }
         if (ratio <= 0.5 && !f.rage) {
@@ -489,8 +509,14 @@
           if (far) leapTo(cb, u, far);
         }
         if (u.ifx === 'markAura') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) { a.as *= 1 + 0.15 * u.ifxK; } }
-        if (p === 'starMark') { const v = AC.pick(cb.alive(1)); if (v) { addStatus(cb, v, 'vuln', { dur: 8, amt: 0.3 }, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '별의 표식', '#e2d0ff'); } }
+        if (p === 'starMark') for (const v of AC.shuffle(cb.alive(1).filter((x) => !x.object)).slice(0, 2)) { addStatus(cb, v, 'vuln', { dur: 8, amt: 0.3 }, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '별의 표식', '#e2d0ff'); }
         if (u.ifx === 'towerGuard') u.tauntT = 0;
+        if (p === 'holyAura') u.auraT = 2;
+        if (p === 'golem') {
+          const cell = grid.neighbors[u.cell].find((n) => !cb.occ[n]);
+          if (cell !== undefined) { const g = makeSummon('stonegolem', cell, 0, u); g.maxHp = g.hp = Math.round(g.hp * 0.75); cb.spawn(g); cb.ring(g.px, g.py, '#9bff8a', 26, 0.6); }
+        }
+        if (p === 'hex') for (const v of cb.alive(1).filter((x) => !x.object).sort((a, c) => c.atk - a.atk).slice(0, 2)) { addStatus(cb, v, 'weak', 8, u); cb.beam(u.px, u.py, v.px, v.py, '#b04fd0', 0.5); cb.float(v.px, v.py - 30, '저주', '#e2d0ff'); }
       }
       if (has('snowglobe')) for (const v of cb.alive(1)) addStatus(cb, v, 'slow', 3);
     }
@@ -502,6 +528,7 @@
         onStart,
         // 성서: 다친 아군이 있으면 기본 공격 대신 치유
         preAttack: (u, t, cb) => {
+          if (u.nextCrit) { u.nextCrit = false; u.critSave = u.crit; u.crit = 1; }
           if (u.ifx !== 'healer') return false;
           const a = lowestAlly(cb, u.side, true);
           if (!a || a.hp / a.maxHp > 0.92) return false;
@@ -517,8 +544,9 @@
           execSkill(cb, u, t, s);
           if (u.side === 0) {
             if (u.passive === 'scholar') u.mana = Math.min(u.maxMana, 15);
+            if (u.passive === 'sage') for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.08 * u.healMult, u);
             if (u.ifx === 'hourglass') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && a.ability) { a.mana = Math.min(a.maxMana, a.mana + 25 * u.ifxK); cb.ring(a.px, a.py, '#6ab0e8', 16); } }
-            if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 2 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.7); } } }
+            if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 2 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.8); } } }
           }
           const ef = s.def.effect;
           fx.play(['heal', 'shield', 'buff', 'haste', 'timewarp', 'revive', 'mana', 'fortify', 'parry'].includes(ef) ? 'heal' : s.def.cls === 'mag' || ef === 'tele' ? 'magic' : 'skill', 0.08);
@@ -529,6 +557,7 @@
           let m = 1;
           if (u.st.slow > 0) m *= 0.6;
           if (u.st.haste) for (const h of u.st.haste) m *= h.amt;
+          if (u.passive === 'frenzy') m *= 1 + 0.6 * Math.max(0, 1 - u.hp / u.maxHp);
           if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.4 * Math.min(1.6, u.ifxK);
           if (u.side === 0 && has('drum') && cb.t < 4) m *= 1.4;
           return m;
@@ -537,6 +566,9 @@
           let m = 1;
           if (src.st && src.st.weak > 0) m *= 0.7;
           if (src.dmgMul) m *= src.dmgMul;
+          if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
+          if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.4 * Math.min(1.6, src.ifxK);
+          if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.15;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + 0.08 * (src.focusN || 0);
           return m;
         },
@@ -545,6 +577,7 @@
           if (src && src.pierce && kind === 'atk' && t.armor > 0) m /= 1 - t.armor;
           if (t.st.vuln && t.st.vuln.t > 0) m *= 1 + t.st.vuln.amt;
           if (t.st.fort > 0) m *= 0.6;
+          if (t.side === 0 && cb.t < 6 && has('sandglass')) m *= 0.7;
           if (t.side === 0) for (const n of grid.neighbors[t.cell]) { const w = cb.occ[n]; if (w && w.side === 0 && w.passive === 'guardAura') { m *= 0.9; break; } }
           return m;
         },
@@ -552,9 +585,22 @@
         onAttack: (u, t, cb) => {
           if (u.range > 1) fx.play('shoot', 0.06);
           if (u.firstStrike) { u.firstStrike = false; u.crit = u.crit0; }
+          if (u.critSave != null) { u.crit = u.critSave; u.critSave = null; }
           if (u.passive === 'focus' || u.ifx === 'hawkFocus') { u.focusN = u.lastT === t ? Math.min(5, (u.focusN || 0) + 1) : 0; u.lastT = t; }
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
+          if (u.passive === 'stunHit' && u.atkN % 3 === 0 && !t.boss) { addStatus(cb, t, 'stun', 1, u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
+          if (u.ifx === 'stunEvery' && u.atkN % 4 === 0 && !t.boss) { addStatus(cb, t, 'stun', Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
+          if (u.passive === 'tripleShot' && u.atkN % 3 === 0) {
+            for (const v of cb.alive(1).filter((x) => x !== t && !x.object).sort((a, c) => grid.dist(t.cell, a.cell) - grid.dist(t.cell, c.cell)).slice(0, 2)) {
+              cb.beam(u.px, u.py, v.px, v.py, '#bfe8ff', 0.25); cb.damage(u, v, u.atk * 0.6, 'splash');
+            }
+          }
+          if (u.ifx === 'stormHit') {
+            for (const v of cb.alive(1).filter((x) => x !== t && !x.object && grid.dist(t.cell, x.cell) <= 2).slice(0, 2)) {
+              cb.beam(t.px, t.py, v.px, v.py, '#b48cff', 0.25); cb.damage(u, v, u.atk * 0.5 * Math.min(1.6, u.ifxK), 'splash');
+            }
+          }
           if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.6 * u.healMult * u.ifxK, u); }
           if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 2.5 * u.healMult * u.ifxK, u); } }
           if (u.passive === 'pierce4' && u.atkN % 4 === 0) {
@@ -565,7 +611,7 @@
             for (const i of cells) { const v = cb.occ[i]; if (v && v.side === 1) cb.damage(u, v, u.atk * 1.5, 'spell'); }
           }
         },
-        onDodge: () => {},
+        onDodge: (t) => { if (t.ifx === 'evasive' && t.side === 0) { t.nextCrit = true; } },
         onHit: (t, dmg, src, kind, crit, cb) => {
           t.hitT = 0.22;
           if (kind === 'atk' || kind === 'spell' || kind === 'splash') {
@@ -581,6 +627,11 @@
             if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 30 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
             if (pr.has('cleaveHit')) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== src.side && v !== t) cb.damage(src, v, dmg * 0.35, 'splash'); }
             if (src.ifx === 'markAura') addStatus(cb, t, 'vuln', { dur: 3, amt: 0.15 * Math.min(2, src.ifxK) }, src);
+            if (src.passive === 'heavyBolt' && src.side === 0) {
+              const a = grid.cells[src.cell], b2 = grid.cells[t.cell], dx = Math.sign(b2.c - a.c), dy = Math.sign(b2.r - a.r);
+              const bi = grid.idx(b2.c + dx, b2.r + dy), v = bi >= 0 ? cb.occ[bi] : null;
+              if (v && v.side !== src.side && !v.dead) { tiles(cb, [bi], '#c8331f', 0.3); cb.damage(src, v, dmg * 0.5, 'splash'); }
+            }
             if (src.passive === 'execute20' && !t.dead && !t.boss && t.hp / t.maxHp <= 0.2) { cb.float(t.px, t.py - 30, '처형!', '#f5c400', true); cb.kill(t, src); }
             const th = (t.thorns || 0) + (t.st && t.st.parry > 0 ? 0.4 : 0);
             if (th > 0 && src.range <= 1 && !src.dead) cb.damage(t, src, dmg * th, 'thorns');
@@ -589,6 +640,7 @@
             const pr = src.procs || new Set();
             if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 30 * src.ifxK, dur: 3 }, src);
             if (pr.has('spellSlow')) addStatus(cb, t, 'slow', 2 * Math.min(1.6, src.ifxK), src);
+            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * 0.25 * (src.healMult || 1), src);
           }
         },
         onHeal: () => fx.play('heal', 0.15),
@@ -604,6 +656,11 @@
               u.tauntT -= dt;
               if (u.tauntT <= 0) { u.tauntT = 4; let n = 0; for (const v of cb.alive(1)) if (grid.dist(v.cell, u.cell) <= 2 && !v.boss) { v.forced = u; v.forcedT = 3; n++; } if (n) cb.ring(u.px, u.py, '#f5c400', 40, 0.6); }
             }
+            if (u.passive === 'holyAura' && u.side === 0) {
+              u.auraT -= dt;
+              if (u.auraT <= 0) { u.auraT = 4; for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.05 * u.healMult, u); cb.ring(u.px, u.py, '#fff2b0', 34, 0.5); }
+            }
+            if (u.ifx === 'manaRegen' && u.ability && u.mana < u.maxMana) u.mana = Math.min(u.maxMana, u.mana + 5 * Math.min(1.6, u.ifxK) * dt);
             if (u.passive === 'dragonBreath' && !u.breathed && u.hp / u.maxHp <= 0.5) {
               u.breathed = true;
               const t = u.target && !u.target.dead ? u.target : cb.nearestEnemy(u), dir = facing(u, t);
@@ -655,6 +712,15 @@
             if (src.vetHeal) cb.heal(src, src.maxHp * 0.15, src);
           }
           if (t.boss) { for (const v of cb.alive(1)) cb.kill(v, null); cb.tele = []; }
+          if (t.side === 0 && !t.summon && !t.object && !t.revived && has('lantern') && !cb.lanternUsed) {
+            const cell = freeNear(cb, t.cell);
+            if (cell !== undefined) {
+              cb.lanternUsed = true;
+              t.dead = false; t.revived = true; t.hp = Math.round(t.maxHp * 0.3); t.moving = null; t.st = {}; t.stun = 0;
+              t.cell = cell; cb.occ[cell] = t; t.px = grid.cells[cell].x; t.py = grid.cells[cell].y; t.popT = 0.35;
+              cb.ring(t.px, t.py, '#fff2b0', 34, 0.8); cb.float(t.px, t.py - 28, '수호 등불!', '#c48a00', true);
+            }
+          }
         },
       };
     }

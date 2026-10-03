@@ -327,6 +327,11 @@
     hawk: (c) => { bg(c, '#d8c8a8'); for (const s of [-1, 1]) { c.beginPath(); c.moveTo(50, 56); c.quadraticCurveTo(50 + s * 30, 30, 50 + s * 46, 46); c.quadraticCurveTo(50 + s * 30, 56, 50 + s * 20, 70); c.closePath(); fs(c, '#8a6a3a'); } ell(c, 50, 62, 14, 18); fs(c, '#a8865a'); circ(c, 50, 42, 13); fs(c, '#efe4cf'); poly(c, [[46, 46], [54, 46], [50, 56]]); fs(c, GOLD, 2); c.fillStyle = INK; circ(c, 45, 40, 2.2); c.fill(); circ(c, 55, 40, 2.2); c.fill(); },
     stonegolem: (c) => { bg(c, '#c8ccd4'); golemHead(c, '#8a8f99', '#9bff8a'); },
     barricade: (c) => { bg(c, '#e0d0b0'); barricadeArt(c); },
+    // v4 추가 궁수·보스
+    scout: (c) => { bg(c, '#b8d8a0'); bow(c, 80, 62, 28, '#6b4a2e'); shoulders(c, '#6b5a3a', '#c8331f'); head(c); face(c, { eyes: 'dot', mouth: 'smile' }); bandana(c, '#c8331f'); },
+    arbalest: (c) => { bg(c, '#c4ccd8'); shoulders(c, '#5b6475', GOLD); greathelm(c, STEEL, '#c8331f'); crossbow(c, 50, 80); },
+    windarcher: (c) => { bg(c, '#c8e8e0'); bow(c, 82, 58, 34, '#e8e3d6'); shoulders(c, '#3b7a8a', '#e8e3d6'); ears(c, SKIN); head(c); face(c, { eyes: 'dot', mouth: 'smile' }); wildHair(c, '#f0ead6'); },
+    surt: (c) => { bg(c, '#e8907a', 'rgba(255,255,255,.1)'); shoulders(c, '#5a1f1e', GOLD); flame(c, 50, 28, 1.7, '#e8643b', GOLD); ell(c, 50, 54, 24, 21); fs(c, '#a8321f'); face(c, { y: 52, eyes: 'glow', eyeColor: '#fff2b0', mouth: 'grin', blush: false }); crown(c, GOLD, 30); },
   });
 
   // ---------- 플라스틱 부품 ----------

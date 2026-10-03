@@ -369,7 +369,14 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .startopt .discs img { width: 40px; height: 40px; margin-right: -8px; }
 .startopt b { font-size: 15px; } .startopt small { color: var(--muted); font-size: 11px; }
 .startopt.on, .diff.on { background: #fff3c4; box-shadow: 0 0 0 3px var(--gold); }
-.diffs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.diffs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.odds { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px; text-align: center; }
+.odds th, .odds td { padding: 5px 2px; border-bottom: 1px solid var(--line); }
+.odds thead th { font-weight: 700; }
+.odds thead i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--tc); border: 1.5px solid var(--ink); margin-right: 3px; vertical-align: -1px; }
+.odds tr.on { background: #fff3c4; font-weight: 700; }
+.elv { cursor: pointer; }
+.best { margin: 0; font-size: 12px; color: var(--muted); }
 .diff { border: 2px solid var(--ink); border-radius: 8px; background: var(--card); padding: 8px; display: grid; text-align: left; }
 .diff small { color: var(--muted); font-size: 11px; }
 .help p { margin: 0 0 6px; font-size: 13px; }
@@ -451,6 +458,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
           <button class="btn" id="contBtn" hidden>이어하기</button>
           <button class="btn" id="codexBtn">도감</button>
         </div>
+        <p class="best" id="bestRec" hidden></p>
       </div>
     </section>
 
@@ -477,7 +485,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
         <div class="shop" id="shop">
           <div class="econ" id="econ">
             <button class="ec gbox" id="gbox" aria-label="보유 골드와 다음 이자"><b class="coin" id="sgold">0</b><span class="int" id="sint">이자 +0</span></button>
-            <div class="ec elv"><b id="eLv">Lv3</b><span class="xpbar"><i id="eXp"></i></span><small id="eXpT">0/6</small></div>
+            <div class="ec elv" id="eLvBox" role="button" tabindex="0" aria-label="레벨과 상점 확률 보기"><b id="eLv">Lv3</b><span class="xpbar"><i id="eXp"></i></span><small id="eXpT">0/6</small></div>
             <button class="ec up" id="lvBtn" aria-label="레벨업: 4골드로 경험치 +4">▲ 4골드</button>
             <button class="ec eye" id="foeBtn">적 필드</button>
           </div>
