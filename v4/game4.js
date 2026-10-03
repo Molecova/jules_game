@@ -161,13 +161,13 @@
     tryMerge(c.kind, c.id, 1, quiet);
     fixBench();
   }
-  function buy(i, quiet) {
-    const c = R.shop[ui.tab][i]; if (!c) return false;
+  function buy(i, quiet, kind = ui.tab) {
+    const c = R.shop[kind][i]; if (!c) return false;
     const p = def(c).t;
     if (R.gold < p) { if (!quiet) toast('골드가 모자라요'); return false; }
     const free = R.bench.indexOf(null);
     if (free < 0 && owned(c.kind, c.id) < 2) { if (!quiet) toast('창고가 가득 찼어요. 팔거나 배치하세요'); return false; }
-    R.gold -= p; R.shop[ui.tab][i] = null; ui.sel = null;
+    R.gold -= p; R.shop[kind][i] = null; ui.sel = null;
     take(c);
     if (free >= 0) R.bench[free] = c; else R.bench.push(c);
     if (!quiet) SFX.play('coin');
@@ -184,11 +184,11 @@
     R.gold += g;
     return g;
   }
-  function reroll(quiet) {
+  function reroll(quiet, kind = ui.tab) {
     const free = R.freeRolls > 0;
     if (!free && R.gold < 1) { if (!quiet) toast('골드가 모자라요'); return false; }
     if (free) R.freeRolls--; else R.gold -= 1;
-    rollRow(ui.tab); R.locked[ui.tab] = false;
+    rollRow(kind); R.locked[kind] = false;
     if (!quiet) { SFX.play('card'); renderPlay(); }
     return true;
   }
@@ -247,7 +247,7 @@
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
     R.mode = R.enemies.length ? 'fight' : 'rest';
     if (quiet) return inc;
-    ui.sel = null; ui.tab = 'unit';
+    ui.sel = null; ui.tab = 'unit'; ui.showFoe = false;
     showPlay();
     if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 5 · 이자 ${inc.interest}${inc.streak ? ' · 연승 ' + inc.streak : ''})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
@@ -396,7 +396,7 @@
   function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200); }
   function stampAt(x, y, txt, cls = '') { const ph = $('phone'), el = document.createElement('div'); el.className = 'stamp ' + cls; el.textContent = txt; el.style.left = x + 'px'; el.style.top = y + 'px'; ph.appendChild(el); setTimeout(() => el.remove(), 1200); }
   const phoneRect = () => $('phone').getBoundingClientRect();
-  function cellScreen(x, y) { const r = $('cv').getBoundingClientRect(), p = phoneRect(), k = r.width / W; const c = grid.cells[grid.idx(x, y)]; return [r.left - p.left + c.x * k, r.top - p.top + c.y * k]; }
+  function cellScreen(x, y) { const r = $('cv').getBoundingClientRect(), p = phoneRect(), k = r.width / W; const c = grid.cells[grid.idx(x, y)]; return [r.left - p.left + c.x * k, r.top - p.top + (c.y - viewY()) * k]; }
   function fxStampAtUnit(u, txt) {
     if (R.board.includes(u)) { const [x, y] = cellScreen(u.x, u.y); stampAt(x, y, txt); return; }
     const i = R.bench.indexOf(u), el = $('bench').children[i];
@@ -557,26 +557,25 @@
       const can = s && s.from === 'bench' && s.c.kind !== 'unit' && c.kind === 'unit' && canEquip(s.c, c);
       return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
     }).join('');
-    document.querySelectorAll('.tab').forEach((b) => {
-      const k = b.dataset.tab, ready = R.shop[k].filter((c) => c && owned(c.kind, c.id) >= 2).length;
-      b.classList.toggle('on', k === ui.tab);
-      b.innerHTML = TABNAME[k] + (ready ? `<span class="dot">★2</span>` : '');
-    });
-    $('lockBtn').classList.toggle('on', R.locked[ui.tab]);
-    $('lockBtn').textContent = R.locked[ui.tab] ? '잠김' : '잠금';
-    $('rollCost').textContent = R.freeRolls > 0 ? `무료 ${R.freeRolls}` : '1골드';
+    for (const k of ['unit', 'skill', 'item']) {
+      const ready = R.shop[k].some((c) => c && owned(c.kind, c.id) >= 2);
+      document.querySelector(`[data-lbl="${k}"]`).classList.toggle('ready', ready);
+      const lk = document.querySelector(`[data-lock="${k}"]`); lk.classList.toggle('on', R.locked[k]); lk.textContent = R.locked[k] ? '잠김' : '잠금';
+      document.querySelector(`[data-cost="${k}"]`).textContent = R.freeRolls > 0 ? '무료' : '1';
+    }
+    const fb = $('foeBtn'); fb.hidden = R.mode !== 'fight'; fb.classList.toggle('on', !!ui.showFoe); fb.textContent = ui.showFoe ? '상점 보기' : '적 필드 보기';
     const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit' && !drag.on;
     if (!s || s.c !== ui.infoFor) { ui.openInfo = null; ui.infoFor = s ? s.c : null; }
     const showDetail = !!s && s.from !== 'shop' && s.c.kind !== 'unit' && !drag.on, peek = !!s && s.from === 'shop';
-    $('row').hidden = showDetail; $('detail').hidden = !showDetail;
+    $('detail').hidden = !showDetail;
     $('peek').hidden = !peek; $('usheet').hidden = !unitSheet;
     if (showDetail) renderDetail(s, $('detail'));
     if (unitSheet) { renderUnitSheet(s); $('usheet').style.top = $('syn').offsetTop + 'px'; }
     if (peek) { renderDetail(s, $('peek')); $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
-    $('row').innerHTML = R.shop[ui.tab].map((c, i) => {
+    for (const k of ['unit', 'skill', 'item']) document.querySelector(`[data-row="${k}"]`).innerHTML = R.shop[k].map((c, i) => {
       if (!c) return `<div class="card sold" aria-hidden="true"></div>`;
       const d = def(c), n = owned(c.kind, c.id);
-      return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
+      return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
         <span class="cost">${d.t}</span><span class="cl">${CLS[d.cls].short}</span>
         <img src="${imgOf(c, 84)}" alt=""><b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2 합성' : '보유 ' + n}</span>` : ''}</button>`;
     }).join('');
@@ -753,28 +752,30 @@
     renderPlay();
   }
   $('bench').addEventListener('click', (e) => { const b = e.target.closest('[data-b]'); if (b && !B && performance.now() - drag.endT > 250) tapBench(+b.dataset.b); });
-  $('row').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-s]'); if (!b || B) return;
-    const i = +b.dataset.s, c = R.shop[ui.tab][i];
+  $('srows').addEventListener('click', (e) => {
+    if (B) return;
+    const r = e.target.closest('[data-roll]'), l = e.target.closest('[data-lock]');
+    if (r) { ui.sel = null; return reroll(false, r.dataset.roll); }
+    if (l) { const k = l.dataset.lock; R.locked[k] = !R.locked[k]; toast(R.locked[k] ? `${TABNAME[k]} 줄 잠금: 다음 라운드에도 그대로` : '잠금 해제'); return renderPlay(); }
+    const b = e.target.closest('[data-s]'); if (!b) return;
+    const k = b.dataset.k, i = +b.dataset.s, c = R.shop[k][i];
     if (ui.sel && ui.sel.c === c) { ui.sel = null; renderPlay(); return; }
-    ui.sel = { from: 'shop', i, c }; ui.peekT = performance.now(); SFX.play('card'); renderPlay();
+    ui.sel = { from: 'shop', i, c, kind: k }; ui.peekT = performance.now(); SFX.play('card'); renderPlay();
   });
+  $('foeBtn').onclick = () => { ui.showFoe = !ui.showFoe; ui.sel = null; SFX.play('card'); renderPlay(); };
   const onDetail = (e) => {
     const b = e.target.closest('[data-act],[data-un],[data-info]'); if (!b) return;
     if (b.dataset.un != null) { const u = ui.sel.c, k = b.dataset.un; unequip(u, k === 'item' ? 'item' : +k); ui.openInfo = null; return renderPlay(); }
     if (b.dataset.info != null) { ui.openInfo = ui.openInfo === b.dataset.info ? null : b.dataset.info; SFX.play('click'); return renderPlay(); }
     if (b.dataset.act === 'noop') return;
     const a = b.dataset.act;
-    if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i); }
+    if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i, false, ui.sel.kind); }
     else if (a === 'tobench') { const i = R.bench.indexOf(null); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
     else if (a === 'sell') { const s = ui.sel, g = sellCard(s.c, s.from, s.i); ui.sel = null; SFX.play('coin'); toast(`${def(s.c).name} 판매 +${g}골드`); renderPlay(); }
     else { ui.sel = null; renderPlay(); }
   };
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
-  document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { ui.tab = b.dataset.tab; ui.sel = null; SFX.play('click'); renderPlay(); }));
-  $('rollBtn').onclick = () => reroll();
   $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 5 · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
-  $('lockBtn').onclick = () => { R.locked[ui.tab] = !R.locked[ui.tab]; toast(R.locked[ui.tab] ? `${TABNAME[ui.tab]} 줄 잠금: 다음 라운드에도 그대로` : '잠금 해제'); renderPlay(); };
   $('lvBtn').onclick = () => levelUp();
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
   $('spdBtn').onclick = () => { if (!B) return; B.speed = B.speed === 1 ? 2 : B.speed === 2 ? 3 : 1; ui.speed = B.speed; renderBattlePanel(); };
@@ -817,15 +818,31 @@
   // =====================================================================
   const canvas = $('cv'), ctx = canvas.getContext('2d');
   let kScale = 1, DPR = Math.min(2, window.devicePixelRatio || 1);
+  // 상점 단계: 내 진영 세 줄만 보여 준다(적 필드 보기 버튼으로 전체)
+  const mineOnly = () => !B && ui.screen === 'play' && R && !ui.showFoe;
+  const viewY = () => (mineOnly() ? CS * PLAYER_ROW : 0);
+  const viewH = () => (mineOnly() ? CS * (ROWS - PLAYER_ROW) + M * 2 : H);
   function fitBoard() {
-    const wrap = $('boardwrap'), r = wrap.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    kScale = Math.max(0.4, Math.min((r.width - 24) / W, (r.height - 4) / H));
-    canvas.style.width = Math.round(W * kScale) + 'px'; canvas.style.height = Math.round(H * kScale) + 'px';
-    canvas.width = Math.round(W * kScale * DPR); canvas.height = Math.round(H * kScale * DPR);
+    const wrap = $('boardwrap'), scr = $('scr-play');
+    scr.classList.toggle('prep', !B && !ui.showFoe);
+    scr.classList.toggle('foeview', !B && !!ui.showFoe);
+    const vh = viewH();
+    if (mineOnly()) {
+      const w = wrap.getBoundingClientRect().width;
+      if (!w) return;
+      kScale = Math.max(0.4, Math.min((w - 24) / W, (scr.clientHeight * (scr.clientHeight < 640 ? 0.3 : 0.36)) / vh));
+      wrap.style.height = Math.round(vh * kScale + 6) + 'px';
+    } else {
+      wrap.style.height = '';
+      const r = wrap.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      kScale = Math.max(0.4, Math.min((r.width - 24) / W, (r.height - 4) / vh));
+    }
+    canvas.style.width = Math.round(W * kScale) + 'px'; canvas.style.height = Math.round(vh * kScale) + 'px';
+    canvas.width = Math.round(W * kScale * DPR); canvas.height = Math.round(vh * kScale * DPR);
     draw();
   }
-  function cellFromPoint(x, y) { const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale); }
+  function cellFromPoint(x, y) { const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale + viewY()); }
   canvas.addEventListener('pointerdown', (e) => {
     if (B || ui.screen !== 'play') return;
     const c = cellFromPoint(e.clientX, e.clientY);
@@ -1122,10 +1139,11 @@
   }
   function draw() {
     if (ui.screen !== 'play' || !R) return;
-    const k = kScale * DPR;
+    const k = kScale * DPR, vy = viewY();
     ctx.setTransform(k, 0, 0, k, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.save();
+    ctx.translate(0, -vy);
     if (B && B.vfx.shake > 0.2) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
     ctx.drawImage(boardBg(R.act), 0, 0, W, H);
     const now = performance.now();
@@ -1153,7 +1171,8 @@
           return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : null, dash: can }) }; }),
       ].sort((a, b) => a.y - b.y);
       for (const it of items) it.f();
-      if (!R.enemies.length && R.mode === 'rest') { ctx.fillStyle = 'rgba(35,42,59,.55)'; ctx.font = "15px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center'; ctx.fillText(R.node ? NODE[R.node.k].name + ' · 전투 없음' : '', W / 2, M + CS * 1.5); }
+      if (vy) { const L = ACT_LOOK[R.act] || ACT_LOOK[1]; ctx.fillStyle = L.frame; ctx.fillRect(0, vy, W, M); ctx.fillStyle = INK; ctx.fillRect(M, vy + M - 1.5, CS * COLS, 3); }
+      if (!R.enemies.length && R.mode === 'rest' && !vy) { ctx.fillStyle = 'rgba(35,42,59,.55)'; ctx.font = "15px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center'; ctx.fillText(R.node ? NODE[R.node.k].name + ' · 전투 없음' : '', W / 2, M + CS * 1.5); }
     }
     ctx.restore();
   }
@@ -1339,6 +1358,7 @@
       if (m === 'close' || m === 'relics') return closeSheet();
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
+        <p><b>상점 단계</b> 칸에 들어가면 내 진영과 상점 세 줄이 보입니다. 적 배치는 ‘적 필드 보기’로 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
         <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 종이 · 2 청동 · 3 은 · 4 금 · 5 루비. 딱지 테두리 색은 클래스(전사 파랑 · 궁수 초록 · 마법사 보라).</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>

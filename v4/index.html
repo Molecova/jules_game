@@ -84,8 +84,24 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 @keyframes pulse { 50% { box-shadow: inset 0 2px 3px rgba(0,0,0,.35), 0 0 0 3px var(--gold); } }
 
 /* 상점 */
-.shop { flex: none; height: 176px; padding: 8px var(--g) 0; display: flex; flex-direction: column; gap: 6px; }
-.tabs { display: flex; gap: 4px; align-items: stretch; height: 30px; flex: none; }
+.shop { flex: 1 1 auto; min-height: 0; padding: 6px var(--g) 0; display: flex; flex-direction: column; gap: 5px; position: relative; }
+.shophead { flex: none; display: flex; align-items: center; gap: 6px; height: 30px; }
+.shophead .gbox { height: 30px; }
+.shophead .foebtn { margin-left: auto; width: auto; height: 30px; padding: 0 10px; font-size: 12px; white-space: nowrap; }
+.shophead .foebtn.on { background: var(--foe); color: #fff; }
+.srows { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 7px; padding-top: 4px; }
+.srow { display: flex; gap: 5px; min-height: 0; }
+.srow .cards { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.rtools { flex: none; width: 38px; display: flex; flex-direction: column; gap: 3px; }
+.rtools b { font-size: 10px; text-align: center; white-space: nowrap; position: relative; }
+.rtools b.ready::after { content: "★2"; position: absolute; top: -6px; right: -4px; font-size: 8px; background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 2px; }
+.rtools button { flex: 1; min-height: 0; border: 2px solid var(--ink); border-radius: 5px; background: var(--card); font-size: 10px; font-weight: 700; padding: 0; display: flex; align-items: center; justify-content: center; gap: 1px; line-height: 1; box-shadow: 1px 1px 0 var(--ink); }
+.rtools .lk.on { background: var(--ink); color: var(--paper); }
+.shop > .detail { position: absolute; left: var(--g); right: var(--g); top: 42px; bottom: 0; z-index: 5; }
+#scr-play.prep .boardwrap { flex: 0 0 auto; }
+#scr-play.foeview .boardwrap { flex: 1 1 auto; }
+#scr-play.foeview .srows, #scr-play.foeview .shop > .detail { display: none; }
+#scr-play.foeview .shop { flex: none; }
 .tab { position: relative; flex: 1; border: 2px solid var(--ink); border-radius: 6px 6px 0 0; border-bottom-width: 0; background: var(--paper2); font-weight: 700; font-size: 12px; }
 .tab.on { background: var(--card); }
 .tab .dot { position: absolute; top: -5px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--stamp); color: #fff; font: 700 9px/16px var(--body); border: 1.5px solid var(--ink); padding-inline: 2px; }
@@ -103,7 +119,6 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .tool { flex: none; width: 44px; border: 2px solid var(--ink); border-radius: 6px; background: var(--card); font-size: 11px; font-weight: 700; display: grid; place-items: center; line-height: 1.05; box-shadow: 2px 2px 0 var(--ink); }
 .tool.on { background: var(--ink); color: var(--paper); }
 .tool small { font-weight: 400; font-size: 10px; }
-.row { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .card { position: relative; border: 2px solid var(--ink); border-radius: 7px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); padding: 3px 0 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; box-shadow: 2px 3px 0 var(--ink); min-width: 0; }
 /* 종류별 카드 모양: 유닛=둥근 종이 카드, 스킬=육각 무늬와 점선 안쪽 테, 아이템=리벳 박힌 금속판 */
 .card.k-unit { border-radius: 14px; }
@@ -117,7 +132,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .card.tier5, .pickcard.tier5 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 12px rgba(255,230,200,.8); }
 .card.k-skill.tier3 { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, #eef2f5, var(--t3)); }
 .card img { width: 100%; height: 100%; object-fit: contain; min-height: 0; pointer-events: none; }
-.card b { font-size: 11px; line-height: 1.15; padding: 2px 2px 3px; background: rgba(255,253,246,.85); border-top: 1.5px solid rgba(35,42,59,.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card b { font-size: 10.5px; line-height: 1.15; padding: 2px 2px 3px; background: rgba(255,253,246,.85); border-top: 1.5px solid rgba(35,42,59,.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cost { position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 2px solid var(--ink); font: 700 11px/18px var(--body); text-align: center; }
 .card .cl { position: absolute; top: 9px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--cc); color: #fff; font: 400 9px/16px var(--display); border: 1.5px solid var(--ink); }
 .card .own { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--ink); white-space: nowrap; background: var(--paper2); border-radius: 4px; padding: 0 4px; }
@@ -329,7 +344,11 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 @keyframes stamp { 15% { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -70%) rotate(-12deg) scale(1); } }
 
 @media (max-height: 700px) {
-  .shop { height: 152px; }
+  .srows { gap: 9px; padding-top: 6px; }
+  .card .cost { width: 18px; height: 18px; top: -6px; left: -5px; font-size: 10px; line-height: 14px; }
+  .card .own { display: none; }
+  .card b { font-size: 10px; padding: 1px 1px 2px; }
+  .card .cl { width: 14px; height: 14px; font-size: 8px; line-height: 14px; top: 3px; }
   .hud { height: 40px; }
   .actions .btn { min-height: 40px; }
   .peek { height: 146px; }
@@ -386,19 +405,20 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
       <div class="syn" id="syn"></div>
       <div id="prepUI" style="display:contents">
         <div class="benchbox" id="benchbox">
-          <div class="lbl"><span>창고 <b id="benchN">0/8</b> <span class="intpill" id="sint">이자 +0</span></span><span id="benchHint">탭해서 고르기</span></div>
+          <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint">탭해서 고르기</span></div>
           <div class="bench" id="bench"></div>
         </div>
         <div class="shop" id="shop">
-          <div class="tabs" id="tabsRow">
+          <div class="shophead">
             <button class="gbox" id="gbox" aria-label="보유 골드"><b class="coin" id="sgold">0</b></button>
-            <button class="tab on" data-tab="unit">유닛</button>
-            <button class="tab" data-tab="skill">스킬</button>
-            <button class="tab" data-tab="item">아이템</button>
-            <button class="tool" id="lockBtn" aria-label="이 줄 잠금">잠금</button>
-            <button class="tool" id="rollBtn" aria-label="이 줄 다시 뽑기"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><small id="rollCost">1골드</small></button>
+            <span class="intpill" id="sint">다음 이자 +0</span>
+            <button class="tool foebtn" id="foeBtn">적 필드 보기</button>
           </div>
-          <div class="row" id="row"></div>
+          <div class="srows" id="srows">
+            <div class="srow" data-k="unit"><div class="cards" data-row="unit"></div><div class="rtools"><b data-lbl="unit">유닛</b><button class="rb" data-roll="unit" aria-label="유닛 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="unit">1</small></button><button class="lk" data-lock="unit" aria-label="유닛 줄 잠금">잠금</button></div></div>
+            <div class="srow" data-k="skill"><div class="cards" data-row="skill"></div><div class="rtools"><b data-lbl="skill">스킬</b><button class="rb" data-roll="skill" aria-label="스킬 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="skill">1</small></button><button class="lk" data-lock="skill" aria-label="스킬 줄 잠금">잠금</button></div></div>
+            <div class="srow" data-k="item"><div class="cards" data-row="item"></div><div class="rtools"><b data-lbl="item">아이템</b><button class="rb" data-roll="item" aria-label="아이템 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="item">1</small></button><button class="lk" data-lock="item" aria-label="아이템 줄 잠금">잠금</button></div></div>
+          </div>
           <div class="detail" id="detail" hidden></div>
         </div>
         <div class="actions">
