@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>카드 원정대 UI 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 문서: 문제점 → 상점 시안 3 → 전투 시안 2 → 추천. 폰 화면은 게임 고유의 종이 톤 그대로, 문서 바탕만 테마를 따른다. */
+:root {
+  --bg: #efeee9; --surface: #fbfaf6; --fg: #1f2329; --muted: #626770; --line: #d8d5cc; --accent: #d6335a;
+  --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* 폰 내부(게임) 색: 문서 테마와 무관하게 고정 */
+  --paper: #f4eedf; --paper2: #ebe2cc; --card: #fffdf6; --ink: #232a3b; --gmuted: #6d6a60; --gold: #f5c400; --golddk: #b98f00; --stamp: #d6335a; --mine: #2f6fd6; --foe: #e8436b; --ok: #2e9e6b;
+  --t1: #f7f5ef; --t2: #a6dcae; --t3: #9cc3f2; --t4: #c7aaf0; --t5: #f6d64e;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #17191d; --surface: #202328; --fg: #eceae4; --muted: #a3a7ae; --line: #34383f; --accent: #ff7a98; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #17191d; --surface: #202328; --fg: #eceae4; --muted: #a3a7ae; --line: #34383f; --accent: #ff7a98; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); padding: 28px 16px 64px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 40px; }
+header { display: grid; gap: 8px; max-width: 70ch; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+h1 { margin: 0; font: 400 clamp(30px, 5vw, 44px)/1.1 var(--display); text-wrap: balance; }
+h2 { margin: 0 0 4px; font: 400 26px/1.2 var(--display); }
+h3 { margin: 0; font: 700 18px/1.3 var(--body); }
+p { margin: 0; }
+.lead { color: var(--muted); }
+section { display: grid; gap: 18px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; align-items: start; }
+.prop { display: grid; gap: 12px; justify-items: center; }
+.prop .txt { width: 100%; max-width: 360px; display: grid; gap: 6px; }
+.prop .tag { display: inline-flex; gap: 8px; align-items: baseline; }
+.prop .tag b { font: 400 22px var(--display); color: var(--accent); }
+.prop ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 3px; }
+.prop ul li b { color: var(--fg); font-weight: 600; }
+.issues { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+.issue { display: grid; gap: 12px; justify-items: center; }
+.issue img { width: 300px; max-width: 100%; border-radius: 22px; border: 6px solid #15191d; }
+.issue ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; max-width: 360px; }
+.issue ol li::marker { color: var(--accent); font-weight: 700; }
+.reco { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 18px 20px; display: grid; gap: 8px; max-width: 80ch; }
+
+/* ===== 폰 프레임(390×844를 축소) ===== */
+.phone-wrap { width: calc(390px * var(--s)); height: calc(844px * var(--s)); --s: .78; flex: none; max-width: 100%; }
+.phone { width: 390px; height: 844px; transform: scale(var(--s)); transform-origin: 0 0; border-radius: 34px; box-shadow: 0 0 0 9px #15191d, 0 20px 40px rgba(0,0,0,.25); overflow: hidden; position: relative;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='.6' fill='%23d9cfb5'/%3E%3C/svg%3E"); color: var(--ink); font: 13px/1.35 var(--body); display: flex; flex-direction: column; padding: 12px 0 10px; }
+@media (max-width: 380px) { .phone-wrap { --s: .7; } }
+.phone * { box-sizing: border-box; }
+.g { padding-inline: 16px; }
+.hud { display: flex; align-items: center; gap: 8px; height: 44px; flex: none; }
+.menu { width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 6px; background: var(--card); display: grid; place-items: center; flex: none; }
+.menu i, .menu i::before, .menu i::after { display: block; width: 13px; height: 2px; background: var(--ink); position: relative; content: ""; }
+.menu i::before { position: absolute; top: -5px; } .menu i::after { position: absolute; top: 5px; }
+.where { flex: 1; min-width: 0; line-height: 1.15; }
+.where b { display: block; font: 400 17px var(--display); }
+.where span { font-size: 11px; color: var(--gmuted); }
+.flame { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffe2c2; color: #a8501a; border: 1.5px solid #e0a070; }
+canvas.board { display: block; margin: 0 auto; }
+.coin { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.coin::before { content: ""; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 1.5px solid var(--ink); }
+.btn { border: 2px solid var(--ink); border-radius: 8px; background: var(--card); font: 700 13px var(--body); color: var(--ink); display: grid; place-items: center; }
+.go { background: var(--stamp); color: #fff; font: 400 20px var(--display); letter-spacing: .04em; border-radius: 10px; box-shadow: 0 3px 0 var(--ink); }
+.bench { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 4px; border-radius: 8px; background: #c9a77d; box-shadow: inset 0 2px 0 rgba(0,0,0,.18); }
+.bench i { aspect-ratio: 1; border-radius: 6px; background: #b8946a; box-shadow: inset 0 2px 3px rgba(0,0,0,.25); display: grid; place-items: center; }
+.bench i img { width: 100%; height: 100%; object-fit: contain; }
+.lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--gmuted); }
+.lbl b { color: var(--ink); }
+
+/* 시너지 칩 */
+.syn { display: flex; gap: 4px; align-items: center; flex: none; overflow: hidden; }
+.sc { flex: none; height: 28px; min-width: 28px; padding: 0 6px; border: 2px solid var(--c); border-radius: 7px; background: var(--card); color: var(--c); display: inline-flex; align-items: center; gap: 4px; font: 700 11px var(--body); white-space: nowrap; }
+.sc b { font: 400 13px var(--display); }
+.sc.on { background: var(--c); color: #fff; border-color: var(--ink); }
+.sc small { font-size: 10px; color: inherit; opacity: .85; }
+.sc.dim { opacity: .75; border-style: dashed; padding: 0 5px; }
+.synall { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--gmuted); white-space: nowrap; }
+
+/* 카드 공통 */
+.cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.cd { position: relative; border: 2px solid var(--ink); border-radius: 8px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); display: grid; justify-items: center; align-content: start; overflow: hidden; }
+.cd .pr { width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.cd .pr img { width: 86%; height: 86%; object-fit: contain; }
+.cd .nm { width: 100%; text-align: center; font: 700 10.5px/1.2 var(--body); padding: 2px 1px 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.3px; }
+.cd .co { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 1.5px solid var(--ink); font: 700 10px/14px var(--body); text-align: center; }
+.cd .tr { display: flex; gap: 3px; justify-content: center; padding: 0 2px 4px; flex-wrap: wrap; }
+.cd .tr i { font: 700 8.5px/1.25 var(--body); font-style: normal; color: var(--c); white-space: nowrap; }
+.cd .tr i::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--c); margin-right: 2px; vertical-align: 1px; }
+.cd.unit { border-color: var(--cc); box-shadow: 0 0 0 1.5px var(--ink); border-width: 3px; }
+.cd.unit::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--cc); }
+.cd.ready { box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px var(--gold), 0 0 12px 3px rgba(245,196,0,.6); }
+.cd .own { position: absolute; top: 3px; right: 3px; font: 700 9px/1 var(--body); background: var(--stamp); color: #fff; border-radius: 4px; padding: 2px 3px; }
+.cd.skill { border-radius: 4px; }
+.cd.item { border-radius: 3px; border-width: 2.5px; }
+.cd .sub { font-size: 8.5px; color: var(--gmuted); line-height: 1.2; text-align: center; padding: 0 3px 4px; }
+
+/* 시안 A */
+.econ { display: flex; align-items: center; gap: 0; height: 40px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); overflow: hidden; flex: none; }
+.econ > * { height: 100%; display: flex; align-items: center; padding: 0 10px; gap: 6px; }
+.econ > * + * { border-left: 1.5px solid var(--line, #d9cfb5); }
+.econ .gold { font-size: 16px; }
+.econ .int { font-size: 11px; color: var(--gmuted); font-weight: 600; }
+.econ .lv { flex: 1; min-width: 0; }
+.econ .lv b { font: 400 13px var(--display); background: var(--ink); color: var(--paper); border-radius: 4px; padding: 1px 6px; }
+.xpbar { flex: 1; height: 7px; border-radius: 4px; background: var(--paper2); overflow: hidden; border: 1px solid var(--ink); }
+.xpbar i { display: block; height: 100%; background: var(--mine); }
+.econ .up { background: #e8f0fd; font-weight: 700; color: var(--mine); font-size: 12px; }
+.econ .eye { font-size: 11px; font-weight: 700; }
+.shrow { display: grid; gap: 3px; }
+.shhead { display: flex; align-items: center; gap: 8px; font: 700 11px var(--body); color: var(--gmuted); }
+.shhead .sp { flex: 1; height: 1px; background: var(--line, #d9cfb5); }
+.shhead .mini { border: 1.5px solid var(--ink); border-radius: 999px; padding: 0 7px; color: var(--ink); background: var(--card); font-size: 10.5px; line-height: 18px; }
+
+/* 시안 B */
+.seg { display: flex; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper2); }
+.seg span { flex: 1; text-align: center; font: 700 12.5px/30px var(--body); position: relative; }
+.seg span.on { background: var(--ink); color: var(--paper); }
+.seg span .dot { position: absolute; top: 2px; right: 6px; font-size: 8px; background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 3px; line-height: 13px; }
+.big .cd { min-height: 236px; }
+.big .cd .pr img { width: 92%; height: 92%; }
+.big .cd .nm { font-size: 12px; padding-top: 4px; }
+.big .cd .desc { font-size: 9.5px !important; }
+.big .cd .desc { font-size: 8.5px; line-height: 1.25; color: var(--ink); text-align: center; padding: 0 4px 5px; }
+
+/* 시안 C: 시너지 레일 */
+.railwrap { display: grid; grid-template-columns: 80px 1fr; gap: 6px; align-items: start; }
+.rail { display: grid; gap: 4px; }
+.rail .r { display: grid; grid-template-columns: 22px 1fr; align-items: center; gap: 3px; height: 26px; padding: 0 3px; border-radius: 6px; border: 1.5px solid var(--c); background: var(--card); }
+.rail .r b { width: 20px; height: 20px; border-radius: 5px; background: var(--c); color: #fff; font: 400 11px/20px var(--display); text-align: center; }
+.rail .r small { font: 700 10px/1.05 var(--body); color: var(--ink); white-space: nowrap; overflow: hidden; }
+.rail .r small em { display: block; font-style: normal; color: var(--gmuted); font-weight: 600; font-size: 9px; }
+.rail .r.on { background: var(--c); } .rail .r.on b { background: #fff; color: var(--c); } .rail .r.on small, .rail .r.on small em { color: #fff; }
+.rail .r.dim { border-style: dashed; opacity: .8; }
+.rollfab { position: absolute; right: -30px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font: 700 9px/1 var(--body); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+
+/* 전투 공통 */
+.tug { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.tug .bar { height: 14px; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--paper2); display: flex; }
+.tug .bar.l { justify-content: flex-end; } .tug .bar i { display: block; height: 100%; }
+.tug .time { font: 400 20px var(--display); }
+.tug small { font-size: 10px; color: var(--gmuted); display: block; text-align: center; font-weight: 700; }
+.speed { display: flex; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+.speed span { width: 34px; text-align: center; font: 700 12px/26px var(--body); background: var(--card); }
+.speed span.on { background: var(--ink); color: var(--paper); }
+.strip { display: flex; gap: 6px; justify-content: center; }
+.ring { position: relative; width: 62px; height: 76px; display: grid; justify-items: center; align-content: start; }
+.ring svg { position: absolute; inset: 0 0 auto 0; width: 62px; height: 62px; }
+.ring img { width: 48px; height: 48px; margin-top: 7px; position: relative; }
+.ring small { font: 700 10px/1 var(--body); margin-top: 8px; white-space: nowrap; }
+.ring.dead { opacity: .35; }
+.meter { display: grid; gap: 4px; }
+.meter .m { display: grid; grid-template-columns: 30px 96px 1fr 54px; align-items: center; gap: 6px; height: 30px; }
+.meter .m img { width: 30px; height: 30px; }
+.meter .m b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter .m .bar { height: 12px; border-radius: 6px; background: var(--paper2); border: 1px solid var(--ink); overflow: hidden; }
+.meter .m .bar i { display: block; height: 100%; background: var(--foe); }
+.meter .m .v { font: 700 11px var(--body); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.meter .m .v small { display: block; font-weight: 600; color: var(--gmuted); font-size: 9px; }
+.crown { font: 700 8px/1 var(--body); background: var(--gold); border: 1px solid var(--ink); border-radius: 3px; padding: 1px 3px; margin-left: 3px; vertical-align: 1px; }
+.bossbar { border: 2px solid var(--ink); border-radius: 8px; background: var(--card); padding: 4px 8px; display: grid; gap: 3px; }
+.bossbar b { font: 400 14px var(--display); }
+.bossbar .bar { height: 10px; border-radius: 5px; background: var(--paper2); overflow: hidden; border: 1px solid var(--ink); }
+.bossbar .bar i { display: block; height: 100%; background: var(--foe); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">카드 원정대 v4 · UI 개선 시안</span>
+    <h1>상점과 전투 화면, 이렇게 바꿔 보면 어떨까요</h1>
+    <p class="lead">지금 화면에서 걸리는 점을 먼저 짚고, 상점 시안 3개와 전투 시안 2개를 실제 딱지·칩 그림으로 그렸습니다. 모두 390×844 폰 화면 한 장에 들어가는 크기입니다.</p>
+  </header>
+
+  <section>
+    <h2>지금 화면에서 걸리는 점</h2>
+    <div class="issues">
+      <div class="issue"><img src="v4-ui/cur-shop.png" alt="현재 상점 화면">
+        <ol>
+          <li>시너지 태그가 <b>유닛 그림을 덮어</b> 누구인지 안 보임. 유닛 줄만 높이면 균형이 깨짐.</li>
+          <li>오른쪽 <b>줄마다 붙은 유닛/↻/잠금 기둥</b>이 폭의 15%를 먹고 표처럼 보임.</li>
+          <li>동전·"1장"·클래스 원이 카드 모서리에 몰리고, 동전이 윗줄 카드에 걸침.</li>
+          <li>골드·이자·적 필드·레벨업·경험치가 <b>네 군데로 흩어짐</b>. 경험치는 맨 위, 레벨업 버튼은 맨 아래.</li>
+          <li>모든 요소에 굵은 테두리와 그림자 → 무엇이 중요한지(전투 시작) 덜 보임.</li>
+          <li>이름이 잘림(견습 마…, 견습 지…).</li>
+        </ol>
+      </div>
+      <div class="issue"><img src="v4-ui/cur-battle.png" alt="현재 전투 화면">
+        <ol>
+          <li>판 <b>위아래로 큰 빈 공간</b>. 적 목록은 위에 작게, 아군 목록은 아래 두 줄로 나뉨.</li>
+          <li>전투 중엔 쓸 일이 없는 <b>시너지 줄</b>이 그대로 자리를 차지.</li>
+          <li><b>누가 이기고 있는지</b>, 몇 초째인지 한눈에 안 보임(위쪽엔 레벨·경험치가 남아 있음).</li>
+          <li>배속·결과 바로 보기·기록 버튼이 같은 무게라 주 조작이 흐림.</li>
+          <li>아군 이름이 잘리고(견습…), 피해 숫자가 겹쳐 MISS MISS처럼 보임.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>상점 시안</h2>
+    <div class="row">
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="shopA"></div></div>
+        <div class="txt"><span class="tag"><b>A</b><h3>정돈형</h3></span>
+          <ul><li><b>경제 한 줄</b>: 골드·이자 | 레벨·경험치·레벨업 | 적 필드를 한 막대에.</li>
+          <li><b>줄 머리표</b>: 기둥 대신 각 줄 위에 얇은 "유닛 ─ ↻1 · 잠금". 카드가 폭을 다 씀.</li>
+          <li>유닛 카드는 <b>위쪽 클래스 띠 + 그림 + 이름 + 시너지 두 줄 글씨</b>. 그림을 덮지 않음.</li>
+          <li>켜진 시너지는 이름까지, 나머지는 글자 칩. 맨 아래 <b>전투 시작 하나만 크게</b>.</li></ul></div></div>
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="shopB"></div></div>
+        <div class="txt"><span class="tag"><b>B</b><h3>큰 카드 서랍형</h3></span>
+          <ul><li>상점은 <b>한 종류씩 크게</b>(유닛/스킬/아이템 탭, ★2 가능하면 탭에 표시).</li>
+          <li>카드에 <b>설명 한 줄까지</b> 들어가 정보창을 덜 열어도 됨.</li>
+          <li>판·창고가 넉넉해지고 화면이 가장 차분함.</li>
+          <li>대신 세 줄을 한눈에 보던 장점은 줄어듦(탭 전환 필요).</li></ul></div></div>
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="shopC"></div></div>
+        <div class="txt"><span class="tag"><b>C</b><h3>시너지 레일형</h3></span>
+          <ul><li>시너지를 <b>판 왼쪽 세로 레일</b>로(롤토체스처럼). 이름·단계가 늘 보이고 줄 하나가 사라짐.</li>
+          <li>상점 세 줄은 그대로, 다시 뽑기는 <b>줄 끝 동그란 버튼</b>으로.</li>
+          <li>레벨·경험치는 레벨업 버튼 안에.</li>
+          <li>판이 조금 좁아짐(내 진영 세 줄이라 충분).</li></ul></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>전투 시안</h2>
+    <div class="row">
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="battleA"></div></div>
+        <div class="txt"><span class="tag"><b>A</b><h3>스코어보드형</h3></span>
+          <ul><li>맨 위 <b>줄다리기 막대</b>: 아군 전체 체력 vs 적 전체 체력, 가운데 시간.</li>
+          <li>판을 <b>최대 크기</b>로, 시너지 줄과 적 목록은 뺌(적은 판에서 보임).</li>
+          <li>아래 <b>딱지 한 줄</b>: 체력 고리 + 마나 점, 쓰러지면 흐려짐.</li>
+          <li>배속은 ×1·×2·×3 버튼 묶음, 건너뛰기·기록은 작게.</li></ul></div></div>
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="battleB"></div></div>
+        <div class="txt"><span class="tag"><b>B</b><h3>실시간 딜 미터형</h3></span>
+          <ul><li>아래에 <b>실시간 피해 순위</b>(입힌 피해 막대 + 받은 피해·회복 숫자, MVP 왕관).</li>
+          <li>보스전이면 위에 <b>보스 체력 막대</b>와 패턴 이름.</li>
+          <li>지금의 "기록" 창을 열 필요가 없어짐.</li>
+          <li>판은 A보다 조금 작음.</li></ul></div></div>
+    </div>
+  </section>
+
+  <div class="reco">
+    <span class="eyebrow">추천</span>
+    <h3>상점 A + 전투 A, 여기에 C의 시너지 레일은 선택</h3>
+    <p>A는 지금 구조(내 진영 + 상점 세 줄)를 유지하면서 흩어진 정보만 모아 완성도가 가장 빨리 올라갑니다. 시너지가 더 중요해지면 C의 레일을 얹고, 전투는 A의 줄다리기 막대로 승부가 한눈에 보이게 하는 조합을 제안합니다. 마음에 드는 시안(섞어도 됨)을 골라 주시면 그대로 게임에 옮기겠습니다.</p>
+  </div>
+</div>
+
+<script src="../game/data.js"></script>
+<script src="../game/art.js"></script>
+<script src="../v4/data4.js"></script>
+<script>
+(() => {
+  'use strict';
+  const V = window.V4, ART = window.ART;
+  const def = (k, id) => V.DEF[k + ':' + id];
+  const CLS = V.CLS, TR = V.TRAITS;
+  const wpArt = (d) => ({ id: 'v4' + d.id, shape: d.shape, cls: CLS[d.cls].art, tier: d.t >= 3 ? 3 : d.t });
+  const lo = (u) => ({ level: 1, skills: (u.sk || []).map((s) => { const d = def('skill', s[0]); return { col: CLS[d.cls].col, icon: d.icon || 'star', up: s[1] > 1 }; }), weapon: u.it ? Object.assign(wpArt(def('item', u.it)), { up: false }) : null });
+  const disc = (id, l, px = 90) => ART.discURL(id, 0, def('unit', id).cls, l || null, px);
+  const chip = (id, px = 60) => { const d = def('skill', id); return ART.chipURL(CLS[d.cls].col, d.icon || 'star', false, px); };
+  const weapon = (id, px = 60) => ART.weaponURL(wpArt(def('item', id)), false, px);
+  const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content; };
+
+  // 예시 상태(2막 1층, 라운드 7)
+  const BOARD = [
+    { id: 'squire', x: 1, y: 3, star: 2, sk: [['cross', 2], ['bash', 1]], it: 'buckler' }, { id: 'shieldman', x: 3, y: 3, star: 1, sk: [['wall', 1]] },
+    { id: 'archer', x: 1, y: 5, star: 2, sk: [['pierce', 1]], it: 'shortbow' }, { id: 'acolyte', x: 2, y: 5, star: 1, sk: [['light', 1]] }, { id: 'apprentice', x: 3, y: 5, star: 1, sk: [['fire', 1]] },
+  ];
+  const BENCH = [['unit', 'merc'], ['skill', 'whirl'], ['item', 'venombow'], ['unit', 'monk']];
+  const SHOP = { unit: ['merc', 'apprentice', 'archer', 'acolyte', 'monk'], skill: ['cross', 'bleedcut', 'frostnova', 'healarrow', 'frostnova'], item: ['wand', 'buckler', 'longbow', 'wand', 'twinblades'] };
+  const OWNED = { merc: 1, apprentice: 1, archer: 2, acolyte: 1, monk: 1, buckler: 1 };
+  const ENEMIES = [{ id: 'wraith', x: 2, y: 2 }, { id: 'wraith', x: 4, y: 2 }, { id: 'skel', x: 1, y: 1 }, { id: 'skelarch', x: 3, y: 0 }];
+
+  // ---------- 판 그리기 ----------
+  const CS = 64, M = 8;
+  function drawBoard(cv, opt) {
+    const rows = opt.rows === 'mine' ? [3, 4, 5] : [0, 1, 2, 3, 4, 5], W = CS * 5 + M * 2, H = CS * rows.length + M * 2;
+    const k = opt.w / W; cv.width = opt.w * 2; cv.height = H * k * 2; cv.style.width = opt.w + 'px'; cv.style.height = H * k + 'px';
+    const c = cv.getContext('2d'); c.scale(2 * k, 2 * k);
+    c.fillStyle = '#3b3848'; c.fillRect(0, 0, W, H); c.fillStyle = '#4a4658'; c.fillRect(M, M, CS * 5, CS * rows.length);
+    rows.forEach((r, ri) => { for (let x = 0; x < 5; x++) {
+      const mine = r >= 3; c.fillStyle = mine ? ((x + r) % 2 ? '#d5d9e4' : '#c8cddb') : ((x + r) % 2 ? '#ddd0dc' : '#cfc0cf');
+      const px = M + x * CS + 2, py = M + ri * CS + 2; c.fillRect(px, py, CS - 4, CS - 4);
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(px, py, CS - 4, 3); c.fillStyle = 'rgba(35,42,59,.15)'; c.fillRect(px, py + CS - 7, CS - 4, 3);
+    } });
+    c.strokeStyle = '#232a3b'; c.lineWidth = 3; c.strokeRect(M, M, CS * 5, CS * rows.length);
+    if (rows.length === 6) { c.setLineDash([10, 6]); c.beginPath(); c.moveTo(M, M + CS * 3); c.lineTo(M + CS * 5, M + CS * 3); c.stroke(); c.setLineDash([]); }
+    const at = (x, y) => [M + x * CS + CS / 2, M + rows.indexOf(y) * CS + CS / 2];
+    const r = 23;
+    for (const e of opt.enemies || []) { if (!rows.includes(e.y)) continue; const [x, y] = at(e.x, e.y); ART.drawToken(c, ART.token(e.id, 1, r), x, y, r, {}); if (opt.hp) bar(c, x, y, r, e.hp ?? 0.6, '#e8436b'); }
+    for (const u of opt.units || []) {
+      const [x, y] = at(u.bx ?? u.x, u.by ?? u.y); const cls = def('unit', u.id).cls;
+      ART.drawToken(c, ART.token(u.id, 0, r, 2, cls), x, y, r, {}); ART.drawLoadout(c, x, y, r, lo(u));
+      if (u.star > 1) { c.save(); c.lineWidth = 3; c.strokeStyle = '#c9d1dc'; c.beginPath(); c.arc(x, y, r + 1, 0, 7); c.stroke(); for (let s = 0; s < u.star; s++) { ART.star(c, x + (s - (u.star - 1) / 2) * 10, y - r - 1, 5.5); c.fillStyle = '#f5c400'; c.fill(); c.strokeStyle = '#232a3b'; c.lineWidth = 1.2; c.stroke(); } c.restore(); }
+      if (opt.hp) bar(c, x, y, r, u.hp ?? 0.8, '#2e9e6b');
+    }
+    for (const f of opt.floats || []) { const [x, y] = at(f.x, f.y); c.font = "16px 'Black Han Sans', sans-serif"; c.textAlign = 'center'; c.lineWidth = 4; c.strokeStyle = '#232a3b'; c.strokeText(f.t, x + (f.dx || 0), y - 30); c.fillStyle = f.c || '#fffdf7'; c.fillText(f.t, x + (f.dx || 0), y - 30); }
+    for (const t of opt.tiles || []) { const [x, y] = at(t.x, t.y); c.fillStyle = 'rgba(232,100,59,.35)'; c.fillRect(x - CS / 2 + 3, y - CS / 2 + 3, CS - 6, CS - 6); }
+  }
+  function bar(c, x, y, r, v, col) { const w = r * 2 + 4; c.fillStyle = '#232a3b'; c.fillRect(x - w / 2 - 1.5, y + r + 4.5, w + 3, 8); c.fillStyle = '#fffdf7'; c.fillRect(x - w / 2, y + r + 6, w, 5); c.fillStyle = col; c.fillRect(x - w / 2, y + r + 6, w * v, 5); }
+
+  // ---------- 조각 ----------
+  const hud = (title, sub, right = '<span class="flame">3연승</span>') => `<div class="hud g"><span class="menu"><i></i></span><div class="where"><b>${title}</b><span>${sub}</span></div>${right}</div>`;
+  const bench = () => `<div class="bench">${Array.from({ length: 8 }, (_, i) => { const b = BENCH[i]; if (!b) return '<i></i>'; const src = b[0] === 'unit' ? disc(b[1], null, 70) : b[0] === 'skill' ? chip(b[1], 44) : weapon(b[1], 44); return `<i><img src="${src}" alt=""></i>`; }).join('')}</div>`;
+  const tierBg = (t) => `--tc:var(--t${t})`;
+  function card(kind, id, opt = {}) {
+    const d = def(kind, id), own = OWNED[id] || 0, ready = own >= 2;
+    const pr = kind === 'unit' ? disc(id, null, 90) : kind === 'skill' ? chip(id, 60) : weapon(id, 60);
+    const trs = kind === 'unit' ? `<div class="tr">${d.traits.map((t) => `<i style="--c:${TR[t].col}">${TR[t].name.replace(/ /g, '')}</i>`).join('')}</div>` : '';
+    const desc = opt.desc ? `<div class="desc">${kind === 'unit' ? d.trait : d.desc}</div>` : '';
+    return `<div class="cd ${kind}${ready ? ' ready' : ''}" style="${tierBg(d.t)};--cc:${CLS[d.cls].col}"><span class="co">${d.t}</span>${own ? `<span class="own">${ready ? '★2!' : own + '장'}</span>` : ''}<div class="pr"><img src="${pr}" alt=""></div><div class="nm">${d.name}</div>${trs}${desc}</div>`;
+  }
+  // 시너지 칩: 켜진 것은 이름까지
+  const SYN = [['novice', 3, 3, true], ['guardian', 2, 4, true], ['wild', 2, 4, true], ['knight', 1, 2], ['arcane', 0, 2], ['mentor', 1, 2]];
+  const CLSYN = [['war', 2, 4, true], ['mag', 2, 4, true], ['arc', 1, 2]];
+  function synChips(withName) {
+    const a = [...SYN.filter((s) => s[1]).map(([k, n, m, on]) => ({ c: TR[k].col, s: TR[k].short, nm: TR[k].name, n, m, on })), ...CLSYN.map(([k, n, m, on]) => ({ c: CLS[k].col, s: CLS[k].short, nm: CLS[k].name, n, m, on }))];
+    a.sort((x, y) => !!y.on - !!x.on);
+    return a.slice(0, withName ? 7 : 9).map((x, i) => x.on && withName && i < 3 ? `<span class="sc on" style="--c:${x.c}"><b>${x.s}</b>${x.nm} <small>${x.n}/${x.m}</small></span>` : `<span class="sc dim${x.on ? ' on' : ''}" style="--c:${x.c}"><b>${x.s}</b><small>${x.n}/${x.m}</small></span>`).join('');
+  }
+  const roll = '<svg width="11" height="11" viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // ---------- 상점 A ----------
+  (function () {
+    const el = document.getElementById('shopA');
+    el.append(h(`${hud('2막 · 1층 전투', '라운드 7')}
+      <div class="g" style="flex:none"><canvas class="board" id="bA"></canvas></div>
+      <div class="g syn" style="margin-top:6px">${synChips(true)}<span class="synall">전체 ›</span></div>
+      <div class="g" style="margin-top:6px;display:grid;gap:3px"><div class="lbl"><span>창고 <b>4/8</b></span><span>출전 <b>5/5</b></span></div>${bench()}</div>
+      <div class="g" style="margin-top:8px"><div class="econ"><span class="gold"><span class="coin">12</span><span class="int">이자 +1</span></span><span class="lv"><b>Lv5</b><span class="xpbar"><i style="width:37%"></i></span><small style="font-size:10px;color:var(--gmuted)">6/16</small></span><span class="up">▲ 4골드</span><span class="eye">적 필드</span></div></div>
+      <div class="g" style="margin-top:6px;display:grid;gap:5px;flex:1;min-height:0">
+        ${['unit', 'skill', 'item'].map((k) => `<div class="shrow"><div class="shhead">${{ unit: '유닛', skill: '스킬', item: '아이템' }[k]}<span class="sp"></span><span class="mini">${roll} 1골드</span><span class="mini">잠금</span></div><div class="cards">${SHOP[k].map((id) => card(k, id)).join('')}</div></div>`).join('')}
+      </div>
+      <div class="g" style="margin-top:6px"><div class="btn go" style="height:48px">전투 시작</div></div>`));
+    drawBoard(document.getElementById('bA'), { rows: 'mine', w: 300, units: BOARD });
+  })();
+
+  // ---------- 상점 B ----------
+  (function () {
+    const el = document.getElementById('shopB');
+    el.append(h(`${hud('2막 · 1층 전투', '라운드 7', '<span class="flame">3연승</span>')}
+      <div class="g" style="flex:none"><canvas class="board" id="bB"></canvas></div>
+      <div class="g syn" style="margin-top:6px">${synChips(true)}<span class="synall">전체 ›</span></div>
+      <div class="g" style="margin-top:6px;display:grid;gap:3px"><div class="lbl"><span>창고 <b>4/8</b> · 출전 <b>5/5</b></span><span>이자 +1 · Lv5 6/16</span></div>${bench()}</div>
+      <div class="g" style="margin-top:10px;display:grid;gap:8px"><div style="display:flex;gap:6px;align-items:center"><div class="seg" style="flex:1"><span class="on">유닛<span class="dot">★2</span></span><span>스킬</span><span>아이템</span></div><span class="btn" style="width:62px;height:34px;display:flex;gap:4px;justify-content:center;align-items:center">${roll}1골드</span><span class="btn" style="width:48px;height:34px">잠금</span></div>
+        <div class="cards big">${SHOP.unit.map((id) => card('unit', id, { desc: true })).join('')}</div></div>
+      <div class="g" style="margin-top:auto"><div class="econ"><span class="gold"><span class="coin">12</span><span class="int">이자 +1</span></span><span class="lv"><b>Lv5</b><span class="xpbar"><i style="width:37%"></i></span><small style="font-size:10px;color:var(--gmuted)">6/16</small></span><span class="eye">적 필드</span></div></div>
+      <div class="g" style="margin-top:8px;display:flex;gap:8px"><div class="btn" style="flex:0 0 108px;height:48px;line-height:1.1;text-align:center">레벨업<br><small style="font-weight:400;font-size:10px;color:var(--gmuted)">4골드 · +4</small></div><div class="btn go" style="flex:1;height:48px">전투 시작</div></div>`));
+    drawBoard(document.getElementById('bB'), { rows: 'mine', w: 330, units: BOARD });
+  })();
+
+  // ---------- 상점 C ----------
+  (function () {
+    const el = document.getElementById('shopC');
+    const rail = [...SYN.filter((s) => s[1]).map(([k, n, m, on]) => ({ c: TR[k].col, s: TR[k].short, nm: TR[k].name, n, m, on })), ...CLSYN.map(([k, n, m, on]) => ({ c: CLS[k].col, s: CLS[k].short, nm: CLS[k].name, n, m, on }))].sort((x, y) => !!y.on - !!x.on).slice(0, 8);
+    el.append(h(`${hud('2막 · 1층 전투', '라운드 7', '<span class="coin" style="font-size:16px">12</span><span class="flame" style="margin-left:6px">이자 +1</span>')}
+      <div class="g railwrap"><div class="rail">${rail.map((x) => `<div class="r${x.on ? ' on' : ' dim'}" style="--c:${x.c}"><b>${x.s}</b><small>${x.nm.replace(/ /g, '')}<em>${x.n}/${x.m}</em></small></div>`).join('')}</div><canvas class="board" id="bC"></canvas></div>
+      <div class="g" style="margin-top:8px;display:grid;gap:3px"><div class="lbl"><span>창고 <b>4/8</b> · 출전 <b>5/5</b></span><span>적 필드 보기 ›</span></div>${bench()}</div>
+      <div class="g" style="margin-top:10px;display:grid;gap:9px;flex:1;min-height:0;padding-right:46px">
+        ${['unit', 'skill', 'item'].map((k) => `<div style="position:relative"><div class="cards">${SHOP[k].map((id) => card(k, id)).join('')}</div><span class="rollfab">${roll}</span></div>`).join('')}
+      </div>
+      <div class="g" style="margin-top:8px;display:flex;gap:8px"><div class="btn" style="flex:0 0 128px;height:48px;display:flex;gap:6px;padding:0 8px"><b style="font:400 13px var(--display);background:var(--ink);color:var(--paper);border-radius:4px;padding:1px 5px">Lv5</b><span style="display:grid;gap:2px;flex:1"><span class="xpbar" style="height:6px"><i style="width:37%"></i></span><small style="font-size:9.5px;font-weight:600">▲ 4골드</small></span></div><div class="btn go" style="flex:1;height:48px">전투 시작</div></div>`));
+    drawBoard(document.getElementById('bC'), { rows: 'mine', w: 272, units: BOARD });
+  })();
+
+  // ---------- 전투 공통 데이터 ----------
+  const BU = BOARD.map((u, i) => Object.assign({}, u, { hp: [0.82, 0.55, 0.9, 0.3, 0.7][i], by: [2, 3, 4, 4, 5][i] }));
+  BU[0].bx = 1; BU[1].bx = 3;
+  const BE = ENEMIES.map((e, i) => Object.assign({}, e, { hp: [0.4, 0.75, 0.2, 0.9][i] }));
+  const ringSvg = (hp, mp) => { const C = 2 * Math.PI * 22; return `<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="#ebe2cc" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="${hp < 0.35 ? '#e8436b' : '#2e9e6b'}" stroke-width="5" stroke-dasharray="${C * hp} ${C}" transform="rotate(-90 26 26)" stroke-linecap="round"/><circle cx="44" cy="44" r="5" fill="${mp > 0.95 ? '#f5c400' : '#2f6fd6'}" stroke="#232a3b" stroke-width="1.5"/></svg>`; };
+
+  // ---------- 전투 A ----------
+  (function () {
+    const el = document.getElementById('battleA');
+    el.append(h(`<div class="g" style="height:46px;display:flex;align-items:center;gap:8px"><span class="menu"><i></i></span><div class="where"><b>2막 · 1층 전투</b><span>지면 원정 끝</span></div><div class="speed"><span>×1</span><span class="on">×2</span><span>×3</span></div></div>
+      <div class="g tug" style="margin-top:6px"><div><small>아군 71%</small><div class="bar l"><i style="width:71%;background:#2f6fd6"></i></div></div><div class="time">0:23</div><div><small>적 48%</small><div class="bar"><i style="width:48%;background:#e8436b"></i></div></div></div>
+      <div class="g" style="margin-top:10px;flex:1;display:grid;place-items:center"><canvas class="board" id="bbA"></canvas></div>
+      <div class="g strip" style="margin-top:8px">${BU.map((u) => `<div class="ring${u.hp < 0.05 ? ' dead' : ''}">${ringSvg(u.hp, u.id === 'apprentice' ? 1 : 0.4)}<img src="${disc(u.id, lo(u), 70)}" alt=""><small>${def('unit', u.id).name.replace('견습 ', '')}</small></div>`).join('')}</div>
+      <div class="g" style="margin-top:8px;display:flex;gap:8px"><div class="btn" style="flex:1;height:40px">기록</div><div class="btn" style="flex:1;height:40px">건너뛰기 ⏭</div></div>`));
+    drawBoard(document.getElementById('bbA'), { rows: 'all', w: 358, units: BU, enemies: BE, hp: true, floats: [{ x: 2, y: 2, t: '84' }, { x: 4, y: 2, t: '화염 폭발', c: '#e2d0ff', dx: -10 }], tiles: [{ x: 4, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 1 }] });
+  })();
+
+  // ---------- 전투 B ----------
+  (function () {
+    const el = document.getElementById('battleB');
+    const meter = [['squire', 'cross', 1240, 820, 0], ['archer', 'pierce', 980, 120, 0], ['apprentice', 'fire', 760, 90, 0], ['shieldman', null, 410, 1310, 220], ['acolyte', null, 180, 260, 640]];
+    const mx = 1240;
+    el.append(h(`<div class="g" style="height:46px;display:flex;align-items:center;gap:8px"><span class="menu"><i></i></span><div class="where"><b>2막 · 보스</b><span>0:41 · 지면 원정 끝</span></div><div class="speed"><span class="on">×1</span><span>×2</span><span>×3</span></div></div>
+      <div class="g" style="margin-top:4px"><div class="bossbar"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>흡혈귀 백작 루드</b><small style="font-size:10px;color:var(--stamp);font-weight:700">다음: 피의 만찬 2초</small></div><div class="bar"><i style="width:58%"></i></div></div></div>
+      <div class="g" style="margin-top:8px;flex:1;display:grid;place-items:center"><canvas class="board" id="bbB"></canvas></div>
+      <div class="g meter" style="margin-top:8px">
+        <div class="lbl"><span><b>실시간 피해</b></span><span>받은 피해 · 회복</span></div>
+        ${meter.map(([id, , d, t, hl], i) => `<div class="m"><img src="${disc(id, null, 60)}" alt=""><b>${def('unit', id).name}${i === 0 ? '<span class="crown">MVP</span>' : ''}</b><div class="bar"><i style="width:${(100 * d) / mx}%"></i></div><div class="v">${d}<small>${t} · ${hl}</small></div></div>`).join('')}
+      </div>
+      <div class="g" style="margin-top:8px"><div class="btn" style="height:38px">건너뛰기 ⏭</div></div>`));
+    const boss = [{ id: 'vampire', x: 2, y: 1, hp: 0.58 }, { id: 'bat', x: 0, y: 2, hp: 0.3 }, { id: 'cultist', x: 4, y: 0, hp: 0.8 }];
+    drawBoard(document.getElementById('bbB'), { rows: 'all', w: 320, units: BU, enemies: boss, hp: true, floats: [{ x: 2, y: 2, t: '132', c: '#f5c400' }] });
+  })();
+})();
+</script>
+</body>
+</html>
