@@ -282,6 +282,7 @@
     }
 
     attack(u, t) {
+      if (this.hooks.preAttack && this.hooks.preAttack(u, t, this)) return; // 기본 공격을 다른 행동으로 바꾸는 훅(치유 등)
       u.mana = Math.min(u.maxMana, u.mana + (u.manaPerHit || 10));
       const crit = Math.random() < u.crit;
       const dmg = u.atk * AC.rand(0.9, 1.1);
