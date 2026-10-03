@@ -7,9 +7,9 @@
   const GD = global.GD;
 
   const CLS = {
-    war: { name: '전사', short: '전', col: '#2f6fd6', plastic: '#3f7fe6', art: 'sword' },
-    arc: { name: '궁수', short: '궁', col: '#2e9e6b', plastic: '#38b37c', art: 'bow' },
-    mag: { name: '마법사', short: '마', col: '#7a4fd0', plastic: '#8d63e0', art: 'mage' },
+    war: { name: '전사', short: '전', col: '#26408f', plastic: '#3352ad', art: 'sword' },
+    arc: { name: '궁수', short: '궁', col: '#d23f2c', plastic: '#e5533f', art: 'bow' },
+    mag: { name: '마법사', short: '마', col: '#11968c', plastic: '#1aafa4', art: 'mage' },
     any: { name: '공용', short: '공', col: '#4b5160', plastic: '#6b7180', art: 'any' },
   };
 
@@ -107,7 +107,7 @@
       desc: ['셋이 모이면 모든 아군 치명타 +20%, 치명 피해 +50%'] },
     mentor: { name: '스승과 제자', short: '스', col: '#a8508a', kind: 'combo', members: ['archmage', 'apprentice'],
       desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 스킬 마나 −30%'] },
-    veteran: { name: '베테랑', short: '베', col: '#a8323b', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'merc', 'duelist', 'hunter', 'ranger', 'blademaster'],
+    veteran: { name: '베테랑', short: '베', col: '#7a5a3c', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'merc', 'duelist', 'hunter', 'ranger', 'blademaster'],
       desc: ['베테랑 공격력 +15%', '베테랑 공격력 +30%', '베테랑 공격력 +50%, 적을 쓰러뜨리면 체력 15% 회복'] },
   };
   for (const u of UNITS) u.traits = Object.keys(TRAITS).filter((k) => TRAITS[k].members.includes(u.id));
