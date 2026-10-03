@@ -249,7 +249,7 @@
     ui.sel = null; ui.tab = 'unit';
     showPlay();
     if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 5 · 이자 ${inc.interest}${inc.streak ? ' · 연승 ' + inc.streak : ''})`);
-    else toast('상점 카드를 탭하면 정보, 한 번 더 탭하면 구매. 준비되면 전투 시작!');
+    else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
     if (n.k === 'camp') openCamp(); else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
     else if (n.k === 'shop') toast('암시장: 상점 등급 확률 +1, 다시 뽑기 3번 무료');
     return inc;
@@ -424,6 +424,11 @@
   function renderHud() {
     if (!R) return;
     $('gold').textContent = R.gold;
+    $('gold').hidden = ui.screen === 'play';
+    const intMax = 5 + (has('vault') ? 2 : 0);
+    $('sgold').textContent = R.gold; $('sint').textContent = `이자 +${Math.min(intMax, Math.floor(R.gold / 10))}`;
+    if (ui.lastGold != null && ui.lastGold !== R.gold) { const g = $('sgold').parentNode; g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); }
+    ui.lastGold = R.gold;
     $('lvB').textContent = 'Lv' + R.lv;
     $('xpT').textContent = R.lv < 8 ? `${R.xp}/${XPNEED[R.lv]}` : 'MAX';
     $('xpBar').style.width = R.lv < 8 ? (100 * R.xp / XPNEED[R.lv]) + '%' : '100%';
@@ -542,7 +547,7 @@
   function renderPrep() {
     const s = ui.sel;
     $('benchN').textContent = `${R.bench.filter(Boolean).length}/${benchSize()}`;
-    $('benchHint').textContent = !s ? '탭해서 고르기' : s.from === 'shop' ? '한 번 더 탭하면 구매' : s.c.kind === 'unit' ? '보드 칸을 탭해 배치 · 빈 창고 칸으로 빼기' : `${CLS[def(s.c).cls].name} 딱지를 탭해 장착`;
+    $('benchHint').textContent = !s ? '탭해서 고르기' : s.from === 'shop' ? '구매 버튼으로 삽니다' : s.c.kind === 'unit' ? '보드 칸을 탭하면 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지를 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
     $('bench').innerHTML = R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" aria-label="빈 칸"></button>`;
@@ -557,10 +562,12 @@
     $('lockBtn').classList.toggle('on', R.locked[ui.tab]);
     $('lockBtn').textContent = R.locked[ui.tab] ? '잠김' : '잠금';
     $('rollCost').textContent = R.freeRolls > 0 ? `무료 ${R.freeRolls}` : '1골드';
-    const showDetail = !!s && s.from !== 'shop', peek = !!s && s.from === 'shop';
-    $('row').hidden = showDetail; $('detail').hidden = !showDetail; $('tabsRow').hidden = showDetail;
-    $('peek').hidden = !peek;
+    const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit';
+    const showDetail = !!s && s.from !== 'shop' && !unitSheet, peek = !!s && s.from === 'shop';
+    $('row').hidden = showDetail; $('detail').hidden = !showDetail;
+    $('peek').hidden = !peek; $('usheet').hidden = !unitSheet;
     if (showDetail) renderDetail(s, $('detail'));
+    if (unitSheet) { renderUnitSheet(s); $('usheet').style.top = $('syn').offsetTop + 'px'; }
     if (peek) { renderDetail(s, $('peek')); $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
     $('row').innerHTML = R.shop[ui.tab].map((c, i) => {
       if (!c) return `<div class="card sold" aria-hidden="true"></div>`;
@@ -592,6 +599,104 @@
     el.innerHTML = `<div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
+
+  // ---------- 유닛 상세: 장착 장비·스킬 수치·능력치를 한 화면에 ----------
+  const pct = (v) => Math.round(v * 100);
+  const FXTEXT = {
+    infiltrate: () => '전투 시작 시 적 뒤로 도약',
+    healMace: (e, k) => `공격마다 가장 다친 아군 <em>${Math.round(e.atk * 0.6 * e.healMult * k)}</em> 회복`,
+    bloodrage: () => '주변 적에게 35% 튐, 체력 50% 이하 공속 +40%',
+    towerGuard: () => '4초마다 주변 적 도발, 맞으면 주변 아군 보호막',
+    poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(30 * k)}</em>, 최대 3중첩)`,
+    quiverHeal: (e, k) => `3타마다 치유 화살 <em>${Math.round(e.atk * 2.5 * e.healMult * k)}</em>`,
+    hawkFocus: () => '사냥매 소환, 같은 적을 계속 쏘면 피해 증가',
+    markAura: (e, k) => `맞힌 적 받는 피해 <em>+${Math.round(15 * Math.min(2, k))}%</em>, 주변 아군 공속 <em>+${Math.round(15 * k)}%</em>`,
+    spellSlow: () => '스킬에 맞은 적 둔화',
+    spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(30 * k)}</em>)`,
+    healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 <em>${Math.round(e.atk * 1.4 * e.healMult * k)}</em> 치유`,
+    hourglass: (e, k) => `스킬 사용 시 주변 아군 마나 <em>+${Math.round(25 * k)}</em>`,
+    echo: () => '2번 시전마다 한 번 더(위력 70%)',
+  };
+  function itemText(it, star, e) {
+    const k = BT4.ITSTAR[star], st = it.st, parts = [];
+    if (st.atk) parts.push(`공격력 <em>+${pct(st.atk * k)}%</em>`);
+    if (st.as) parts.push(`공속 <em>+${pct(st.as * k)}%</em>`);
+    if (st.hp) parts.push(`체력 <em>+${pct(st.hp * k)}%</em>`);
+    if (st.armor) parts.push(`받는 피해 <em>−${pct(st.armor * k)}%</em>`);
+    if (st.range) parts.push(`사거리 <em>+${st.range}</em>`);
+    if (st.crit) parts.push(`치명 <em>+${pct(st.crit * k)}%</em>`);
+    if (st.lifesteal) parts.push(`흡혈 <em>${pct(st.lifesteal * k)}%</em>`);
+    if (st.spell) parts.push(`스킬 위력 <em>+${pct(st.spell * k)}%</em>`);
+    if (st.heal) parts.push(`치유 <em>+${pct(st.heal * k)}%</em>`);
+    if (st.mana) parts.push(`시작 마나 <em>+${Math.round(st.mana * Math.min(k, 1.6))}</em>`);
+    if (st.manaPerHit) parts.push(`공격당 마나 <em>+${Math.round(st.manaPerHit * k)}</em>`);
+    if (it.fx && FXTEXT[it.fx]) parts.push(FXTEXT[it.fx](e, k));
+    return parts.join(' · ');
+  }
+  function skillText(sd, star, e) {
+    const k = BT4.SKSTAR[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult, pw = e.pow;
+    const ex = [];
+    if (sd.stun) ex.push(`기절 ${sd.stun}초`);
+    if (sd.slow) ex.push(`둔화 ${sd.slow}초`);
+    if (sd.burn) ex.push(`화상 초당 ${Math.round(sd.burn.dps * pw)}`);
+    if (sd.bleed) ex.push(`출혈 초당 ${Math.round(sd.bleed.dps * pw)}`);
+    if (sd.poison) ex.push(`중독 초당 ${Math.round(sd.poison.dps * pw)}`);
+    if (sd.vuln) ex.push(`받는 피해 +${pct(sd.vuln.amt)}% ${sd.vuln.dur}초`);
+    if (sd.crit) ex.push('확정 치명');
+    if (sd.drain) ex.push(`피해의 ${pct(sd.drain)}% 흡수`);
+    if (sd.cleanse) ex.push('해로운 효과 제거');
+    let main = '';
+    switch (sd.effect) {
+      case 'dmg': main = `피해 <em>${P}</em>${sd.mode === 'volley' ? ` × ${(sd.count || 3) + (star >= 3 ? 2 : 0)}발` : sd.mode === 'chain' ? ` · ${4 + (star >= 3 ? 2 : 0)}번 튐` : ''}`; break;
+      case 'tele': main = `1.2초 뒤 피해 <em>${P}</em>`; break;
+      case 'lightrain': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * 0.6 * H)}</em>`; break;
+      case 'heal': main = `회복 <em>${Math.round(P * H)}</em>`; break;
+      case 'shield': main = `보호막 <em>${Math.round(P * H)}</em>`; break;
+      case 'taunt': main = `3초 도발 · 보호막 <em>${P}</em>`; break;
+      case 'buff': main = `공격력 <em>+${30 + 10 * (star - 1)}%</em> · 공속 +20%`; break;
+      case 'haste': case 'timewarp': main = `공속 <em>+${Math.round(((sd.amt || 1.25) + 0.08 * (star - 1) - 1) * 100)}%</em> ${sd.dur || 6}초${sd.effect === 'timewarp' ? ` · 적 둔화 ${3 + star - 1}초` : ''}`; break;
+      case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
+      case 'mana': main = `주변 아군 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
+      case 'revive': main = `쓰러진 아군을 체력 <em>${pct(Math.min(0.9, 0.5 + 0.15 * (star - 1)))}%</em>로 부활`; break;
+      case 'heavy': main = `피해 <em>${Math.round(e.atk * sd.power * k)}</em>`; break;
+      default: main = sd.desc;
+    }
+    return main + (ex.length ? ' · ' + ex.join(' · ') : '');
+  }
+  function renderUnitSheet(s) {
+    const c = s.c, d = def(c), onBoard = R.board.includes(c);
+    const e = battleApi.makeAlly(c, grid.idx(c.x || 0, c.y || PLAYER_ROW), battleApi.synergyCounts(onBoard ? R.board : [...R.board, c]));
+    const m = BT4.STAR[c.star];
+    const stat = (label, v, base, fmt = (x) => x) => `<div><small>${label}</small><b class="${v > base + 1e-6 ? 'up' : ''}">${fmt(v)}</b></div>`;
+    const dps = Math.round(e.atk * e.as);
+    const stats = [
+      stat('체력', e.maxHp, Math.round(d.hp * m)),
+      stat('공격력', Math.round(e.atk), Math.round(d.atk * m)),
+      stat('공격 속도', e.as, d.as, (x) => x.toFixed(2) + '/초'),
+      stat('사거리', e.range, d.range, (x) => x + '칸'),
+      stat('받는 피해', e.armor, d.armor || 0, (x) => '−' + pct(x) + '%'),
+      stat('치명타', e.crit, d.crit || 0.05, (x) => pct(Math.min(1, x)) + '%'),
+      stat('스킬 위력', e.spell * e.pow, POWBASE(c), (x) => pct(x) + '%'),
+      stat('초당 피해', dps, Math.round(d.atk * m * d.as)),
+    ].join('');
+    const slots = skillSlots(c), cls = CLS[d.cls].name;
+    let rows = '';
+    for (let k = 0; k < slots; k++) {
+      const x = c.skills[k];
+      if (!x) { rows += `<div class="urow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
+      const sd = def(x);
+      rows += `<button class="urow" data-un="${k}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(30, (sd.mana || 80) - (x.star - 1) * 8)}</small><br>${skillText(sd, x.star, e)}</span>${patternGrid(sd, x.star)}<span class="x">빼기</span></button>`;
+    }
+    if (c.item) { const it = def(c.item); rows += `<button class="urow" data-un="item"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}</span><span class="x">빼기</span></button>`; }
+    else rows += `<div class="urow empty"><span>빈 아이템 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
+    const syn = battleApi.synergyCounts(R.board), tier = syn.tiers[d.cls];
+    $('usheet').innerHTML = `<div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값${tier ? ` · ${cls} ${SYN[d.cls].th[tier - 1]}명 시너지` : ''} · 칸 탭 = 빼기</p></div></div>
+      <div class="ustats">${stats}</div>
+      ${rows}
+      <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button></div>`;
+  }
+  const POWBASE = (c) => [0, 1, 1.45, 2.1][c.star] * (1 + (def(c).spellBonus || 0));
+
   function renderBattlePanel() {
     const cb = B.combat;
     const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
@@ -646,18 +751,20 @@
   $('row').addEventListener('click', (e) => {
     const b = e.target.closest('[data-s]'); if (!b || B) return;
     const i = +b.dataset.s, c = R.shop[ui.tab][i];
-    if (ui.sel && ui.sel.c === c) return buy(i);
-    ui.sel = { from: 'shop', i, c }; SFX.play('card'); renderPlay();
+    if (ui.sel && ui.sel.c === c) return;
+    ui.sel = { from: 'shop', i, c }; ui.peekT = performance.now(); SFX.play('card'); renderPlay();
   });
   const onDetail = (e) => {
     const b = e.target.closest('[data-act],[data-un]'); if (!b) return;
     if (b.dataset.un != null) { const u = ui.sel.c, k = b.dataset.un; unequip(u, k === 'item' ? 'item' : +k); return renderPlay(); }
+    if (b.dataset.act === 'noop') return;
     const a = b.dataset.act;
-    if (a === 'buy') buy(ui.sel.i);
+    if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i); }
+    else if (a === 'tobench') { const i = R.bench.indexOf(null); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
     else if (a === 'sell') { const s = ui.sel, g = sellCard(s.c, s.from, s.i); ui.sel = null; SFX.play('coin'); toast(`${def(s.c).name} 판매 +${g}골드`); renderPlay(); }
     else { ui.sel = null; renderPlay(); }
   };
-  $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail);
+  $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
   document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { ui.tab = b.dataset.tab; ui.sel = null; SFX.play('click'); renderPlay(); }));
   $('rollBtn').onclick = () => reroll();
   $('lockBtn').onclick = () => { R.locked[ui.tab] = !R.locked[ui.tab]; toast(R.locked[ui.tab] ? `${TABNAME[ui.tab]} 줄 잠금: 다음 라운드에도 그대로` : '잠금 해제'); renderPlay(); };
@@ -1093,7 +1200,7 @@
       if (m === 'close' || m === 'relics') return closeSheet();
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
-        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 한 번 탭하면 정보, 한 번 더 탭하면 구매. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
+        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 2개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 아이템에 따라 역할이 바뀝니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
