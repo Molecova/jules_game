@@ -61,16 +61,16 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .bstamp.win { color: var(--ok); border-color: var(--ok); }
 .bstamp.lose { color: var(--stamp); border-color: var(--stamp); }
 @keyframes bst { to { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1); } }
-.syn { flex: none; display: flex; gap: 4px; align-items: center; padding: 5px var(--g) 0; height: 38px; overflow: hidden; }
-.sc { flex: none; width: 32px; height: 32px; padding: 0; border: 2px solid var(--c); border-radius: 7px; background: var(--card); color: var(--c); display: grid; place-items: center; align-content: center; gap: 0; line-height: 1; }
+.syn { flex: none; display: flex; gap: 6px; align-items: center; padding: 6px var(--g) 0; height: 36px; }
+.scs { flex: 1; min-width: 0; display: flex; gap: 4px; align-items: center; overflow: hidden; }
+.sc { flex: none; height: 28px; min-width: 28px; padding: 0 6px; border: 2px dashed var(--c); border-radius: 7px; background: var(--card); color: var(--c); display: inline-flex; align-items: center; gap: 4px; font: 700 11px/1 var(--body); white-space: nowrap; }
 .sc b { font: 400 13px/1 var(--display); }
-.sc small { font: 700 9px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 1px; }
-.sc.on { background: var(--c); color: #fff; border-color: var(--ink); box-shadow: 1px 2px 0 var(--ink); }
-.sc.on small { color: #fff; }
-.sc.combo { border-radius: 50%; }
-.sc.cls { border-style: double; border-width: 3px; }
-.sc.all { width: 44px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font: 700 10px/1.15 var(--body); }
-.scmore { font-size: 11px; color: var(--muted); font-weight: 700; padding-left: 2px; }
+.sc small { font: 700 10px/1 var(--body); color: var(--ink); font-variant-numeric: tabular-nums; }
+.sc.on { background: var(--c); color: #fff; border: 2px solid var(--ink); }
+.sc.on small { color: #fff; opacity: .9; }
+.sc.combo { border-radius: 14px; }
+.sc.all { flex: none; border: none; background: none; color: var(--muted); padding: 0 2px; font: 700 11px/28px var(--body); white-space: nowrap; }
+.sc.all em { font-style: normal; color: var(--ink); }
 .synlist { display: grid; gap: 6px; }
 .synrow > div { display: grid; gap: 1px; }
 .synrow small.act { color: var(--ink); font-weight: 700; }
@@ -82,8 +82,6 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .sm.off { opacity: .35; } .sm.own { opacity: .7; } .sm.on img { filter: drop-shadow(0 0 3px var(--gold)); }
 .cx.tier1, .cx.tier2, .cx.tier3, .cx.tier4, .cx.tier5 { background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); }
 .cx.k-item { border-width: 3px; border-radius: 3px; } .cx.k-unit { border-radius: 14px; }
-.trn { position: absolute; left: 2px; right: 2px; bottom: 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; pointer-events: none; }
-.trn i { max-width: 100%; font: 700 8px/12px var(--body); letter-spacing: -.5px; font-style: normal; color: #fff; background: var(--c); border: 1px solid rgba(35,42,59,.6); border-radius: 3px; padding: 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--card); font-weight: 600; font-size: 12px; white-space: nowrap; }
 .pill i { width: 18px; height: 18px; border-radius: 50%; background: var(--c); color: #fff; font: 400 10px/18px var(--display); text-align: center; font-style: normal; }
 .pill small { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
@@ -107,19 +105,34 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 
 /* 상점 */
 .shop { flex: 1 1 auto; min-height: 0; padding: 6px var(--g) 0; display: flex; flex-direction: column; gap: 5px; position: relative; }
-.shophead { flex: none; display: flex; align-items: center; gap: 6px; height: 30px; }
-.shophead .gbox { height: 30px; }
-.shophead .foebtn { margin-left: auto; width: auto; height: 30px; padding: 0 10px; font-size: 12px; white-space: nowrap; }
-.shophead .foebtn.on { background: var(--foe); color: #fff; }
-.srows { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 7px; padding-top: 4px; }
-.srow { display: flex; gap: 5px; min-height: 0; }
-.srow .cards { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.rtools { flex: none; width: 38px; display: flex; flex-direction: column; gap: 3px; }
-.rtools b { font-size: 10px; text-align: center; white-space: nowrap; position: relative; }
-.rtools b.ready::after { content: "★2"; position: absolute; top: -6px; right: -4px; font-size: 8px; background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 2px; }
-.rtools button { flex: 1; min-height: 0; border: 2px solid var(--ink); border-radius: 5px; background: var(--card); font-size: 10px; font-weight: 700; padding: 0; display: flex; align-items: center; justify-content: center; gap: 1px; line-height: 1; box-shadow: 1px 1px 0 var(--ink); }
-.rtools .lk.on { background: var(--ink); color: var(--paper); }
-.shop > .detail { position: absolute; left: var(--g); right: var(--g); top: 42px; bottom: 0; z-index: 5; }
+/* 경제 줄: 골드·이자 | 레벨·경험치 | 레벨업 | 적 필드 */
+.econ { flex: none; display: flex; align-items: stretch; height: 38px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); overflow: hidden; box-shadow: 1px 2px 0 var(--ink); }
+.ec { display: flex; align-items: center; gap: 5px; padding: 0 9px; border: none; border-radius: 0; background: none; min-width: 0; white-space: nowrap; }
+.ec + .ec { border-left: 1.5px solid var(--line); }
+.econ .gbox .coin { font-size: 16px; gap: 4px; }
+.econ .gbox .coin::before { width: 17px; height: 17px; border-width: 1.5px; box-shadow: 0 1px 0 var(--ink); }
+.econ .int { font-size: 11px; color: var(--muted); font-weight: 600; }
+.elv { flex: 1; }
+.elv b { font: 400 13px var(--display); background: var(--ink); color: var(--paper); border-radius: 4px; padding: 1px 6px; }
+.xpbar { flex: 1; min-width: 16px; height: 7px; border-radius: 4px; background: var(--paper2); overflow: hidden; border: 1px solid var(--ink); }
+.xpbar i { display: block; height: 100%; background: var(--mine); }
+.elv small { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ec.up { background: #e8f0fd; font-weight: 700; color: var(--mine); font-size: 12px; }
+.ec.up:disabled { color: var(--muted); background: var(--paper2); }
+.ec.eye { font-size: 11.5px; font-weight: 700; }
+.ec.eye.on { background: var(--foe); color: #fff; }
+/* 유닛 줄은 이름 아래 특성 두 줄이 더 들어가서 조금 높게(시안 A 비율) */
+.srows { flex: 1; min-height: 0; display: grid; grid-template-rows: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 5px; padding-top: 5px; }
+.srow { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 3px; min-height: 0; }
+.srow .cards { min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.shhead { display: flex; align-items: center; gap: 6px; height: 20px; font: 700 11px var(--body); color: var(--muted); }
+.shhead b { position: relative; color: var(--ink); }
+.shhead b.ready::after { content: "★2"; margin-left: 4px; font-size: 9px; background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 3px; vertical-align: 1px; }
+.shhead .sp { flex: 1; height: 1.5px; background: var(--line); }
+.mini { display: inline-flex; align-items: center; gap: 3px; height: 20px; border: 1.5px solid var(--ink); border-radius: 999px; padding: 0 8px; background: var(--card); font: 700 10.5px/1 var(--body); }
+.mini small { font: inherit; }
+.mini.lk.on { background: var(--ink); color: var(--paper); }
+.shop > .detail { position: absolute; left: var(--g); right: var(--g); top: 50px; bottom: 0; z-index: 5; }
 #scr-play.prep .boardwrap { flex: 0 0 auto; }
 #scr-play.foeview .boardwrap { flex: 1 1 auto; }
 #scr-play.foeview .srows, #scr-play.foeview .shop > .detail { display: none; }
@@ -127,46 +140,51 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .tab { position: relative; flex: 1; border: 2px solid var(--ink); border-radius: 6px 6px 0 0; border-bottom-width: 0; background: var(--paper2); font-weight: 700; font-size: 12px; }
 .tab.on { background: var(--card); }
 .tab .dot { position: absolute; top: -5px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--stamp); color: #fff; font: 700 9px/16px var(--body); border: 1.5px solid var(--ink); padding-inline: 2px; }
-.gbox { flex: none; min-width: 58px; padding: 0 6px; display: grid; place-items: center; line-height: 1; border: 2px solid var(--ink); border-radius: 6px; background: #fff3c4; box-shadow: 2px 2px 0 var(--ink); }
-.gbox .coin { font-size: 17px; gap: 4px; }
-.gbox .coin::before { width: 16px; height: 16px; border-width: 1.5px; box-shadow: 0 1px 0 var(--ink); }
-.intpill { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #fff3c4; border: 1px solid var(--golddk); color: var(--ink); font-weight: 700; }
 .xbtn { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 50%; background: var(--card); box-shadow: 1px 2px 0 var(--ink); display: grid; place-items: center; padding: 0; z-index: 2; }
 .xbtn svg { pointer-events: none; }
 .detail, .usheet { position: relative; }
 .peek, .usheet { position: absolute; }
 .dh .tt, .uh .tt { padding-right: 34px; }
 .gbox.bump { animation: bump .35s ease-out; }
-@keyframes bump { 40% { transform: scale(1.15); background: var(--gold); } }
+@keyframes bump { 40% { background: #fff3c4; } }
 .tool { flex: none; width: 44px; border: 2px solid var(--ink); border-radius: 6px; background: var(--card); font-size: 11px; font-weight: 700; display: grid; place-items: center; line-height: 1.05; box-shadow: 2px 2px 0 var(--ink); }
 .tool.on { background: var(--ink); color: var(--paper); }
 .tool small { font-weight: 400; font-size: 10px; }
-.card { position: relative; border: 2px solid var(--ink); border-radius: 7px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); padding: 3px 0 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; box-shadow: 2px 3px 0 var(--ink); min-width: 0; }
-/* 종류별 카드 모양: 유닛=둥근 종이 카드, 스킬=육각 무늬와 점선 안쪽 테, 아이템=리벳 박힌 금속판 */
-/* 유닛 카드: 클래스색 띠(전사 파랑 · 궁수 초록 · 마법사 보라) */
-.card.k-unit { border-radius: 14px; border: 4px solid var(--cc); box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 1px var(--ink); }
-.card.k-unit.ready { box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--gold), 0 0 14px 6px rgba(245,196,0,.7); }
-.card.k-unit .cost { top: -10px; left: -10px; }
-.card.k-unit .cl { top: 4px; right: 1px; }
-.card.k-unit b { border-radius: 0 0 9px 9px; }
-.card.k-skill { border-radius: 4px; box-shadow: 2px 3px 0 var(--ink), inset 0 0 0 3px rgba(255,255,255,.55); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%); background-color: var(--tc); }
-.card.k-skill::after { content: ""; position: absolute; inset: 4px; border: 1.5px dashed rgba(35,42,59,.35); border-radius: 2px; pointer-events: none; }
-.card.k-item { border-width: 3px; border-radius: 3px; background-image: radial-gradient(circle at 6px 6px, #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at calc(100% - 6px) 6px, #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at 6px calc(100% - 6px), #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), #8a8f99 2.2px, transparent 2.8px), repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 9px, rgba(255,255,255,.22) 9px 11px), linear-gradient(160deg, rgba(255,255,255,.5), rgba(0,0,0,.06)); background-color: var(--tc); }
-.card.k-item b { background: rgba(35,42,59,.85); color: #fff; }
-.card.tier5, .pickcard.tier5 { background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 8px, rgba(255,255,255,.4) 8px 10px), linear-gradient(160deg, #fff6c8, var(--t5)); }
-.card.tier4, .pickcard.tier4 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 10px rgba(255,255,255,.7); }
-.card.tier5, .pickcard.tier5 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 12px rgba(255,230,200,.8); }
+.card { position: relative; overflow: hidden; border: 2px solid var(--ink); border-radius: 7px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); padding: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; min-width: 0; min-height: 0; }
+/* 종류별 카드 모양: 유닛=클래스색 테와 위 띠, 스킬=육각 무늬와 점선 안쪽 테, 아이템=리벳 박힌 금속판 */
+.card.k-unit { grid-template-rows: minmax(0, 1fr) auto; border: 3px solid var(--cc); border-radius: 9px; box-shadow: 0 0 0 1.5px var(--ink); }
+.card.k-unit::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--cc); }
+.card.k-skill { border-radius: 4px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%); background-color: var(--tc); }
+.card.k-skill::after { content: ""; position: absolute; inset: 3px; border: 1.5px dashed rgba(35,42,59,.3); border-radius: 2px; pointer-events: none; }
+.card.k-item { border-width: 2.5px; border-radius: 3px; background-image: radial-gradient(circle at 5px calc(100% - 5px), #8a8f99 2px, transparent 2.6px), radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #8a8f99 2px, transparent 2.6px), repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 9px, rgba(255,255,255,.22) 9px 11px), linear-gradient(160deg, rgba(255,255,255,.5), rgba(0,0,0,.06)); background-color: var(--tc); }
+.card.tier5 { background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 8px, rgba(255,255,255,.4) 8px 10px), linear-gradient(160deg, #fff6c8, var(--t5)); }
+.pickcard.tier5 { background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 8px, rgba(255,255,255,.4) 8px 10px), linear-gradient(160deg, #fff6c8, var(--t5)); }
+.pickcard.tier4 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 10px rgba(255,255,255,.7); }
+.pickcard.tier5 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 12px rgba(255,230,200,.8); }
 .card.k-skill.tier5 { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, #fff6c8, var(--t5)); }
-.card img { width: 100%; height: 100%; object-fit: contain; min-height: 0; pointer-events: none; }
-.card b { font-size: 10.5px; line-height: 1.15; padding: 2px 2px 3px; background: rgba(255,253,246,.85); border-top: 1.5px solid rgba(35,42,59,.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .pr { width: 100%; min-height: 0; display: grid; place-items: center; padding: 6px 4px 0; }
+.card.k-unit .pr { padding-top: 7px; }
+.card img { width: 100%; height: 100%; max-width: 64px; object-fit: contain; min-height: 0; pointer-events: none; }
+.card b { width: 100%; font: 700 10.5px/1.2 var(--body); letter-spacing: -.3px; text-align: center; padding: 2px 2px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.k-unit b { padding-bottom: 0; }
+.card .tr { width: 100%; display: grid; justify-items: center; padding: 0 2px 3px; pointer-events: none; }
+.card .tr i { max-width: 100%; font: 700 8.5px/11px var(--body); font-style: normal; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.4px; }
+.card .tr i::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--c); margin-right: 2px; vertical-align: 0; }
+/* 이름·특성 글자 뒤 바탕(좁은 화면에서 초상과 겹칠 때 읽히게) */
+.card.k-unit .txt { width: 100%; display: grid; background: linear-gradient(rgba(255,255,255,0), color-mix(in srgb, var(--tc) 88%, transparent) 30%); position: relative; z-index: 1; }
 .cost { position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 2px solid var(--ink); font: 700 11px/18px var(--body); text-align: center; }
-.card .cl { position: absolute; top: 9px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--cc); color: #fff; font: 400 9px/16px var(--display); border: 1.5px solid var(--ink); }
-.card .own { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--ink); white-space: nowrap; background: var(--paper2); border-radius: 4px; padding: 0 4px; }
-.card.ready { box-shadow: 2px 3px 0 var(--ink), 0 0 0 3px var(--gold), 0 0 14px 4px rgba(245,196,0,.7); animation: glow 1.1s ease-in-out infinite; }
-.card.ready .own { background: var(--stamp); color: #fff; font-weight: 700; }
-.card.sel { transform: translateY(-4px); }
-.card.sold { border-style: dashed; box-shadow: none; background: transparent; opacity: .45; }
-@keyframes glow { 50% { box-shadow: 2px 3px 0 var(--ink), 0 0 0 3px var(--gold), 0 0 4px 1px rgba(245,196,0,.5); } }
+.card .cost { top: 3px; left: 3px; width: 18px; height: 18px; border-width: 1.5px; font-size: 10px; line-height: 15px; z-index: 1; }
+.card.k-unit .cost { top: 6px; }
+.card .cl { position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--cc); color: #fff; font: 400 9px/14px var(--display); text-align: center; border: 1.5px solid var(--ink); z-index: 1; }
+.card .own { position: absolute; top: 3px; right: 3px; z-index: 2; font: 700 9px/1 var(--body); color: #fff; background: var(--ink); border-radius: 4px; padding: 2px 3px; white-space: nowrap; }
+.card.k-unit .own { top: 6px; }
+.card .cl + .own { top: 21px; }
+.card.ready { box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px var(--gold), 0 0 12px 3px rgba(245,196,0,.6); animation: glow 1.1s ease-in-out infinite; }
+.card.ready .own { background: var(--stamp); }
+.card.sel { transform: translateY(-3px); }
+.card.sold { border: 2px dashed var(--line); box-shadow: none; background: transparent; }
+.card.sold::before { content: none; }
+@keyframes glow { 50% { box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px var(--gold), 0 0 3px 1px rgba(245,196,0,.4); } }
 
 /* 상세 */
 .detail { flex: 1; min-height: 0; border: 2px solid var(--ink); border-radius: 8px; background: var(--card); box-shadow: 2px 3px 0 var(--ink); padding: 8px 10px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 6px; }
@@ -231,29 +249,36 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 
 .actions { flex: none; display: flex; gap: 8px; padding: 8px var(--g) 6px; }
 .actions .btn { min-height: 44px; font-size: 14px; }
-.actions .lvup { flex: 0 0 104px; display: grid; line-height: 1.05; }
-.actions .lvup small { font-weight: 400; font-size: 10px; color: var(--muted); }
-.go { background: var(--stamp) !important; color: #fff; font: 400 18px var(--display) !important; letter-spacing: .04em; }
+.go { background: var(--stamp) !important; color: #fff; font: 400 19px var(--display) !important; letter-spacing: .04em; }
+#prepUI .actions .go { min-height: 48px; border-radius: 10px; box-shadow: 0 3px 0 var(--ink); }
 
-/* 전투 패널 */
-.foebox { flex: none; padding: 0 var(--g) 4px; }
-.foes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
-.fo { display: grid; justify-items: center; gap: 2px; min-width: 0; }
-.fo img { width: 100%; max-width: 38px; aspect-ratio: 1; }
-.fo .bar { width: 100%; }
-.fo .bar i { background: var(--foe); }
-.fo.dead { opacity: .3; }
-.bpanel { flex: none; padding: 6px var(--g) 6px; display: grid; gap: 6px; }
-.roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.rs { display: flex; gap: 5px; align-items: center; border: 2px solid var(--ink); border-radius: 7px; background: var(--card); padding: 3px 5px; min-width: 0; }
-.rs img { width: 32px; height: 32px; flex: none; }
-.rs div { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.rs b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 전투: 위 줄다리기 막대(아군·적 남은 체력 합) + 판 + 아래 딱지 고리 */
+.flame { flex: none; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #ffe2c2; color: #a8501a; border: 1.5px solid #e0a070; white-space: nowrap; }
+.speed { flex: none; display: flex; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--card); }
+.speed button { width: 36px; height: 30px; border: none; padding: 0; background: none; font: 700 12px var(--body); }
+.speed button + button { border-left: 1.5px solid var(--line); }
+.speed button.on { background: var(--ink); color: var(--paper); }
+.tug { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 8px; padding: 2px var(--g) 4px; }
+.tug small { display: block; text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tbar { display: flex; height: 14px; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--paper2); }
+.tbar.l { justify-content: flex-end; }
+.tbar i { display: block; height: 100%; background: var(--foe); transition: width .2s; }
+.tbar.l i { background: var(--mine); }
+.tug .time { font: 400 20px/1 var(--display); font-variant-numeric: tabular-nums; min-width: 44px; text-align: center; }
+.bpanel { flex: none; padding: 6px var(--g) 6px; display: grid; gap: 8px; }
+.strip { display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 60px)); justify-content: center; gap: 6px; }
+.ring { position: relative; display: grid; justify-items: center; gap: 4px; min-width: 0; }
+.ring .rw { position: relative; width: 100%; aspect-ratio: 1; }
+.ring svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ring img { position: absolute; inset: 13%; width: 74%; height: 74%; }
+.ring .st { position: absolute; top: -5px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: -1px; color: var(--gold); -webkit-text-stroke: .8px var(--ink); white-space: nowrap; }
+.ring small { max-width: 100%; font: 700 10px/1.1 var(--body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ring.dead { opacity: .35; }
+.ring.dead img { filter: grayscale(1); }
 .bar { display: block; height: 5px; border-radius: 3px; background: var(--paper2); overflow: hidden; border: 1px solid var(--ink); }
 .bar i { display: block; height: 100%; background: var(--ok); }
-.bar.mp i { background: var(--mine); }
-.rs.dead { opacity: .4; }
 .bctl { display: flex; gap: 8px; }
+#scr-play.combat .syn { display: none; }
 .stats { display: grid; grid-template-columns: 30px minmax(0, 1fr) repeat(3, 64px); gap: 4px 6px; align-items: center; font-size: 11px; }
 .stats .h { font-weight: 700; color: var(--muted); font-size: 10.5px; text-align: left; background: none; border: none; padding: 0; }
 .stats .h.on { color: var(--ink); text-decoration: underline; }
@@ -264,7 +289,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .stats .v i { display: block; height: 5px; border-radius: 3px; background: var(--c); min-width: 2px; }
 .stats .dead { opacity: .55; }
 .mvp { font-size: 9px; background: var(--gold); border: 1px solid var(--ink); border-radius: 3px; padding: 0 3px; margin-left: 3px; vertical-align: 1px; }
-.bctl .btn { min-height: 44px; font-size: 14px; }
+.bctl .btn { min-height: 42px; font-size: 14px; }
 
 /* 지도 */
 .mapbox { flex: 1 1 auto; min-height: 0; position: relative; margin: 4px var(--g) 0; border: 2px solid var(--ink); border-radius: 10px; background: #e9e3cf; box-shadow: 2px 3px 0 var(--ink); overflow: hidden; }
@@ -370,12 +395,24 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 @keyframes stamp { 15% { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -70%) rotate(-12deg) scale(1); } }
 
 @media (max-height: 700px) {
-  .srows { gap: 9px; padding-top: 6px; }
-  .card .cost { width: 18px; height: 18px; top: -6px; left: -5px; font-size: 10px; line-height: 14px; }
-  .card .own { display: none; }
-  .card b { font-size: 10px; padding: 1px 1px 2px; }
-  .card .cl { width: 14px; height: 14px; font-size: 8px; line-height: 14px; top: 3px; }
+  .srows { gap: 3px; padding-top: 4px; }
+  .srow { gap: 2px; }
+  .econ { height: 34px; }
+  .card .pr { padding-top: 3px; }
+  .card b { font-size: 10px; padding: 0 1px 1px; line-height: 1.15; }
+  .card .tr { padding-bottom: 2px; }
+  .card .tr i { font-size: 8px; line-height: 9.5px; }
+  .card.k-unit .txt { margin-top: -10px; padding-top: 6px; }
+  .card.k-unit .pr { padding-top: 6px; }
+  .card .cost { width: 16px; height: 16px; font-size: 9px; line-height: 13px; }
+  .card .cl { width: 14px; height: 14px; font-size: 8px; line-height: 12px; }
+  .card .cl + .own { top: 19px; }
   .hud { height: 40px; }
+  #prepUI .actions { padding-top: 6px; padding-bottom: 4px; }
+  #prepUI .actions .go { min-height: 42px; }
+  .shhead { height: 16px; } .mini { height: 17px; }
+  .syn { height: 32px; padding-top: 4px; } .sc { height: 26px; }
+  .shop > .detail { top: 44px; }
   .actions .btn { min-height: 40px; }
   .peek { height: 146px; }
   .usheet { gap: 4px; padding-top: 6px; }
@@ -399,7 +436,9 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
     <button class="menu" data-menu aria-label="메뉴"><i></i></button>
     <div class="where"><b id="hWhere">1막</b><span id="hSub"></span></div>
     <div class="coin" id="gold" aria-label="골드">0</div>
-    <div class="lv"><b id="lvB">Lv3</b><span class="xp"><i id="xpBar"></i></span><small id="xpT">0/6</small></div>
+    <div class="lv" id="hlv"><b id="lvB">Lv3</b><span class="xp"><i id="xpBar"></i></span><small id="xpT">0/6</small></div>
+    <span class="flame" id="streak" hidden></span>
+    <div class="speed" id="spdSeg" role="group" aria-label="전투 배속" hidden><button data-spd="1">×1</button><button data-spd="2">×2</button><button data-spd="3">×3</button></div>
   </div>
   <div class="screens">
     <section class="screen" id="scr-title">
@@ -423,41 +462,41 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
     </section>
 
     <section class="screen" id="scr-play" hidden>
-      <div class="foebox" id="foebox" hidden>
-        <div class="lbl"><span>적 <b id="foeN">0</b></span><span id="foeNote"></span></div>
-        <div class="foes" id="foeRoster"></div>
+      <div class="tug" id="tug" hidden>
+        <div><small id="tugA">아군 100%</small><span class="tbar l"><i id="tugAi"></i></span></div>
+        <b class="time" id="tugT">0:00</b>
+        <div><small id="tugF">적 100%</small><span class="tbar"><i id="tugFi"></i></span></div>
       </div>
       <div class="boardwrap" id="boardwrap"><canvas id="cv" aria-label="전투 보드"></canvas><div class="bstamp" id="bstamp"></div></div>
       <div class="syn" id="syn"></div>
       <div id="prepUI" style="display:contents">
         <div class="benchbox" id="benchbox">
-          <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint">탭해서 고르기</span></div>
+          <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint"></span></div>
           <div class="bench" id="bench"></div>
         </div>
         <div class="shop" id="shop">
-          <div class="shophead">
-            <button class="gbox" id="gbox" aria-label="보유 골드"><b class="coin" id="sgold">0</b></button>
-            <span class="intpill" id="sint">다음 이자 +0</span>
-            <button class="tool foebtn" id="foeBtn">적 필드 보기</button>
+          <div class="econ" id="econ">
+            <button class="ec gbox" id="gbox" aria-label="보유 골드와 다음 이자"><b class="coin" id="sgold">0</b><span class="int" id="sint">이자 +0</span></button>
+            <div class="ec elv"><b id="eLv">Lv3</b><span class="xpbar"><i id="eXp"></i></span><small id="eXpT">0/6</small></div>
+            <button class="ec up" id="lvBtn" aria-label="레벨업: 4골드로 경험치 +4">▲ 4골드</button>
+            <button class="ec eye" id="foeBtn">적 필드</button>
           </div>
           <div class="srows" id="srows">
-            <div class="srow" data-k="unit"><div class="cards" data-row="unit"></div><div class="rtools"><b data-lbl="unit">유닛</b><button class="rb" data-roll="unit" aria-label="유닛 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="unit">1</small></button><button class="lk" data-lock="unit" aria-label="유닛 줄 잠금">잠금</button></div></div>
-            <div class="srow" data-k="skill"><div class="cards" data-row="skill"></div><div class="rtools"><b data-lbl="skill">스킬</b><button class="rb" data-roll="skill" aria-label="스킬 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="skill">1</small></button><button class="lk" data-lock="skill" aria-label="스킬 줄 잠금">잠금</button></div></div>
-            <div class="srow" data-k="item"><div class="cards" data-row="item"></div><div class="rtools"><b data-lbl="item">아이템</b><button class="rb" data-roll="item" aria-label="아이템 줄 다시 뽑기"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="item">1</small></button><button class="lk" data-lock="item" aria-label="아이템 줄 잠금">잠금</button></div></div>
+            <div class="srow" data-k="unit"><div class="shhead"><b data-lbl="unit">유닛</b><span class="sp"></span><button class="mini" data-roll="unit" aria-label="유닛 줄 다시 뽑기"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="unit">1골드</small></button><button class="mini lk" data-lock="unit" aria-label="유닛 줄 잠금">잠금</button></div><div class="cards" data-row="unit"></div></div>
+            <div class="srow" data-k="skill"><div class="shhead"><b data-lbl="skill">스킬</b><span class="sp"></span><button class="mini" data-roll="skill" aria-label="스킬 줄 다시 뽑기"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="skill">1골드</small></button><button class="mini lk" data-lock="skill" aria-label="스킬 줄 잠금">잠금</button></div><div class="cards" data-row="skill"></div></div>
+            <div class="srow" data-k="item"><div class="shhead"><b data-lbl="item">아이템</b><span class="sp"></span><button class="mini" data-roll="item" aria-label="아이템 줄 다시 뽑기"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost="item">1골드</small></button><button class="mini lk" data-lock="item" aria-label="아이템 줄 잠금">잠금</button></div><div class="cards" data-row="item"></div></div>
           </div>
           <div class="detail" id="detail" hidden></div>
         </div>
         <div class="actions">
-          <button class="btn lvup" id="lvBtn">레벨업</button>
           <button class="btn go" id="goBtn">전투 시작</button>
         </div>
       </div>
       <div class="bpanel" id="bpanel" hidden>
-        <div class="roster" id="roster"></div>
+        <div class="strip" id="roster"></div>
         <div class="bctl">
-          <button class="btn" id="spdBtn">배속 ×1</button>
-          <button class="btn" id="skipBtn">결과 바로 보기</button>
-          <button class="btn" id="statBtn" style="flex:0 0 64px">기록</button>
+          <button class="btn" id="statBtn">기록</button>
+          <button class="btn" id="skipBtn">건너뛰기 <span aria-hidden="true">⏭</span></button>
           <button class="btn pri" id="resBtn" hidden>계속</button>
         </div>
       </div>

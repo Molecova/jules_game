@@ -425,18 +425,23 @@
   }
   function renderHud() {
     if (!R) return;
+    const play = ui.screen === 'play', fighting = play && !!B;
     $('gold').textContent = R.gold;
-    $('gold').hidden = ui.screen === 'play';
+    $('gold').hidden = play; $('hlv').hidden = play;
+    $('streak').hidden = !play || fighting || R.streak < 1; $('streak').textContent = `${R.streak}연승`;
+    $('spdSeg').hidden = !fighting || B.phase === 'result';
+    if (fighting) for (const b of $('spdSeg').children) b.classList.toggle('on', +b.dataset.spd === B.speed);
     const intMax = 5 + (has('vault') ? 2 : 0);
-    $('sgold').textContent = R.gold; $('sint').textContent = `다음 이자 +${Math.min(intMax, Math.floor(R.gold / 10))}`;
+    $('sgold').textContent = R.gold; $('sint').textContent = `이자 +${Math.min(intMax, Math.floor(R.gold / 10))}`;
     if (ui.lastGold != null && ui.lastGold !== R.gold) { const g = $('sgold').parentNode; g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); }
     ui.lastGold = R.gold;
     $('lvB').textContent = 'Lv' + R.lv;
     $('xpT').textContent = R.lv < 8 ? `${R.xp}/${XPNEED[R.lv]}` : 'MAX';
     $('xpBar').style.width = R.lv < 8 ? (100 * R.xp / XPNEED[R.lv]) + '%' : '100%';
+    $('eLv').textContent = 'Lv' + R.lv; $('eXpT').textContent = $('xpT').textContent; $('eXp').style.width = $('xpBar').style.width;
     const n = R.node, A = ACTS[R.act];
     if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료 · 연승 ${R.streak}`; }
-    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '보스' : n.f + 1 + '층'} ${NODE[n.k].name}`; $('hSub').textContent = B && B.phase !== 'prep' ? '자동 전투' : `라운드 ${R.round} · 연승 ${R.streak}`; }
+    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : `라운드 ${R.round}`; }
   }
 
   // ---------- 이미지 ----------
@@ -475,17 +480,26 @@
     for (const k of Object.keys(SYN)) {
       const n = sc.counts[k]; if (!n) continue;
       const th = SYN[k].th, tier = sc.tiers[k];
-      items.push({ on: tier, n, html: `<button class="sc cls${tier ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}" aria-label="${CLS[k].name} ${n}"><b>${CLS[k].short}</b><small>${n}/${th.find((t) => n < t) || th[th.length - 1]}</small></button>` });
+      items.push({ on: tier, n, name: CLS[k].name, html: `<button class="sc cls${tier ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}" aria-label="${CLS[k].name} ${n}"><b>${CLS[k].short}</b><small>${n}/${th.find((t) => n < t) || th[th.length - 1]}</small></button>` });
     }
     for (const [k, T] of Object.entries(TRAITS)) {
       const n = sc.tcounts[k]; if (!n) continue;
       const tier = sc.ttiers[k], need = T.kind === 'combo' ? T.members.length : (T.th.find((t) => n < t) || T.th[T.th.length - 1]);
-      items.push({ on: tier, n: n / need, html: `<button class="sc${tier ? ' on' : ''}${T.kind === 'combo' ? ' combo' : ''}" data-tr="${k}" style="--c:${T.col}" aria-label="${T.name} ${n}/${need}"><b>${T.short}</b><small>${n}/${need}</small></button>` });
+      items.push({ on: tier, n: n / need, name: T.name.replace(/ /g, ''), html: `<button class="sc${tier ? ' on' : ''}${T.kind === 'combo' ? ' combo' : ''}" data-tr="${k}" style="--c:${T.col}" aria-label="${T.name} ${n}/${need}"><b>${T.short}</b><small>${n}/${need}</small></button>` });
     }
     items.sort((a, b) => (b.on > 0) - (a.on > 0) || b.on - a.on || b.n - a.n);
-    const max = Math.max(4, Math.floor(($('syn').clientWidth - 32 - 48) / 36));
-    const more = items.length > max ? `<span class="scmore">+${items.length - max}</span>` : '';
-    return `<button class="sc all" data-allsyn>시너지<br>전체</button>` + items.slice(0, max).map((x) => x.html).join('') + more;
+    // 켜진 것 앞 세 개는 이름까지
+    let named = 0;
+    for (const x of items) if (x.on && named < 3) { named++; x.html = x.html.replace('</b>', `</b>${x.name}`); }
+    return `<div class="scs">${items.map((x) => x.html).join('')}</div><button class="sc all" data-allsyn>전체 <em data-more></em>›</button>`;
+  }
+  // 한 줄에 다 안 들어가는 칩은 숨기고 개수만 "전체" 옆에
+  function fitSyn() {
+    const box = document.querySelector('#syn .scs'); if (!box) return;
+    const w = box.clientWidth; let hid = 0;
+    for (const el of box.children) { el.hidden = false; }
+    for (const el of box.children) if (hid || el.offsetLeft - box.offsetLeft + el.offsetWidth > w) { el.hidden = true; hid++; }
+    const m = document.querySelector('#syn [data-more]'); if (m) m.textContent = hid ? `+${hid} ` : '';
   }
   // 시너지 전체 목록(도감·시트 공용). cards 가 있으면 진행도와 보유 표시
   function synList(cards) {
@@ -579,16 +593,18 @@
     if (ui.screen !== 'play') return;
     renderHud();
     const combat = !!B;
-    $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('foebox').hidden = !combat;
-    $('syn').innerHTML = synHTML(R.board);
+    $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('tug').hidden = !combat;
+    $('scr-play').classList.toggle('combat', combat);
+    $('syn').innerHTML = synHTML(R.board); fitSyn();
     if (combat) { renderBattlePanel(); fitBoard(); return; }
     renderPrep();
     fitBoard();
   }
   function renderPrep() {
     const s = ui.sel;
-    $('benchN').innerHTML = `${R.bench.filter(Boolean).length}/${benchSize()}</b> · 출전 <b>${R.board.length}/${deployMax()}`;
-    $('benchHint').textContent = !s ? '탭해서 고르기' : s.from === 'shop' ? '구매 버튼으로 삽니다' : s.c.kind === 'unit' ? '보드 칸을 탭하면 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지를 탭해 장착`;
+    $('benchN').textContent = `${R.bench.filter(Boolean).length}/${benchSize()}`;
+    if (!s || s.from === 'shop') $('benchHint').innerHTML = `출전 <b>${R.board.length}/${deployMax()}</b>`;
+    else $('benchHint').textContent = s.c.kind === 'unit' ? '칸을 탭하거나 끌어서 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지에 끌거나 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
     $('bench').innerHTML = R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" aria-label="빈 칸"></button>`;
@@ -599,9 +615,9 @@
       const ready = R.shop[k].some((c) => c && owned(c.kind, c.id) >= 2);
       document.querySelector(`[data-lbl="${k}"]`).classList.toggle('ready', ready);
       const lk = document.querySelector(`[data-lock="${k}"]`); lk.classList.toggle('on', R.locked[k]); lk.textContent = R.locked[k] ? '잠김' : '잠금';
-      document.querySelector(`[data-cost="${k}"]`).textContent = R.freeRolls > 0 ? '무료' : '1';
+      document.querySelector(`[data-cost="${k}"]`).textContent = R.freeRolls > 0 ? '무료' : '1골드';
     }
-    const fb = $('foeBtn'); fb.hidden = R.mode !== 'fight'; fb.classList.toggle('on', !!ui.showFoe); fb.textContent = ui.showFoe ? '상점 보기' : '적 필드 보기';
+    const fb = $('foeBtn'); fb.hidden = R.mode !== 'fight'; fb.classList.toggle('on', !!ui.showFoe); fb.textContent = ui.showFoe ? '상점' : '적 필드';
     const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit' && !drag.on;
     if (!s || s.c !== ui.infoFor) { ui.openInfo = null; ui.infoFor = s ? s.c : null; }
     const showDetail = !!s && s.from !== 'shop' && s.c.kind !== 'unit' && !drag.on, peek = !!s && s.from === 'shop';
@@ -613,11 +629,12 @@
     for (const k of ['unit', 'skill', 'item']) document.querySelector(`[data-row="${k}"]`).innerHTML = R.shop[k].map((c, i) => {
       if (!c) return `<div class="card sold" aria-hidden="true"></div>`;
       const d = def(c), n = owned(c.kind, c.id);
-      return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
-        <span class="cost">${d.t}</span><span class="cl">${CLS[d.cls].short}</span>
-        <img src="${imgOf(c, 84)}" alt="">${c.kind === 'unit' ? `<span class="trn">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span>` : ''}<b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}</button>`;
+      const unit = c.kind === 'unit';
+      return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드${unit ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}">
+        <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
+        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}</button>`;
     }).join('');
-    $('lvBtn').innerHTML = R.lv >= 8 ? '최대 레벨' : `레벨업 <small>4골드 · 경험치 +4</small>`;
+    $('lvBtn').textContent = R.lv >= 8 ? 'MAX' : '▲ 4골드'; $('lvBtn').disabled = R.lv >= 8;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
   }
   function renderDetail(s, el) {
@@ -738,23 +755,38 @@
   }
   const POWBASE = (c) => [0, 1, 1.45, 2.1][c.star] * (1 + (def(c).spellBonus || 0));
 
+  function battleNote() {
+    const boss = B && B.combat && B.combat.units.find((u) => u.boss && u.side === 1);
+    if (boss) return `${boss.def.name}${B.phaseText ? ' · ' + B.phaseText : ''}`;
+    return R.node && R.node.k === 'elite' ? '정예 · 지면 원정 끝' : '지면 원정 끝';
+  }
+  // 체력 고리(빨강 35% 미만) + 마나 점(가득 차면 금색)
+  function ringSVG(hp, mp) {
+    const C = 2 * Math.PI * 22;
+    return `<svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="#ebe2cc" stroke-width="5"/>` +
+      (hp > 0 ? `<circle cx="26" cy="26" r="22" fill="none" stroke="${hp < 0.35 ? '#e8436b' : '#2e9e6b'}" stroke-width="5" stroke-dasharray="${(C * hp).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 26 26)" stroke-linecap="round"/>` : '') +
+      (mp == null ? '' : `<circle cx="45" cy="45" r="5" fill="${mp >= 0.98 ? '#f5c400' : '#2f6fd6'}" stroke="#232a3b" stroke-width="1.5"/>`) + '</svg>';
+  }
   function renderBattlePanel() {
     const cb = B.combat;
     const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
-    const fo = cb.units.filter((u) => u.side === 1 && !u.summon);
-    const boss = fo.find((u) => u.boss);
-    $('foeN').textContent = `${fo.filter((u) => !u.dead).length}/${fo.length}`;
-    $('foeNote').textContent = boss ? `${boss.def.name}${B.phaseText ? ' · ' + B.phaseText : ''}` : R.node.k === 'elite' ? '정예 · 지면 원정 끝' : '지면 원정 끝';
-    $('foeRoster').innerHTML = fo.slice(0, 10).map((u) => `<div class="fo${u.dead ? ' dead' : ''}${u.boss ? ' boss' : ''}"><img src="${ART.tokenURL(u.artId, 1, u.boss ? 'boss' : '')}" alt=""><span class="bar"><i style="width:${Math.max(0, 100 * u.hp / u.maxHp)}%"></i></span></div>`).join('');
-    $('foeRoster').style.gridTemplateColumns = `repeat(${Math.max(5, Math.min(10, fo.length))}, minmax(0,1fr))`;
-    $('roster').style.gridTemplateColumns = `repeat(${al.length > 4 ? 4 : 2}, minmax(0,1fr))`;
-    $('roster').innerHTML = al.map((u) => `<div class="rs${u.dead ? ' dead' : ''}"><img src="${imgOf(u.card, 60)}" alt=""><div><b>${u.def.name}${starTxt(u.card.star)}</b><span class="bar"><i style="width:${Math.max(0, 100 * u.hp / u.maxHp)}%"></i></span><span class="bar mp"><i style="width:${u.maxMana ? Math.min(100, 100 * u.mana / u.maxMana) : 0}%"></i></span></div></div>`).join('');
+    const fo = cb.units.filter((u) => u.side === 1 && !u.summon && !u.object);
+    const pct = (us) => { const m = us.reduce((a, u) => a + u.maxHp, 0); return m ? Math.max(0, Math.round(100 * us.reduce((a, u) => a + (u.dead ? 0 : Math.max(0, u.hp)), 0) / m)) : 0; };
+    const pa = pct(al), pf = pct(fo), t = Math.floor(cb.t);
+    $('tugA').textContent = `아군 ${pa}%`; $('tugAi').style.width = pa + '%';
+    $('tugF').textContent = `적 ${pf}%`; $('tugFi').style.width = pf + '%';
+    $('tugT').textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+    $('hSub').textContent = battleNote();
+    const ro = $('roster');
+    ro.style.setProperty('--n', al.length);
+    ro.innerHTML = al.map((u) => `<div class="ring${u.dead ? ' dead' : ''}" aria-label="${u.def.name} 체력 ${Math.max(0, Math.round(u.hp))}/${Math.round(u.maxHp)}"><span class="rw">${ringSVG(u.dead ? 0 : Math.max(0, u.hp / u.maxHp), u.maxMana ? Math.min(1, u.mana / u.maxMana) : null)}<img src="${imgOf(u.card, 60)}" alt="">${u.card.star > 1 ? `<span class="st">${starTxt(u.card.star)}</span>` : ''}</span><small>${u.def.name.replace(/^견습 /, '')}</small></div>`).join('');
     const res = B.phase === 'result';
-    $('spdBtn').hidden = res; $('skipBtn').hidden = res;
-    $('spdBtn').textContent = '배속 ×' + B.speed;
+    $('skipBtn').hidden = res;
     $('resBtn').hidden = !res;
     if (res) $('resBtn').textContent = B.won ? `승리 +${B.reward}골드 · 계속` : B.phoenix ? '불사조 깃털로 버티기' : '원정 기록 보기';
     $('resBtn').className = 'btn ' + (B.won || B.phoenix ? 'pri' : 'warn');
+    $('resBtn').style.flex = res ? '2' : '';
+    renderHud();
   }
 
   // ---------- 입력 ----------
@@ -816,7 +848,7 @@
   $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 5 · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
   $('lvBtn').onclick = () => levelUp();
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
-  $('spdBtn').onclick = () => { if (!B) return; B.speed = B.speed === 1 ? 2 : B.speed === 2 ? 3 : 1; ui.speed = B.speed; renderBattlePanel(); };
+  $('spdSeg').onclick = (e) => { const b = e.target.closest('[data-spd]'); if (!b || !B) return; B.speed = ui.speed = +b.dataset.spd; SFX.play('click'); renderBattlePanel(); };
   $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 30); B.skipping = false; B.vfx = newVfx(); };
   $('resBtn').onclick = () => { if (B && B.phase === 'result') afterCombat(); };
   // ---------- 전투 기록: 입힌 피해 · 받은 피해 · 회복/보호막 ----------
@@ -873,7 +905,7 @@
     if (mineOnly()) {
       const w = wrap.getBoundingClientRect().width;
       if (!w) return;
-      kScale = Math.max(0.4, Math.min((w - 24) / W, (scr.clientHeight * (scr.clientHeight < 640 ? 0.3 : 0.36)) / vh));
+      kScale = Math.max(0.4, Math.min((w - 24) / W, (scr.clientHeight * (scr.clientHeight < 640 ? 0.25 : scr.clientHeight < 720 ? 0.28 : scr.clientHeight < 780 ? 0.32 : 0.36)) / vh));
       wrap.style.height = Math.round(vh * kScale + 6) + 'px';
     } else {
       wrap.style.height = '';
@@ -1440,7 +1472,7 @@
   $('overTitle').onclick = title;
   $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet') && ui.screen === 'title') closeSheet(); });
   document.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && !b.closest('#row') && !b.closest('#bench')) SFX.play('click', 0.05); });
-  new ResizeObserver(() => { if (ui.screen === 'play') { fitBoard(); renderPrepPeek(); } if (ui.screen === 'map') renderMap(); }).observe($('phone'));
+  new ResizeObserver(() => { if (ui.screen === 'play') { fitBoard(); fitSyn(); renderPrepPeek(); } if (ui.screen === 'map') renderMap(); }).observe($('phone'));
   function renderPrepPeek() { if (!B && ui.sel && ui.sel.from === 'shop') $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
   
 
