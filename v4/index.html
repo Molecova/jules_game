@@ -88,10 +88,15 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .tab { position: relative; flex: 1; border: 2px solid var(--ink); border-radius: 6px 6px 0 0; border-bottom-width: 0; background: var(--paper2); font-weight: 700; font-size: 12px; }
 .tab.on { background: var(--card); }
 .tab .dot { position: absolute; top: -5px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--stamp); color: #fff; font: 700 9px/16px var(--body); border: 1.5px solid var(--ink); padding-inline: 2px; }
-.gbox { flex: none; width: 58px; display: grid; justify-items: center; align-content: center; line-height: 1; border: 2px solid var(--ink); border-radius: 6px; background: #fff3c4; box-shadow: 2px 2px 0 var(--ink); }
-.gbox .coin { font-size: 15px; gap: 3px; }
-.gbox .coin::before { width: 14px; height: 14px; border-width: 1.5px; box-shadow: 0 1px 0 var(--ink); }
-.gbox small { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.gbox { flex: none; min-width: 58px; padding: 0 6px; display: grid; place-items: center; line-height: 1; border: 2px solid var(--ink); border-radius: 6px; background: #fff3c4; box-shadow: 2px 2px 0 var(--ink); }
+.gbox .coin { font-size: 17px; gap: 4px; }
+.gbox .coin::before { width: 16px; height: 16px; border-width: 1.5px; box-shadow: 0 1px 0 var(--ink); }
+.intpill { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #fff3c4; border: 1px solid var(--golddk); color: var(--ink); font-weight: 700; }
+.xbtn { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 50%; background: var(--card); box-shadow: 1px 2px 0 var(--ink); display: grid; place-items: center; padding: 0; z-index: 2; }
+.xbtn svg { pointer-events: none; }
+.detail, .usheet { position: relative; }
+.peek, .usheet { position: absolute; }
+.dh .tt, .uh .tt { padding-right: 34px; }
 .gbox.bump { animation: bump .35s ease-out; }
 @keyframes bump { 40% { transform: scale(1.15); background: var(--gold); } }
 .tool { flex: none; width: 44px; border: 2px solid var(--ink); border-radius: 6px; background: var(--card); font-size: 11px; font-weight: 700; display: grid; place-items: center; line-height: 1.05; box-shadow: 2px 2px 0 var(--ink); }
@@ -343,12 +348,12 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
       <div class="syn" id="syn"></div>
       <div id="prepUI" style="display:contents">
         <div class="benchbox" id="benchbox">
-          <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint">탭해서 고르기</span></div>
+          <div class="lbl"><span>창고 <b id="benchN">0/8</b> <span class="intpill" id="sint">이자 +0</span></span><span id="benchHint">탭해서 고르기</span></div>
           <div class="bench" id="bench"></div>
         </div>
         <div class="shop" id="shop">
           <div class="tabs" id="tabsRow">
-            <div class="gbox" aria-label="보유 골드"><b class="coin" id="sgold">0</b><small id="sint">이자 +0</small></div>
+            <button class="gbox" id="gbox" aria-label="보유 골드"><b class="coin" id="sgold">0</b></button>
             <button class="tab on" data-tab="unit">유닛</button>
             <button class="tab" data-tab="skill">스킬</button>
             <button class="tab" data-tab="item">아이템</button>

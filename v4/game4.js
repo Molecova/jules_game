@@ -426,7 +426,7 @@
     $('gold').textContent = R.gold;
     $('gold').hidden = ui.screen === 'play';
     const intMax = 5 + (has('vault') ? 2 : 0);
-    $('sgold').textContent = R.gold; $('sint').textContent = `이자 +${Math.min(intMax, Math.floor(R.gold / 10))}`;
+    $('sgold').textContent = R.gold; $('sint').textContent = `다음 이자 +${Math.min(intMax, Math.floor(R.gold / 10))}`;
     if (ui.lastGold != null && ui.lastGold !== R.gold) { const g = $('sgold').parentNode; g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); }
     ui.lastGold = R.gold;
     $('lvB').textContent = 'Lv' + R.lv;
@@ -596,7 +596,7 @@
     const btns = shop
       ? `<button class="btn pri" data-act="buy" ${R.gold < d.t ? 'disabled' : ''}>구매 · ${d.t}골드${n >= 2 ? ' → ★2' : ''}</button><button class="btn" data-act="close">닫기</button>`
       : `<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button>`;
-    el.innerHTML = `<div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
+    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
 
@@ -689,11 +689,10 @@
     }
     if (c.item) { const it = def(c.item); rows += `<button class="urow" data-un="item"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}</span><span class="x">빼기</span></button>`; }
     else rows += `<div class="urow empty"><span>빈 아이템 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
-    const syn = battleApi.synergyCounts(R.board), tier = syn.tiers[d.cls];
-    $('usheet').innerHTML = `<div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값${tier ? ` · ${cls} ${SYN[d.cls].th[tier - 1]}명 시너지` : ''} · 칸 탭 = 빼기</p></div></div>
+    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸 탭 = 빼기</p></div></div>
       <div class="ustats">${stats}</div>
       ${rows}
-      <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button></div>`;
+      <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button></div>`;
   }
   const POWBASE = (c) => [0, 1, 1.45, 2.1][c.star] * (1 + (def(c).spellBonus || 0));
 
@@ -751,7 +750,7 @@
   $('row').addEventListener('click', (e) => {
     const b = e.target.closest('[data-s]'); if (!b || B) return;
     const i = +b.dataset.s, c = R.shop[ui.tab][i];
-    if (ui.sel && ui.sel.c === c) return;
+    if (ui.sel && ui.sel.c === c) { ui.sel = null; renderPlay(); return; }
     ui.sel = { from: 'shop', i, c }; ui.peekT = performance.now(); SFX.play('card'); renderPlay();
   });
   const onDetail = (e) => {
@@ -767,6 +766,7 @@
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
   document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { ui.tab = b.dataset.tab; ui.sel = null; SFX.play('click'); renderPlay(); }));
   $('rollBtn').onclick = () => reroll();
+  $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 5 · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
   $('lockBtn').onclick = () => { R.locked[ui.tab] = !R.locked[ui.tab]; toast(R.locked[ui.tab] ? `${TABNAME[ui.tab]} 줄 잠금: 다음 라운드에도 그대로` : '잠금 해제'); renderPlay(); };
   $('lvBtn').onclick = () => levelUp();
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
