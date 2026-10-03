@@ -141,6 +141,15 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .urow > span em { font-style: normal; color: var(--stamp); font-weight: 700; }
 .urow .x { flex: none; font-size: 10px; color: var(--muted); border: 1.5px solid var(--line); border-radius: 4px; padding: 1px 5px; }
 .urow.empty { border-style: dashed; border-color: var(--line); background: transparent; color: var(--muted); }
+.urow { cursor: pointer; flex: none; }
+.uh, .ustats, .usheet .dbtn { flex: none; }
+.urow.open { background: #fff8dc; }
+.urow .uinfo { display: block; margin-top: 3px; padding-top: 3px; border-top: 1px dashed var(--line); color: var(--ink); }
+.urow button.x { background: var(--card); cursor: pointer; font-weight: 700; min-height: 30px; }
+.slot { touch-action: none; }
+.slot.dragsrc img { opacity: .3; }
+.slot.over { background: #fff3c4; outline: 3px solid var(--mine); outline-offset: -3px; }
+.dragghost { position: absolute; z-index: 60; width: 64px; height: 64px; transform: translate(-50%, -70%) rotate(-6deg); pointer-events: none; filter: drop-shadow(0 8px 6px rgba(35,42,59,.35)); }
 .urow .pat { grid-template-columns: repeat(5, 6px); }
 .urow .pat i { width: 6px; height: 6px; }
 .peek { position: absolute; left: var(--g); right: var(--g); z-index: 12; height: 156px; box-shadow: 3px 5px 0 var(--ink), 0 10px 30px rgba(35,42,59,.35); }
@@ -194,6 +203,16 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .bar.mp i { background: var(--mine); }
 .rs.dead { opacity: .4; }
 .bctl { display: flex; gap: 8px; }
+.stats { display: grid; grid-template-columns: 30px minmax(0, 1fr) repeat(3, 64px); gap: 4px 6px; align-items: center; font-size: 11px; }
+.stats .h { font-weight: 700; color: var(--muted); font-size: 10.5px; text-align: left; background: none; border: none; padding: 0; }
+.stats .h.on { color: var(--ink); text-decoration: underline; }
+.stats img { width: 30px; height: 30px; }
+.stats .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.stats .nm small { display: block; font-weight: 400; color: var(--muted); }
+.stats .v { display: grid; gap: 2px; font-variant-numeric: tabular-nums; font-weight: 700; }
+.stats .v i { display: block; height: 5px; border-radius: 3px; background: var(--c); min-width: 2px; }
+.stats .dead { opacity: .55; }
+.mvp { font-size: 9px; background: var(--gold); border: 1px solid var(--ink); border-radius: 3px; padding: 0 3px; margin-left: 3px; vertical-align: 1px; }
 .bctl .btn { min-height: 44px; font-size: 14px; }
 
 /* 지도 */
@@ -373,6 +392,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
         <div class="bctl">
           <button class="btn" id="spdBtn">배속 ×1</button>
           <button class="btn" id="skipBtn">결과 바로 보기</button>
+          <button class="btn" id="statBtn" style="flex:0 0 64px">기록</button>
           <button class="btn pri" id="resBtn" hidden>계속</button>
         </div>
       </div>

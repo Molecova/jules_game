@@ -552,7 +552,7 @@
     $('bench').innerHTML = R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" aria-label="빈 칸"></button>`;
       const can = s && s.from === 'bench' && s.c.kind !== 'unit' && c.kind === 'unit' && canEquip(s.c, c);
-      return `<button class="slot${s && s.c === c ? ' sel' : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
+      return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
     }).join('');
     document.querySelectorAll('.tab').forEach((b) => {
       const k = b.dataset.tab, ready = R.shop[k].filter((c) => c && owned(c.kind, c.id) >= 2).length;
@@ -562,8 +562,9 @@
     $('lockBtn').classList.toggle('on', R.locked[ui.tab]);
     $('lockBtn').textContent = R.locked[ui.tab] ? '잠김' : '잠금';
     $('rollCost').textContent = R.freeRolls > 0 ? `무료 ${R.freeRolls}` : '1골드';
-    const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit';
-    const showDetail = !!s && s.from !== 'shop' && !unitSheet, peek = !!s && s.from === 'shop';
+    const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit' && !drag.on;
+    if (!s || s.c !== ui.infoFor) { ui.openInfo = null; ui.infoFor = s ? s.c : null; }
+    const showDetail = !!s && s.from !== 'shop' && s.c.kind !== 'unit' && !drag.on, peek = !!s && s.from === 'shop';
     $('row').hidden = showDetail; $('detail').hidden = !showDetail;
     $('peek').hidden = !peek; $('usheet').hidden = !unitSheet;
     if (showDetail) renderDetail(s, $('detail'));
@@ -685,11 +686,12 @@
       const x = c.skills[k];
       if (!x) { rows += `<div class="urow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
       const sd = def(x);
-      rows += `<button class="urow" data-un="${k}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(30, (sd.mana || 80) - (x.star - 1) * 8)}</small><br>${skillText(sd, x.star, e)}</span>${patternGrid(sd, x.star)}<span class="x">빼기</span></button>`;
+      const open = ui.openInfo === 's' + k;
+      rows += `<div class="urow${open ? ' open' : ''}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(30, (sd.mana || 80) - (x.star - 1) * 8)}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${esc(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span></span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
     }
-    if (c.item) { const it = def(c.item); rows += `<button class="urow" data-un="item"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}</span><span class="x">빼기</span></button>`; }
+    if (c.item) { const it = def(c.item), open = ui.openInfo === 'item'; rows += `<div class="urow${open ? ' open' : ''}" data-info="item" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}${open ? `<span class="uinfo">${esc(it.desc)}<br><span class="meta">${CLS[it.cls].name} 아이템 · ${it.t}등급 · ★2 수치 ×1.6 · ★3 ×2.5</span></span>` : ''}</span><button class="x" data-un="item" aria-label="${it.name} 빼기">빼기</button></div>`; }
     else rows += `<div class="urow empty"><span>빈 아이템 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
-    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸 탭 = 빼기</p></div></div>
+    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸을 탭하면 설명</p></div></div>
       <div class="ustats">${stats}</div>
       ${rows}
       <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button></div>`;
@@ -726,8 +728,9 @@
     SFX.play('click');
     renderPlay();
   }
-  function tapCell(x, y) {
+  function tapCell(x, y, fromDrag) {
     const s = ui.sel, u = R.board.find((b) => b.x === x && b.y === y);
+    if (!fromDrag && u && s && s.c.kind === 'unit' && s.c !== u) { ui.sel = { from: 'board', c: u }; SFX.play('click'); return renderPlay(); }
     if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); if (e) { const m = MONSTERS[e.id]; toast(`${m.name} · 체력 약 ${Math.round(m.hp * battleApi.foePreview(m).hp)} · ${m.range > 1 ? '원거리' : '근접'}`); } ui.sel = null; return renderPlay(); }
     if (s && s.from === 'bench' && s.c.kind !== 'unit') { if (u) { equip(s.c, s.i, u); ui.sel = null; } else ui.sel = null; return renderPlay(); }
     if (s && s.from === 'bench' && s.c.kind === 'unit') {
@@ -746,7 +749,7 @@
     if (u) SFX.play('click');
     renderPlay();
   }
-  $('bench').addEventListener('click', (e) => { const b = e.target.closest('[data-b]'); if (b && !B) tapBench(+b.dataset.b); });
+  $('bench').addEventListener('click', (e) => { const b = e.target.closest('[data-b]'); if (b && !B && performance.now() - drag.endT > 250) tapBench(+b.dataset.b); });
   $('row').addEventListener('click', (e) => {
     const b = e.target.closest('[data-s]'); if (!b || B) return;
     const i = +b.dataset.s, c = R.shop[ui.tab][i];
@@ -754,8 +757,9 @@
     ui.sel = { from: 'shop', i, c }; ui.peekT = performance.now(); SFX.play('card'); renderPlay();
   });
   const onDetail = (e) => {
-    const b = e.target.closest('[data-act],[data-un]'); if (!b) return;
-    if (b.dataset.un != null) { const u = ui.sel.c, k = b.dataset.un; unequip(u, k === 'item' ? 'item' : +k); return renderPlay(); }
+    const b = e.target.closest('[data-act],[data-un],[data-info]'); if (!b) return;
+    if (b.dataset.un != null) { const u = ui.sel.c, k = b.dataset.un; unequip(u, k === 'item' ? 'item' : +k); ui.openInfo = null; return renderPlay(); }
+    if (b.dataset.info != null) { ui.openInfo = ui.openInfo === b.dataset.info ? null : b.dataset.info; SFX.play('click'); return renderPlay(); }
     if (b.dataset.act === 'noop') return;
     const a = b.dataset.act;
     if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i); }
@@ -773,6 +777,36 @@
   $('spdBtn').onclick = () => { if (!B) return; B.speed = B.speed === 1 ? 2 : B.speed === 2 ? 3 : 1; ui.speed = B.speed; renderBattlePanel(); };
   $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 30); B.skipping = false; B.vfx = newVfx(); };
   $('resBtn').onclick = () => { if (B && B.phase === 'result') afterCombat(); };
+  // ---------- 전투 기록: 입힌 피해 · 받은 피해 · 회복/보호막 ----------
+  let statSort = 'dmg';
+  function openStats() {
+    if (!B || !B.combat) return;
+    const cb = B.combat;
+    const rows = cb.units.filter((u) => u.side === 0 && !u.object).map((u) => ({ u, dmg: Math.round(u.dmgDealt || 0), taken: Math.round(u.dmgTaken || 0), heal: Math.round((u.healDone || 0) + (u.shieldDone || 0)) }));
+    rows.sort((a, b) => b[statSort] - a[statSort]);
+    const mx = { dmg: 1, taken: 1, heal: 1 };
+    for (const r of rows) for (const k in mx) mx[k] = Math.max(mx[k], r[k]);
+    const top = rows.reduce((a, b) => (b.dmg > a.dmg ? b : a), rows[0]);
+    const col = { dmg: '#e8436b', taken: '#8a8f99', heal: '#2e9e6b' };
+    const head = [['dmg', '입힌 피해'], ['taken', '받은 피해'], ['heal', '회복·보호막']].map(([k, n]) => `<button class="h${statSort === k ? ' on' : ''}" data-sort="${k}">${n}</button>`).join('');
+    const body = rows.map((r) => {
+      const u = r.u, img = u.card ? imgOf(u.card, 60) : ART.tokenURL(u.artId, 0);
+      const name = (u.def.name || '') + (u.card ? starTxt(u.card.star) : '');
+      return `<img class="${u.dead ? 'dead' : ''}" src="${img}" alt=""><div class="nm${u.dead ? ' dead' : ''}">${esc(name)}${r === top && r.dmg > 0 ? '<span class="mvp">MVP</span>' : ''}<small>${u.summon ? '소환물' : u.dead ? '찢어짐' : '생존'}</small></div>` +
+        ['dmg', 'taken', 'heal'].map((k) => `<div class="v" style="--c:${col[k]}">${r[k]}<i style="width:${Math.round(100 * r[k] / mx[k])}%"></i></div>`).join('');
+    }).join('');
+    const sum = (k) => rows.reduce((a, r) => a + r[k], 0);
+    openSheet(`<span class="eyebrow">전투 기록 · ${cb.done ? '전투 끝' : Math.floor(cb.t) + '초째, 일시 정지'}</span><h2>누가 얼마나 했나</h2>
+      <div class="stats"><span></span><span class="h">딱지</span>${head}${body}</div>
+      <p class="meta" style="margin:0">합계 · 입힌 피해 ${sum('dmg')} · 받은 피해 ${sum('taken')} · 회복·보호막 ${sum('heal')}. 머리글을 탭하면 그 순서로 정렬</p>
+      <button class="btn" data-close>닫기</button>`);
+    $('sheetIn').onclick = (e) => {
+      const b = e.target.closest('[data-sort]'); if (b) { statSort = b.dataset.sort; return openStats(); }
+      if (e.target.closest('[data-close]')) closeSheet();
+    };
+  }
+  $('statBtn').onclick = openStats;
+
   $('syn').addEventListener('click', (e) => { const b = e.target.closest('[data-syn]'); if (!b) return; const k = b.dataset.syn; toast(`${CLS[k].name} ${SYN[k].th.join('/')}: ${SYN[k].desc.join(' → ')}`); });
 
   // =====================================================================
@@ -788,12 +822,78 @@
     canvas.width = Math.round(W * kScale * DPR); canvas.height = Math.round(H * kScale * DPR);
     draw();
   }
+  function cellFromPoint(x, y) { const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale); }
   canvas.addEventListener('pointerdown', (e) => {
     if (B || ui.screen !== 'play') return;
-    const r = canvas.getBoundingClientRect(), px = (e.clientX - r.left) / kScale, py = (e.clientY - r.top) / kScale;
-    const c = grid.cellAt(px, py);
-    if (c) tapCell(c.c, c.r);
+    const c = cellFromPoint(e.clientX, e.clientY);
+    if (!c) return;
+    const u = R.board.find((b) => b.x === c.c && b.y === c.r);
+    dragBegin(e, canvas, u ? { from: 'board', c: u } : null, () => tapCell(c.c, c.r));
   });
+  // ---------- 드래그: 창고·보드의 딱지와 창고의 칩을 끌어다 놓기 ----------
+  const drag = { start: null, on: false, src: null, tap: null, ghost: null, endT: 0 };
+  function dragBegin(e, el, src, tap) {
+    drag.start = { x: e.clientX, y: e.clientY, id: e.pointerId }; drag.src = src; drag.tap = tap; drag.on = false;
+    try { el.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+  }
+  $('bench').addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('[data-b]'); if (!b || B) return;
+    const i = +b.dataset.b, c = R.bench[i];
+    if (c) dragBegin(e, b, { from: 'bench', i, c }, null);
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!drag.start || e.pointerId !== drag.start.id) return;
+    if (!drag.on) {
+      if (!drag.src || Math.hypot(e.clientX - drag.start.x, e.clientY - drag.start.y) < 10) return;
+      drag.on = true;
+      ui.sel = Object.assign({}, drag.src);
+      const g = document.createElement('img'); g.className = 'dragghost'; g.src = imgOf(drag.src.c, 96); g.alt = '';
+      $('phone').appendChild(g); drag.ghost = g;
+      SFX.play('card');
+      renderPlay();
+    }
+    const p = phoneRect();
+    drag.ghost.style.left = (e.clientX - p.left) + 'px'; drag.ghost.style.top = (e.clientY - p.top) + 'px';
+    const over = document.elementFromPoint(e.clientX, e.clientY), slot = over && over.closest('[data-b]');
+    document.querySelectorAll('.slot.over').forEach((x) => x !== slot && x.classList.remove('over'));
+    if (slot) slot.classList.add('over');
+    drag.hover = cellFromPoint(e.clientX, e.clientY);
+  });
+  function dragEnd(e, cancel) {
+    if (!drag.start || (e && e.pointerId !== drag.start.id)) return;
+    const was = drag.on, tap = drag.tap;
+    drag.start = null; drag.on = false; drag.hover = null;
+    if (drag.ghost) { drag.ghost.remove(); drag.ghost = null; }
+    document.querySelectorAll('.slot.over').forEach((x) => x.classList.remove('over'));
+    if (!was) { if (tap && !cancel) tap(); return; }
+    drag.endT = performance.now();
+    if (cancel) { ui.sel = null; return renderPlay(); }
+    dropAt(e.clientX, e.clientY);
+  }
+  window.addEventListener('pointerup', (e) => dragEnd(e, false));
+  window.addEventListener('pointercancel', (e) => dragEnd(e, true));
+  function dropAt(x, y) {
+    const s = ui.sel; if (!s) return renderPlay();
+    const cell = cellFromPoint(x, y);
+    if (cell) {
+      if (s.from === 'board' && s.c.x === cell.c && s.c.y === cell.r) { ui.sel = null; return renderPlay(); }
+      if (cell.r < PLAYER_ROW) { ui.sel = null; toast('아래쪽 세 줄(내 진영)에만 놓을 수 있어요'); return renderPlay(); }
+      if (s.c.kind !== 'unit' && !R.board.some((b) => b.x === cell.c && b.y === cell.r)) { ui.sel = null; return renderPlay(); }
+      tapCell(cell.c, cell.r, true);
+      if (ui.sel === s) { ui.sel = null; renderPlay(); }
+      return;
+    }
+    const over = document.elementFromPoint(x, y), slot = over && over.closest('[data-b]');
+    if (slot) {
+      const i = +slot.dataset.b, t = R.bench[i];
+      if (s.from === 'bench' && s.i === i) { ui.sel = null; return renderPlay(); }
+      if (t && t.kind === 'unit' && s.c.kind !== 'unit') return tapBench(i);
+      if (t && s.from === 'bench') { R.bench[s.i] = t; R.bench[i] = s.c; ui.sel = null; SFX.play('card'); return renderPlay(); }
+      if (t && s.from === 'board' && t.kind === 'unit') { R.board = R.board.filter((b) => b !== s.c); t.x = s.c.x; t.y = s.c.y; R.board.push(t); R.bench[i] = s.c; ui.sel = null; SFX.play('place'); tryMerge('unit', t.id, t.star); return renderPlay(); }
+      if (!t) return tapBench(i);
+    }
+    ui.sel = null; renderPlay();
+  }
 
   const INK = '#232a3b';
   const boardCache = {};
@@ -1008,9 +1108,11 @@
         for (const c of grid.cells) if (c.r >= PLAYER_ROW && !R.board.some((u) => grid.idx(u.x, u.y) === c.i)) { ctx.fillStyle = '#2f6fd6'; ctx.beginPath(); ctx.arc(c.x, c.y, 7, 0, 7); ctx.fill(); }
         ctx.restore();
       }
+      if (drag.on && drag.hover) { const ok = drag.hover.r >= PLAYER_ROW; fillCell(drag.hover.i, ok ? '#2f6fd6' : '#e8436b', 0.28); }
       const items = [
         ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
         ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)]; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
+          if (selU && drag.on) return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, alpha: 0.3 }) };
           return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : null, dash: can }) }; }),
       ].sort((a, b) => a.y - b.y);
       for (const it of items) it.f();
@@ -1023,7 +1125,7 @@
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (R) R.stats.time += ui.screen === 'play' || ui.screen === 'map' ? dt : 0;
     if (B && B.combat && !B.sim) {
-      if (B.phase === 'combat') {
+      if (B.phase === 'combat' && $('sheet').hidden) {
         let left = dt * B.speed;
         while (left > 0 && !B.combat.done) { const s = Math.min(1 / 60, left); B.combat.step(s); left -= s; }
         if (B.combat.done) endCombat();

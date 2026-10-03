@@ -218,6 +218,7 @@
     }
     function cleanse(t) { const st = t.st; delete st.burn; delete st.poison; delete st.bleed; delete st.slow; delete st.weak; delete st.vuln; t.stun = 0; }
     const H = (u) => (u && u.healMult) || 1;
+    function giveShield(a, amt, src) { a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
     const lowestAlly = (cb, side, needHurt) => cb.alive(side).filter((x) => !x.object && (!needHurt || x.hp < x.maxHp)).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
 
     // ---------- 스킬 ----------
@@ -287,14 +288,14 @@
           tiles(cb, cells, col);
           let dealt = 0;
           for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe) dealt += applySkillHit(cb, u, v, P, d); }
-          if (d.drain && dealt) cb.heal(u, dealt * d.drain);
+          if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
           if (d.mode === 'line' && cells.length) { const last = grid.cells[cells[cells.length - 1]]; cb.beam(u.px, u.py, last.x, last.y, col, 0.3); }
           break;
         }
         case 'lightrain': {
           const cells = cellsOf();
           tiles(cb, cells, '#f5c400');
-          for (const i of cells) { const v = cb.occ[i]; if (!v || v.dead) continue; if (v.side === foe) applySkillHit(cb, u, v, P, d); else if (!v.object) cb.heal(v, P * 0.6 * Hm); }
+          for (const i of cells) { const v = cb.occ[i]; if (!v || v.dead) continue; if (v.side === foe) applySkillHit(cb, u, v, P, d); else if (!v.object) cb.heal(v, P * 0.6 * Hm, u); }
           break;
         }
         case 'tele':
@@ -303,30 +304,30 @@
         case 'heal': {
           if (d.mode === 'lowestAlly') {
             const a = lowestAlly(cb, u.side);
-            if (a) { tiles(cb, [a.cell], '#2e9e6b'); if (u.range > 1) cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, P * Hm); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#7dffa0', 24); }
+            if (a) { tiles(cb, [a.cell], '#2e9e6b'); if (u.range > 1) cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, P * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#7dffa0', 24); }
             break;
           }
           const cells = cellsOf();
           tiles(cb, cells, '#2e9e6b');
-          for (const a of allies(cells)) { cb.heal(a, P * Hm); if (d.cleanse) cleanse(a); }
+          for (const a of allies(cells)) { cb.heal(a, P * Hm, u); if (d.cleanse) cleanse(a); }
           break;
         }
         case 'shield': {
           const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#6aa8ff');
-          for (const a of list) { a.shield += P * Hm; if (d.heal) cb.heal(a, d.heal * Hm); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
+          for (const a of list) { giveShield(a, P * Hm, u); if (d.heal) cb.heal(a, d.heal * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
           break;
         }
         case 'taunt': {
           const cells = cellsOf();
           tiles(cb, cells, '#f5c400');
           for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe) { v.forced = u; v.forcedT = 3; } }
-          u.shield += P;
+          giveShield(u, P, u);
           cb.ring(u.px, u.py, '#f5c400', 40, 0.6);
           break;
         }
-        case 'parry': u.shield += P * Hm; u.st.parry = 4; cb.ring(u.px, u.py, '#c3cbd6', 30); break;
-        case 'fortify': u.st.fort = 5; cb.heal(u, P * Hm); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
+        case 'parry': giveShield(u, P * Hm, u); u.st.parry = 4; cb.ring(u.px, u.py, '#c3cbd6', 30); break;
+        case 'fortify': u.st.fort = 5; cb.heal(u, P * Hm, u); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
           if (a) { a.atk *= 1.3 + 0.1 * ((s.star || 1) - 1); a.as *= 1.2; cb.ring(a.px, a.py, '#f5c400', 26, 0.6); cb.float(a.px, a.py - 22, '축복', '#f5c400'); }
@@ -354,7 +355,7 @@
         }
         case 'revive': {
           const dead = cb.units.find((v) => v.dead && v.side === u.side && !v.revived && !v.summon && !v.object);
-          if (!dead) { cb.heal(u, 150 * Hm); break; }
+          if (!dead) { cb.heal(u, 150 * Hm, u); break; }
           const cell = freeNear(cb, dead.cell);
           if (cell === undefined) break;
           dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, 0.5 + 0.15 * ((s.star || 1) - 1))); dead.mana = 0; dead.moving = null; dead.st = {};
@@ -457,7 +458,7 @@
       for (const u of cb.units.slice()) {
         if (u.side !== 0 || u.dead || u.summon) continue;
         const p = u.passive;
-        if (p === 'startShield') u.shield += 220 * u.healMult;
+        if (p === 'startShield') giveShield(u, 220 * u.healMult, u);
         if (p === 'hawk' || u.ifx === 'hawkFocus') {
           const cell = grid.neighbors[u.cell].find((n) => !cb.occ[n]);
           if (cell !== undefined) cb.spawn(makeSummon('hawk', cell, 0, u));
@@ -485,7 +486,7 @@
           if (!a || a.hp / a.maxHp > 0.92) return false;
           u.mana = Math.min(u.maxMana, u.mana + (u.manaPerHit || 10));
           cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.25);
-          cb.heal(a, u.atk * 1.4 * u.healMult * u.ifxK);
+          cb.heal(a, u.atk * 1.4 * u.healMult * u.ifxK, u);
           return true;
         },
         onCast: (u, t, cb) => {
@@ -532,8 +533,8 @@
           if (u.passive === 'focus' || u.ifx === 'hawkFocus') { u.focusN = u.lastT === t ? Math.min(5, (u.focusN || 0) + 1) : 0; u.lastT = t; }
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
-          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.6 * u.healMult * u.ifxK); }
-          if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 2.5 * u.healMult * u.ifxK); } }
+          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.6 * u.healMult * u.ifxK, u); }
+          if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 2.5 * u.healMult * u.ifxK, u); } }
           if (u.passive === 'pierce4' && u.atkN % 4 === 0) {
             const dir = facing(u, t), cells = [];
             for (let f = 1; f < 10; f++) { const i = rel(u.cell, f, 0, dir); if (i < 0) break; cells.push(i); }
@@ -550,7 +551,7 @@
             fx.burst(t.px, t.py, src && !src.side ? clsCol(src.cls) : '#e8436b', crit ? 7 : 3);
             if (dmg >= 300) fx.shake(3);
           }
-          if (t.ifx === 'towerGuard' && t.side === 0 && dmg > 0) for (const n of grid.neighbors[t.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) a.shield += dmg * 0.2 * t.ifxK; }
+          if (t.ifx === 'towerGuard' && t.side === 0 && dmg > 0) for (const n of grid.neighbors[t.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) giveShield(a, dmg * 0.2 * t.ifxK, t); }
           if (!src || src.dead === undefined) return;
           if (kind === 'atk') {
             const pr = src.procs || new Set();
@@ -602,7 +603,7 @@
                 if (s.t <= 0) delete st[key];
               }
               if (u.dead) continue;
-              if (u.passive === 'healAura') for (const a of cb.units) if (!a.dead && a.side === u.side && !a.object && grid.dist(a.cell, u.cell) <= 1) a.hp = Math.min(a.maxHp, a.hp + a.maxHp * 0.005 * u.healMult);
+              if (u.passive === 'healAura') for (const a of cb.units) if (!a.dead && a.side === u.side && !a.object && grid.dist(a.cell, u.cell) <= 1) { const h = Math.min(a.maxHp - a.hp, a.maxHp * 0.005 * u.healMult); a.hp += h; u.healDone = (u.healDone || 0) + h; }
             }
           }
           for (const tl of cb.tele) {
@@ -627,7 +628,7 @@
           fx.death(t);
           if (t.side === 1 && src && src.side === 0) {
             if (src.passive === 'bounty' && (cb.bountyN || 0) < 2) { cb.bountyN = (cb.bountyN || 0) + 1; cb.goldBonus += 1; cb.float(t.px, t.py - 34, '+1골드', '#f5c400', true); }
-            if (src.passive === 'killHeal') cb.heal(src, src.maxHp * 0.1);
+            if (src.passive === 'killHeal') cb.heal(src, src.maxHp * 0.1, src);
           }
           if (t.boss) { for (const v of cb.alive(1)) cb.kill(v, null); cb.tele = []; }
         },

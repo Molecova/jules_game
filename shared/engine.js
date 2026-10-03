@@ -308,6 +308,7 @@
       dmg *= 1 - t.armor;
       if (this.hooks.dmgTakenMod) dmg *= this.hooks.dmgTakenMod(t, this, src, kind);
       dmg = Math.max(1, Math.round(dmg));
+      t.dmgTaken = (t.dmgTaken || 0) + dmg;
       if (t.shield > 0) {
         const a = Math.min(t.shield, dmg);
         t.shield -= a;
@@ -319,7 +320,7 @@
       t.mana = Math.min(t.maxMana, t.mana + Math.min(10, (dmg / t.maxHp) * 60));
       if (src) {
         src.dmgDealt += dmg;
-        if (src.lifesteal && !src.dead) src.hp = Math.min(src.maxHp, src.hp + dmg * src.lifesteal);
+        if (src.lifesteal && !src.dead) { const h = Math.min(src.maxHp - src.hp, dmg * src.lifesteal); src.hp += h; src.healDone = (src.healDone || 0) + h; }
       }
       const col = (this.hooks.floatColor && this.hooks.floatColor(kind, crit)) || (kind === 'spell' ? '#c9a2ff' : crit ? '#ffb347' : '#ffffff');
       if (dmg > 0) this.float(t.px + AC.rand(-8, 8), t.py - 16, String(dmg), col, crit || kind === 'spell');
@@ -327,10 +328,11 @@
       return dmg;
     }
 
-    heal(t, amt) {
+    heal(t, amt, src) {
       if (t.dead) return;
       const h = Math.round(Math.min(t.maxHp - t.hp, amt));
       t.hp += h;
+      if (src && h > 0) src.healDone = (src.healDone || 0) + h;
       if (h > 0) this.float(t.px, t.py - 16, '+' + h, '#7dffa0');
       if (h > 0 && this.hooks.onHeal) this.hooks.onHeal(t, h, this);
     }
