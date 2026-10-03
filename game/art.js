@@ -531,7 +531,7 @@
   // 결정적 난수(토큰마다 같은 질감)
   function seeded(str) { let h = 2166136261; for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
 
-  const RIM = { 0: ['#2f6fd6', '#1f4fa8'], 1: ['#e8436b', '#b02a4c'], boss: ['#232a3b', '#111522'] };
+  const RIM = { 0: ['#2f6fd6', '#1f4fa8'], 1: ['#e8436b', '#b02a4c'], boss: ['#232a3b', '#111522'], war: ['#2f6fd6', '#1f4fa8'], arc: ['#2e9e6b', '#1d6e48'], mag: ['#7a4fd0', '#5534a0'] }; // war·arc·mag: v4 클래스별 테두리
   /** 딱지 스프라이트. 반지름 r(논리 px)의 2배 크기 캔버스를 scale 배율로 굽는다. */
   function token(id, side, r, scale = 2, kind) {
     const key = [id, side, r, scale, kind || ''].join('|');
@@ -541,7 +541,7 @@
     const c = cv.getContext('2d');
     c.scale(scale, scale);
     c.translate(r, r);
-    const [rim, rimD] = RIM[kind === 'boss' ? 'boss' : side];
+    const [rim, rimD] = RIM[kind === 'boss' ? 'boss' : side === 0 && RIM[kind] ? kind : side];
     const rnd = seeded(key);
     // 테두리 원판
     circ(c, 0, 0, r - 1); c.fillStyle = rim; c.fill();

@@ -13,6 +13,7 @@
   const TABNAME = { unit: '유닛', skill: '스킬', item: '아이템' };
   const KINDNAME = { unit: '유닛', skill: '스킬', item: '아이템' };
   const SAVE_KEY = 'card-expedition-v4';
+  const TIERNAME = ['', '종이', '청동', '은', '금', '루비'];
   const starTxt = (n) => (n > 1 ? '★'.repeat(n) : '');
   const copies = (star) => Math.pow(3, star - 1);
   const price = (c) => def(c).t * copies(c.star) - (c.star > 1 ? 1 : 0);
@@ -441,7 +442,7 @@
   // ---------- 이미지 ----------
   function imgOf(c, px = 96) {
     const d = def(c);
-    if (c.kind === 'unit') return ART.discURL(d.id, 0, '', c.skills ? battleApi.loadoutOf(c) : null, px);
+    if (c.kind === 'unit') return ART.discURL(d.id, 0, d.cls, c.skills ? battleApi.loadoutOf(c) : null, px);
     if (c.kind === 'skill') return ART.chipURL(CLS[d.cls].col, d.icon || 'star', c.star > 1, Math.round(px * 0.6));
     return ART.weaponURL(battleApi.wpArt(d), c.star > 1, Math.round(px * 0.6));
   }
@@ -575,7 +576,7 @@
     $('row').innerHTML = R.shop[ui.tab].map((c, i) => {
       if (!c) return `<div class="card sold" aria-hidden="true"></div>`;
       const d = def(c), n = owned(c.kind, c.id);
-      return `<button class="card${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
+      return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드">
         <span class="cost">${d.t}</span><span class="cl">${CLS[d.cls].short}</span>
         <img src="${imgOf(c, 84)}" alt=""><b>${d.name}</b>${n ? `<span class="own">${n >= 2 ? '★2 합성' : '보유 ' + n}</span>` : ''}</button>`;
     }).join('');
@@ -599,7 +600,7 @@
     const btns = shop
       ? `<button class="btn pri" data-act="buy" ${R.gold < d.t ? 'disabled' : ''}>구매 · ${d.t}골드${n >= 2 ? ' → ★2' : ''}</button><button class="btn" data-act="close">닫기</button>`
       : `<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button>`;
-    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
+    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
 
@@ -955,7 +956,8 @@
   }
   const tokenR = (kind) => (kind === 'boss' ? 31 : kind === 'elite' ? 27 : 23);
   const kindOf = (e) => (e.boss ? 'boss' : e.elite ? 'elite' : '');
-  const sprite = (artId, side, kind) => ART.token(artId, side, tokenR(kind), 2, kind);
+  const clsOfArt = (id) => (DEF['unit:' + id] ? DEF['unit:' + id].cls : '');
+  const sprite = (artId, side, kind) => ART.token(artId, side, tokenR(kind), 2, kind || (side === 0 ? clsOfArt(artId) : ''));
   const STATUS_MARK = { burn: ['#e8643b', 'fire'], poison: ['#5fa043', 'skull'], bleed: ['#c0392b', 'drop'], slow: ['#6aa8ff', 'ice'], weak: ['#8a7a9a', 'fist'], vuln: ['#e8436b', 'target'] };
 
   function starPips(x, y, r, star) {
@@ -1179,7 +1181,7 @@
   function closeSheet() { $('sheet').hidden = true; }
   function cardTile(c, i) {
     const d = def(c);
-    return `<button class="pickcard" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}</small><span class="pd">${esc(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
+    return `<button class="pickcard k-${c.kind} tier${d.t}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}</small><span class="pd">${esc(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
   }
   function pickReward(title, sub, cards, done) {
     if (!cards.length) return done();
@@ -1271,7 +1273,7 @@
     const fan = $('fan');
     if (!fan.children.length) {
       [['squire', 0, ''], ['archer', 0, ''], ['dragon', 1, 'boss'], ['apprentice', 0, ''], ['goblin', 1, '']].forEach(([id, side, kind], i) => {
-        const img = document.createElement('img'); img.className = 'ftok t' + i; img.src = ART.tokenURL(id, side, kind); img.alt = ''; fan.appendChild(img);
+        const img = document.createElement('img'); img.className = 'ftok t' + i; img.src = ART.tokenURL(id, side, kind || (side === 0 ? clsOfArt(id) : '')); img.alt = ''; fan.appendChild(img);
       });
     }
   }
@@ -1279,7 +1281,7 @@
     let st = 'order', diff = 'normal';
     const render = () => {
       openSheet(`<span class="eyebrow">출정 준비</span><h2>어떤 부대로 떠날까요?</h2>
-        <div class="starts">${STARTS.map((S) => `<button class="startopt${S.id === st ? ' on' : ''}" data-st="${S.id}"><span class="discs">${S.units.map(([id, sk, it]) => `<img src="${ART.discURL(id, 0, '', { level: 1, weapon: it ? battleApi.wpArt(DEF['item:' + it]) : null, skills: sk.map((x) => ({ col: CLS[DEF['skill:' + x].cls].col, icon: DEF['skill:' + x].icon })) }, 80)}" alt="">`).join('')}</span><b>${S.name}</b><small>${S.desc}</small></button>`).join('')}</div>
+        <div class="starts">${STARTS.map((S) => `<button class="startopt${S.id === st ? ' on' : ''}" data-st="${S.id}"><span class="discs">${S.units.map(([id, sk, it]) => `<img src="${ART.discURL(id, 0, DEF['unit:' + id].cls, { level: 1, weapon: it ? battleApi.wpArt(DEF['item:' + it]) : null, skills: sk.map((x) => ({ col: CLS[DEF['skill:' + x].cls].col, icon: DEF['skill:' + x].icon })) }, 80)}" alt="">`).join('')}</span><b>${S.name}</b><small>${S.desc}</small></button>`).join('')}</div>
         <div class="diffs">${Object.entries(DIFF).map(([k, D]) => `<button class="diff${k === diff ? ' on' : ''}" data-df="${k}"><b>${D.name}</b><small>${D.desc}</small></button>`).join('')}</div>
         <div class="dbtn"><button class="btn" data-x>돌아가기</button><button class="btn go" data-go>출정!</button></div>`);
       $('sheetIn').onclick = (e) => {
@@ -1311,11 +1313,11 @@
   (function tearLoop() {
     if (ui.screen === 'over') {
       const cv = $('tearCv'), c = cv.getContext('2d');
-      if (!ui.tear || ui.tearT > 2.6) { ui.tear = ART.makeTear(ART.token(ui.tearUnit || 'squire', 0, 60), 180, 120, 60, 0); ui.tear.life = 1.6; ui.tearT = 0; }
+      if (!ui.tear || ui.tearT > 2.6) { ui.tear = ART.makeTear(ART.token(ui.tearUnit || 'squire', 0, 60, 2, clsOfArt(ui.tearUnit || 'squire')), 180, 120, 60, 0); ui.tear.life = 1.6; ui.tearT = 0; }
       ui.tearT += 1 / 60; ART.stepTear(ui.tear, 1 / 60);
       c.clearRect(0, 0, 360, 300);
       if ($('overStamp').classList.contains('win')) ART.drawToken(c, ART.token('dragon', 1, 60, 2, 'boss'), 180, 130, 60, { rot: 0.3, dim: true });
-      else if (ui.tearT < 0.35) ART.drawToken(c, ART.token(ui.tearUnit || 'squire', 0, 60), 180, 120, 60, { lift: 6 * Math.sin(ui.tearT * 30) });
+      else if (ui.tearT < 0.35) ART.drawToken(c, ART.token(ui.tearUnit || 'squire', 0, 60, 2, clsOfArt(ui.tearUnit || 'squire')), 180, 120, 60, { lift: 6 * Math.sin(ui.tearT * 30) });
       else ART.drawTear(c, ui.tear);
     }
     requestAnimationFrame(tearLoop);
@@ -1338,6 +1340,7 @@
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
         <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
+        <p><b>등급</b> 카드 바탕색이 등급입니다: 1 종이 · 2 청동 · 3 은 · 4 금 · 5 루비. 딱지 테두리 색은 클래스(전사 파랑 · 궁수 초록 · 마법사 보라).</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 2개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 아이템에 따라 역할이 바뀝니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>

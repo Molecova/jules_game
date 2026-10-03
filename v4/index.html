@@ -15,7 +15,8 @@
   --paper: #f4eedf; --paper2: #ebe2cc; --card: #fffdf6;
   --ink: #232a3b; --muted: #6d6a60; --line: #cfc4a8;
   --mine: #2f6fd6; --foe: #e8436b; --gold: #f5c400; --golddk: #b98f00; --ok: #2e9e6b; --stamp: #d6335a;
-  --t1: #8a8f99; --t2: #2e9e6b; --t3: #2f6fd6; --t4: #7a4fd0; --t5: #e08a00;
+  /* 등급 = 카드 바탕색(종이·청동·은·금·루비). 클래스색(파랑·초록·보라)과 겹치지 않게 금속 계열로 */
+  --t1: #ece4d2; --t2: #d9a274; --t3: #c3cbd3; --t4: #f0c640; --t5: #e8644a;
   --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
   --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --g: 16px;
@@ -103,10 +104,20 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .tool.on { background: var(--ink); color: var(--paper); }
 .tool small { font-weight: 400; font-size: 10px; }
 .row { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.card { position: relative; border: 2px solid var(--ink); border-radius: 7px; background: var(--card); padding: 0; display: grid; grid-template-rows: 6px minmax(0, 1fr) auto; box-shadow: 2px 3px 0 var(--ink); min-width: 0; }
-.card::before { content: ""; border-radius: 4px 4px 0 0; background: var(--tc); }
+.card { position: relative; border: 2px solid var(--ink); border-radius: 7px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); padding: 3px 0 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; box-shadow: 2px 3px 0 var(--ink); min-width: 0; }
+/* 종류별 카드 모양: 유닛=둥근 종이 카드, 스킬=육각 무늬와 점선 안쪽 테, 아이템=리벳 박힌 금속판 */
+.card.k-unit { border-radius: 14px; }
+.card.k-unit b { border-radius: 0 0 11px 11px; }
+.card.k-skill { border-radius: 4px; box-shadow: 2px 3px 0 var(--ink), inset 0 0 0 3px rgba(255,255,255,.55); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%); background-color: var(--tc); }
+.card.k-skill::after { content: ""; position: absolute; inset: 4px; border: 1.5px dashed rgba(35,42,59,.35); border-radius: 2px; pointer-events: none; }
+.card.k-item { border-width: 3px; border-radius: 3px; background-image: radial-gradient(circle at 6px 6px, #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at calc(100% - 6px) 6px, #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at 6px calc(100% - 6px), #8a8f99 2.2px, transparent 2.8px), radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), #8a8f99 2.2px, transparent 2.8px), repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 9px, rgba(255,255,255,.22) 9px 11px), linear-gradient(160deg, rgba(255,255,255,.5), rgba(0,0,0,.06)); background-color: var(--tc); }
+.card.k-item b { background: rgba(35,42,59,.85); color: #fff; }
+.card.tier3, .pickcard.tier3 { background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 8px, rgba(255,255,255,.35) 8px 10px), linear-gradient(160deg, #eef2f5, var(--t3)); }
+.card.tier4, .pickcard.tier4 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 10px rgba(255,255,255,.7); }
+.card.tier5, .pickcard.tier5 { box-shadow: 2px 3px 0 var(--ink), inset 0 0 12px rgba(255,230,200,.8); }
+.card.k-skill.tier3 { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='19'%3E%3Cpath d='M5.5 1h11l5 8.5-5 8.5h-11l-5-8.5z' fill='none' stroke='%23232a3b' stroke-opacity='.12' stroke-width='1.2'/%3E%3C/svg%3E"), linear-gradient(160deg, #eef2f5, var(--t3)); }
 .card img { width: 100%; height: 100%; object-fit: contain; min-height: 0; pointer-events: none; }
-.card b { font-size: 11px; line-height: 1.15; padding: 0 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card b { font-size: 11px; line-height: 1.15; padding: 2px 2px 3px; background: rgba(255,253,246,.85); border-top: 1.5px solid rgba(35,42,59,.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cost { position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 2px solid var(--ink); font: 700 11px/18px var(--body); text-align: center; }
 .card .cl { position: absolute; top: 9px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--cc); color: #fff; font: 400 9px/16px var(--display); border: 1.5px solid var(--ink); }
 .card .own { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--ink); white-space: nowrap; background: var(--paper2); border-radius: 4px; padding: 0 4px; }
@@ -114,7 +125,6 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .card.ready .own { background: var(--stamp); color: #fff; font-weight: 700; }
 .card.sel { transform: translateY(-4px); }
 .card.sold { border-style: dashed; box-shadow: none; background: transparent; opacity: .45; }
-.card.sold::before { background: transparent; }
 @keyframes glow { 50% { box-shadow: 2px 3px 0 var(--ink), 0 0 0 3px var(--gold), 0 0 4px 1px rgba(245,196,0,.5); } }
 
 /* 상세 */
@@ -276,10 +286,11 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .sheet h2 { margin: 0; font: 400 20px var(--display); text-wrap: balance; }
 .eyebrow { font-size: 11px; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
 .picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.pickcard { position: relative; border: 2px solid var(--ink); border-radius: 8px; background: var(--card); box-shadow: 2px 3px 0 var(--ink); padding: 10px 6px 8px; display: grid; justify-items: center; gap: 2px; border-top: 6px solid var(--tc); min-width: 0; }
+.pickcard { position: relative; border: 2px solid var(--ink); border-radius: 8px; background: linear-gradient(160deg, rgba(255,255,255,.65), rgba(255,255,255,.1) 70%), var(--tc); box-shadow: 2px 3px 0 var(--ink); padding: 10px 6px 8px; display: grid; justify-items: center; gap: 2px; border-top: 6px solid var(--tc); min-width: 0; }
 .pickcard img { width: 64px; height: 64px; }
 .pickcard b { font-size: 13px; }
-.pickcard small { font-size: 10px; color: var(--muted); }
+.pickcard small { font-size: 10px; color: var(--ink); opacity: .75; }
+.pickcard.k-unit { border-radius: 14px; } .pickcard.k-item { border-width: 3px; border-radius: 3px; } .pickcard.k-skill { border-radius: 4px; }
 .pickcard .pd { font-size: 10px; line-height: 1.3; color: var(--ink); }
 .relics { display: grid; gap: 8px; }
 .relic { text-align: left; border: 2px solid var(--ink); border-radius: 8px; background: var(--card); box-shadow: 2px 3px 0 var(--ink); padding: 10px 12px; display: grid; gap: 2px; }
