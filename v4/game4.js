@@ -968,7 +968,10 @@
   });
 
   const onDetail = (e) => {
-    const b = e.target.closest('[data-act],[data-un],[data-info]'); if (!b) return;
+    // 판 바깥 #phone 에도 data-act(막 번호)가 있어서, 패널 안의 단추만 본다(카드 글자를 탭하면 닫히던 버그)
+    const b = e.target.closest('[data-act],[data-un],[data-info]'); if (!b || !e.currentTarget.contains(b)) return;
+    // 카드 바깥(배경)은 그 위에서 누르기 시작한 경우만 닫는다: 터치로 딱지를 탭하면 카드가 뜬 뒤 같은 자리에 오는 클릭이 배경을 눌러 바로 닫히던 문제
+    if (b.classList.contains('ucbg') || b.classList.contains('scbg')) { const ok = ui.bgDown === b.className; ui.bgDown = null; if (!ok) return; }
     if (b.dataset.un != null) { const u = ui.sel.c, k = b.dataset.un; unequip(u, k === 'item' ? 'item' : +k); ui.openInfo = null; return renderPlay(); }
     if (b.dataset.info != null) { ui.openInfo = ui.openInfo === b.dataset.info ? null : b.dataset.info; SFX.play('click'); return renderPlay(); }
     if (b.dataset.act === 'noop') return;
@@ -981,6 +984,7 @@
     else { ui.sel = null; ui.foe = null; renderPlay(); }
   };
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
+  $('usheet').addEventListener('pointerdown', (e) => { ui.bgDown = e.target.classList.contains('ucbg') || e.target.classList.contains('scbg') ? e.target.className : null; });
   $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 ${inc.base} · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
   $('lvBtn').onclick = () => levelUp();
   $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
@@ -1074,7 +1078,7 @@
   $('bench').addEventListener('pointerdown', (e) => {
     const b = e.target.closest('[data-b]'); if (!b || B) return;
     const i = +b.dataset.b, c = R.bench[i];
-    if (c) dragBegin(e, $('bench'), { from: 'bench', i, c }, null); // 다시 그려지지 않는 창고 틀이 포인터를 잡는다
+    if (c) dragBegin(e, b, { from: 'bench', i, c }, null); // 칸 노드는 patchKids 로 유지되므로 칸이 포인터를 잡아도 된다(클릭 대상도 칸)
   });
   window.addEventListener('pointermove', (e) => {
     if (!drag.start || e.pointerId !== drag.start.id) return;
