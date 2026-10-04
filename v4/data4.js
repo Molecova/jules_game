@@ -94,18 +94,18 @@
     I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.08 }, 'healMace', '체력 +8%. 공격할 때마다 가장 다친 아군을 공격력의 40%만큼 회복', '성기사'),
     I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.06 }, 'bloodrage', '공격력 +20%, 흡혈 6%, 주변 적에게 25% 튐. 체력 50% 이하에서 공격 속도 +25%', '광전사'),
     I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.07, hp: 0.07 }, 'stunEvery', '공격력·체력 +7%. 5번째 공격마다 대상 0.8초 기절', '제압'),
-    I_('thornmail', '가시 갑옷', 'war', 3, 'armor', { hp: 0.14, armor: 0.07 }, 'thorns', '체력 +14%, 받는 피해 −7%. 근접 피해 20% 반사', '반격 탱커'),
-    I_('dragonslayer', '용살자의 검', 'war', 4, 'sword', { atk: 0.2, crit: 0.1 }, 'giantSlayer', '공격력 +20%, 치명 +10%. 정예·보스에게 주는 피해 +25%', '보스 사냥꾼'),
+    I_('thornmail', '독 단도', 'war', 3, 'dagger', { as: 0.12, crit: 0.08 }, 'poisonHit', '공격 속도 +12%, 치명 +8%. 공격 시 중독', '암살자'),
+    I_('dragonslayer', '그림자 검', 'war', 4, 'sword', { atk: 0.18, crit: 0.12 }, 'execute', '공격력 +18%, 치명 +12%. 체력 50% 이하 적에게 주는 피해 +25%', '암살자'),
     I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.18, armor: 0.12 }, 'towerGuard', '체력 +18%, 받는 피해 −12%. 4초마다 주변 적을 도발하고, 맞으면 주변 아군에게 보호막', '탱커'),
     I_('shortbow', '단궁', 'arc', 1, 'bow', { as: 0.1 }, null, '공격 속도 +10%', '정석 궁수'),
     I_('longbow', '장궁', 'arc', 1, 'bow', { range: 1, atk: 0.05 }, null, '사거리 +1, 공격력 +5%', '저격수'),
     I_('venombow', '독궁', 'arc', 2, 'bow', { atk: 0.05 }, 'poisonHit', '공격력 +5%. 공격 시 중독', '독 사냥꾼'),
-    I_('quiver', '축복의 화살통', 'arc', 2, 'charm', { heal: 0.14 }, 'quiverHeal', '3번째 공격마다 가장 다친 아군에게 치유 화살(공격력 ×1.8)', '힐러 궁수'),
+    I_('quiver', '도적의 단검', 'arc', 2, 'dagger', { atk: 0.12, as: 0.12, melee: true }, null, '근접 공격(사거리 1), 공격력 +12%, 공격 속도 +12%', '도적'),
     I_('whistle', '사냥매 호루라기', 'arc', 3, 'tooth', { atk: 0.1 }, 'hawkFocus', '공격력 +10%. 전투 시작 시 사냥매 소환, 같은 적 연속 공격 피해 증가', '사냥꾼'),
     I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.07 }, 'burnHit', '공격력 +7%. 공격 시 3초 화상', '화상 궁수'),
-    I_('windcloak', '바람 망토', 'arc', 3, 'cloak', { as: 0.14, dodge: 0.14 }, 'evasive', '공격 속도 +14%, 회피 +14%. 회피하면 다음 공격 치명타', '회피 궁수'),
+    I_('windcloak', '그림자 망토', 'arc', 3, 'cloak', { as: 0.14, dodge: 0.14, melee: true }, 'evasive', '근접 공격(사거리 1), 공격 속도 +14%, 회피 +14%. 회피하면 다음 공격 치명타', '도적'),
     I_('eagleeye', '매의 눈 반지', 'arc', 4, 'ring', { range: 1, crit: 0.18 }, 'headshot', '사거리 +1, 치명 +18%, 치명 피해 +40%', '저격수'),
-    I_('hornbow', '지휘관의 뿔활', 'arc', 4, 'crossbow', { atk: 0.1, as: 0.07 }, 'markAura', '맞힌 적에 표식(받는 피해 +10%). 주변 1칸 아군 공격 속도 +10%', '지원가'),
+    I_('hornbow', '갈고리 쌍검', 'arc', 4, 'twin', { atk: 0.12, crit: 0.12, melee: true }, 'infiltrate', '근접 공격(사거리 1), 공격력 +12%, 치명 +12%. 전투 시작 시 적 뒤로 도약', '도적'),
     I_('wand', '견습 지팡이', 'mag', 1, 'wand', { manaPerHit: 4, spell: 0.03 }, null, '공격할 때마다 마나 +4, 스킬 위력 +3%', '정석 마법사'),
     I_('frostorb', '서리 오브', 'mag', 1, 'orb', { spell: 0.12 }, 'spellSlow', '스킬 위력 +12%. 스킬에 맞은 적 둔화', '제어'),
     I_('firestaff', '화염 지팡이', 'mag', 2, 'staff', { spell: 0.14 }, 'spellBurn', '스킬 위력 +14%. 스킬에 맞은 적 화상', '공격'),
@@ -117,39 +117,52 @@
     I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.3, mana: 20 }, 'echo', '스킬 위력 +30%, 마나 20으로 시작. 3번 시전마다 한 번 더(60%)', '폭딜'),
   ];
 
-  // 특성 시너지 10종: 유닛마다 2개. kind 'count' = 정해진 수만큼 모이면, 'combo' = 지정한 유닛이 전부 모이면
+  // 시너지
+  // 유닛(성격) 10종: 'count' = 서로 다른 딱지 수, 'combo' = 지정한 딱지가 전부, 'peer' = 같은 등급 딱지 수
+  // 무기(전직) 9종: 'job' = 출전 딱지가 쥔 그 전직 무기의 종류 수. 효과는 그 무기를 쥔 딱지가 받는다
   const TRAITS = {
-    knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'count', th: [2, 3, 4], members: ['squire', 'warden', 'blademaster', 'paladin', 'arbalest'],
-      desc: ['기사 받는 피해 −15%', '기사 받는 피해 −30%', '기사 받는 피해 −35%, 체력 +10%'] },
     novice: { name: '견습', short: '견', col: '#8a9a5b', kind: 'combo', members: ['squire', 'archer', 'apprentice'],
       desc: ['견습 셋이 모이면 모든 아군 피해 +8%, 스킬 마나 −10%, 받는 피해 −8%'] },
-    guardian: { name: '수호자', short: '수', col: '#5b6475', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'warden', 'acolyte', 'monk', 'hammer', 'paladin'],
-      desc: ['전투 시작 시 모든 아군 보호막 150', '모든 아군 보호막 400, 수호자 받는 피해 −10%', '모든 아군 보호막 700, 수호자 받는 피해 −20%'] },
-    company: { name: '용병단', short: '용', col: '#b07a2a', kind: 'count', th: [2, 3, 4], members: ['merc', 'duelist', 'crossbow', 'hammer', 'scout'],
-      desc: ['승리하면 골드 +1', '승리하면 골드 +2, 용병단 공격 속도 +20%', '승리하면 골드 +3, 용병단 공격 속도 +35%'] },
-    marksman: { name: '명사수', short: '명', col: '#2e7d5b', kind: 'count', th: [2, 3, 4], members: ['venom', 'crossbow', 'ranger', 'ninja', 'arbalest', 'windarcher'],
-      desc: ['명사수 치명타 +25%, 치명 피해 +30%', '명사수 치명타 +35%, 치명 피해 +60%', '명사수 치명타 +40%, 치명 피해 +80%, 사거리 +1'] },
-    wild: { name: '야생', short: '야', col: '#5fa043', kind: 'count', th: [2, 4, 6], members: ['archer', 'venom', 'hunter', 'acolyte', 'scout', 'windarcher', 'summoner'],
-      desc: ['모든 아군 초당 체력 1% 재생', '모든 아군 초당 체력 2% 재생, 소환물 체력·공격 +60%', '모든 아군 초당 체력 3% 재생, 소환물 체력·공격 +120%'] },
-    arcane: { name: '비전', short: '비', col: '#6a4fc0', kind: 'count', th: [2, 4], members: ['monk', 'cryo', 'archmage', 'bishop', 'pyro', 'summoner'],
-      desc: ['비전 유닛 마나 +40으로 시작', '비전 유닛 마나 +40으로 시작, 모든 아군 마나 획득 +40%'] },
-    stars: { name: '별의 인도', short: '별', col: '#c48a00', kind: 'combo', members: ['cryo', 'ninja', 'bishop'],
-      desc: ['셋이 모이면 모든 아군 치명타 +25%, 치명 피해 +60%, 공격 속도 +15%'] },
     mentor: { name: '스승과 제자', short: '스', col: '#a8508a', kind: 'combo', members: ['archmage', 'apprentice'],
       desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 스킬 마나 −30%'] },
+    twins: { name: '불과 얼음', short: '남', col: '#d0603a', kind: 'combo', members: ['pyro', 'cryo'],
+      desc: ['남매가 함께면 둘 다 스킬 위력 +30%, 스킬 마나 −15%'] },
+    stars: { name: '별의 인도', short: '별', col: '#c48a00', kind: 'combo', members: ['cryo', 'ninja', 'bishop'],
+      desc: ['셋이 모이면 모든 아군 치명타 +25%, 치명 피해 +60%, 공격 속도 +15%'] },
+    artisan: { name: '장인', short: '장', col: '#8a6a3c', kind: 'count', th: [2, 3, 4], members: ['shieldman', 'hammer', 'crossbow', 'arbalest', 'monk'],
+      desc: ['장인이 쥔 무기 수치 ×1.25', '장인이 쥔 무기 수치 ×1.5', '장인이 쥔 무기 수치 ×1.75'] },
+    noble: { name: '귀족', short: '귀', col: '#7a4fa0', kind: 'count', th: [2, 3, 4], members: ['warden', 'paladin', 'archmage', 'bishop', 'ninja'],
+      desc: ['귀족 체력 +12%', '귀족 체력 +24%, 받는 피해 −8%', '귀족 체력 +36%, 받는 피해 −15%'] },
+    wild: { name: '야생', short: '야', col: '#5fa043', kind: 'count', th: [2, 4, 6], members: ['archer', 'venom', 'hunter', 'acolyte', 'scout', 'windarcher', 'summoner'],
+      desc: ['모든 아군 초당 체력 1% 재생', '모든 아군 초당 체력 2% 재생, 소환물 체력·공격 +60%', '모든 아군 초당 체력 3% 재생, 소환물 체력·공격 +120%'] },
     veteran: { name: '베테랑', short: '베', col: '#7a5a3c', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'merc', 'duelist', 'hunter', 'ranger', 'blademaster', 'berserker', 'warlock'],
       desc: ['베테랑 공격력 +25%', '베테랑 공격력 +40%', '베테랑 공격력 +50%, 적을 쓰러뜨리면 체력 15% 회복'] },
-    flame: { name: '불꽃', short: '불', col: '#e0602a', kind: 'count', th: [2, 3], members: ['berserker', 'pyro', 'warlock'],
-      desc: ['불꽃 유닛의 기본 공격이 3초 화상, 불꽃 유닛 공격력 +15%', '모든 아군 화상 피해 +60%, 불꽃 유닛 공격력 +30%'] },
-    shadow: { name: '그림자', short: '그', col: '#4a3f6b', kind: 'count', th: [2, 3, 4], members: ['venom', 'scout', 'merc', 'duelist', 'warlock', 'ninja'],
-      desc: ['그림자 치명타 +15%, 회피 +10%', '그림자 치명타 +25%, 치명 피해 +30%, 회피 +15%', '그림자 치명타 +35%, 치명 피해 +60%, 회피 +20%'] },
     gale: { name: '질풍', short: '질', col: '#2f8fd0', kind: 'count', th: [2, 4, 6], members: ['archer', 'apprentice', 'pyro', 'hunter', 'berserker', 'windarcher', 'blademaster'],
       desc: ['모든 아군 공격 속도 +8%, 질풍 +10% 더', '모든 아군 공격 속도 +16%, 질풍 +10% 더', '모든 아군 공격 속도 +25%, 질풍 +10% 더'] },
-    // 동급: 멤버 없이 '같은 등급의 서로 다른 딱지' 수를 센다(가장 많은 등급 하나)
     peer: { name: '동급', short: '동', col: '#9a7b3a', kind: 'peer', th: [3, 4, 5], members: [],
       desc: ['같은 등급 딱지 3명: 그 딱지들 체력·공격 +12%', '같은 등급 4명: 체력·공격 +20%', '같은 등급 5명: 체력·공격 +30%'] },
+    // ---- 무기 전직 ----
+    j_knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'job', cls: 'war', th: [2, 3], members: ['buckler', 'holymace', 'towershield'],
+      desc: ['기사 무기를 쥔 딱지 받는 피해 −15%', '받는 피해 −25%, 체력 +10%'] },
+    j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer'],
+      desc: ['용병 공격력 +15%, 승리하면 골드 +1', '용병 공격력 +30%, 승리하면 골드 +2'] },
+    j_assassin: { name: '암살자', short: '암', col: '#4a3f6b', kind: 'job', cls: 'war', th: [2, 3], members: ['twinblades', 'thornmail', 'dragonslayer'],
+      desc: ['암살자 치명 +15%, 치명 피해 +30%', '암살자 치명 +30%, 치명 피해 +60%'] },
+    j_hunter: { name: '사냥꾼', short: '냥', col: '#5f7a2a', kind: 'job', cls: 'arc', th: [2, 3], members: ['shortbow', 'venombow', 'whistle'],
+      desc: ['사냥꾼 공격 속도 +15%', '사냥꾼 공격 속도 +30%, 공격력 +10%'] },
+    j_sniper: { name: '저격수', short: '저', col: '#2e7d5b', kind: 'job', cls: 'arc', th: [2, 3], members: ['longbow', 'flamebow', 'eagleeye'],
+      desc: ['저격수 치명 피해 +40%', '저격수 치명 피해 +80%, 사거리 +1'] },
+    j_rogue: { name: '도적', short: '도', col: '#6b3f4a', kind: 'job', cls: 'arc', th: [2, 3], members: ['quiver', 'windcloak', 'hornbow'],
+      desc: ['도적(근접) 회피 +12%, 공격 속도 +12%', '도적 회피 +22%, 공격 속도 +25%'] },
+    j_elemental: { name: '원소술사', short: '원', col: '#d0603a', kind: 'job', cls: 'mag', th: [2, 3], members: ['firestaff', 'frostorb', 'stormstaff'],
+      desc: ['원소술사 스킬 위력 +20%', '원소술사 스킬 위력 +40%'] },
+    j_priest: { name: '사제', short: '사', col: '#2e9e6b', kind: 'job', cls: 'mag', th: [2, 3], members: ['prayerbook', 'lifeorb', 'hourglass'],
+      desc: ['사제 치유·보호막 +25%', '사제 치유·보호막 +50%, 전투 시작 시 모든 아군 보호막 150'] },
+    j_magus: { name: '마도사', short: '마', col: '#6a4fc0', kind: 'job', cls: 'mag', th: [2, 3], members: ['wand', 'manaring', 'archstaff'],
+      desc: ['마도사 시작 마나 +20, 마나 획득 +20%', '마도사 시작 마나 +40, 마나 획득 +40%'] },
   };
-  for (const u of UNITS) u.traits = Object.keys(TRAITS).filter((k) => TRAITS[k].members.includes(u.id));
+  for (const u of UNITS) u.traits = Object.keys(TRAITS).filter((k) => TRAITS[k].kind !== 'job' && TRAITS[k].members.includes(u.id));
+  for (const it of ITEMS) it.job = Object.keys(TRAITS).find((k) => TRAITS[k].kind === 'job' && TRAITS[k].members.includes(it.id)) || null;
 
   const DEF = {};
   for (const d of [...UNITS, ...SKILLS, ...ITEMS]) DEF[d.kind + ':' + d.id] = d;
@@ -207,10 +220,10 @@
   };
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.95, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.05, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.12, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.33, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.86, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.94, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.03, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.22, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)

@@ -379,7 +379,7 @@
     B.phase = 'result'; B.won = won;
     const kind = R.node.k;
     if (won) {
-      const g = 1 + (has('goldtooth') ? 1 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2, 3][battleApi.synergyCounts(R.board).ttiers.company || 0];
+      const g = 1 + (has('goldtooth') ? 1 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2][battleApi.synergyCounts(R.board).ttiers.j_merc || 0];
       R.gold += g; R.stats.goldEarned += g; R.stats.wins++; R.streak++;
       if (kind === 'elite') R.stats.elites++;
       if (kind === 'boss') R.stats.bosses++;
@@ -529,20 +529,30 @@
     el.style.width = ((ML - 20) * kScale) + 'px'; el.style.height = ((CS * ROWS + 8) * kScale) + 'px';
     el.classList.toggle('narrow', (ML - 20) * kScale < 58); // 좁으면 아이콘 대신 왼쪽 색 띠
   }
+  // 전직 무기 상태: 출전 딱지가 쥠(on) · 창고나 창고 딱지에 있음(bench) · 없음(off)
+  function itemState(id) {
+    if (R.board.some((u) => u.item && u.item.id === id)) return 'on';
+    if (R.bench.some((c) => c && ((c.kind === 'item' && c.id === id) || (c.kind === 'unit' && c.item && c.item.id === id)))) return 'bench';
+    return 'off';
+  }
+  const memberImg = (T, id) => (T.kind === 'job' ? ART.weaponURL(battleApi.wpArt(DEF['item:' + id]), false, 48) : ART.tokenURL(id, 0, DEF['unit:' + id].cls));
+  const memberDef = (T, id) => DEF[(T.kind === 'job' ? 'item:' : 'unit:') + id];
   // 시너지 전체 목록(도감·시트 공용). cards 가 있으면 진행도와 보유 표시
   function synList(cards) {
     const sc = cards ? battleApi.synergyCounts(cards) : null;
     const owned = cards ? new Set(allUnits().map((u) => u.id)) : null;
     const block = (key, name, col, short, kindTxt, lines, members, tier, n, need) => {
-      const ms = members.map((id) => { const d = DEF['unit:' + id]; const st = !cards ? '' : cards.some((c) => c.id === id) ? 'on' : owned.has(id) ? 'own' : 'off';
-        return `<span class="sm ${st}"><img src="${ART.tokenURL(id, 0, d.cls)}" alt=""><small>${d.name}</small></span>`; }).join('');
+      const T = TRAITS[key];
+      const ms = members.map((id) => { const d = memberDef(T, id); const st = !cards ? '' : T.kind === 'job' ? { on: 'on', bench: 'own', off: 'off' }[itemState(id)] : cards.some((c) => c.id === id) ? 'on' : owned.has(id) ? 'own' : 'off';
+        return `<span class="sm ${st}"><img src="${memberImg(T, id)}" alt=""><small>${d.name}</small></span>`; }).join('');
       return `<div class="cx synrow"><div><b><span class="sico" style="--c:${col}">${short}</span>${name}</b> <small class="tg">${kindTxt}${cards ? ` · ${n}/${need}` : ''}</small>
         ${lines.map((l, i) => `<small class="${cards && tier > i ? 'act' : ''}">${l}</small>`).join('')}<div class="sms">${ms}</div></div></div>`;
     };
     let out = '';
     for (const [k, T] of Object.entries(TRAITS)) {
       const lines = T.kind === 'combo' ? T.desc : T.desc.map((d, i) => `(${T.th[i]}) ${d}`);
-      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : T.kind === 'peer' ? '같은 등급 · ' + T.th.join('/') + '명' : '기본 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
+      if (T.kind === 'job' && !out.includes('data-jobhead')) out += '<h3 data-jobhead style="margin:6px 0 0;font-size:15px">무기 전직 · 출전 딱지가 쥔 무기 종류 수</h3>';
+      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : T.kind === 'peer' ? '같은 등급 · ' + T.th.join('/') + '명' : T.kind === 'job' ? CLS[T.cls].name + ' 전직 · 무기 ' + T.th.join('/') + '종' : '성격 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
     }
     return out;
   }
@@ -660,7 +670,7 @@
       const unit = c.kind === 'unit';
       return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드${unit ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}">
         <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
-        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}<span class="dsc">${hl(unit ? d.trait : d.desc)}</span></button>`;
+        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>${d.job ? `<span class="tr jt"><i style="--c:${TRAITS[d.job].col}">${TRAITS[d.job].name}</i></span>` : ''}`}<span class="dsc">${hl(unit ? d.trait : d.desc)}</span></button>`;
     }).join('');
     $('lvBtn').textContent = R.lv >= MAXLV ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= MAXLV;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
@@ -682,7 +692,7 @@
     const btns = shop
       ? `<button class="btn pri" data-act="buy" ${R.gold < d.t ? 'disabled' : ''}>구매 · ${d.t}골드${n >= 2 ? ' → ★2' : ''}</button><button class="btn" data-act="close">닫기</button>`
       : `<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button>`;
-    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
+    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : c.kind === 'item' && d.job ? ' · <b style="color:' + TRAITS[d.job].col + '">' + TRAITS[d.job].name + ' 전직</b>' : ''}${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
 
@@ -708,6 +718,7 @@
     stunEvery: (e, k) => `5타마다 기절 <em>${(0.8 * Math.min(1.6, k)).toFixed(1)}초</em>`,
     thorns: (e, k) => `근접 피해 <em>${Math.round(20 * Math.min(1.6, k))}%</em> 반사`,
     giantSlayer: (e, k) => `정예·보스 피해 <em>+${Math.round(25 * Math.min(1.6, k))}%</em>`,
+    execute: (e, k) => `체력 50% 이하 적에게 피해 <em>+${Math.round(25 * Math.min(1.6, k))}%</em>`,
     burnHit: () => '공격 시 3초 화상',
     evasive: () => '회피하면 다음 공격 치명타',
     headshot: (e, k) => `치명 피해 <em>+${Math.round(40 * Math.min(1.6, k))}%</em>`,
@@ -726,6 +737,7 @@
     if (st.lifesteal) parts.push(`흡혈 <em>${pct(st.lifesteal * k)}%</em>`);
     if (st.spell) parts.push(`스킬 위력 <em>+${pct(st.spell * k)}%</em>`);
     if (st.heal) parts.push(`치유 <em>+${pct(st.heal * k)}%</em>`);
+    if (st.melee) parts.push('<em>근접</em> 공격');
     if (st.mana) parts.push(`시작 마나 <em>+${Math.round(st.mana * Math.min(k, 1.6))}</em>`);
     if (st.manaPerHit) parts.push(`공격당 마나 <em>+${Math.round(st.manaPerHit * k)}</em>`);
     if (it.fx && FXTEXT[it.fx]) parts.push(FXTEXT[it.fx](e, k));
@@ -1048,9 +1060,9 @@
     const pegs = `<span class="dpeg">${th.map((x) => `<i class="${n >= x ? 'f' : ''}${x === next ? ' nx' : ''}">${x}</i>`).join('')}</span>`;
     const cur = tier ? `<div class="dw-cur"><small>지금 · ${n}명</small>${hl(T.desc[tier - 1])}</div>` : `<div class="dw-cur off"><small>아직 꺼짐 · ${n}명</small>${th[0]}명부터 켜집니다</div>`;
     const nx = next ? `<div class="dw-nxt"><small>${next}명이면 · ${next - n}명 더</small>${hl(T.desc[combo ? 0 : th.indexOf(next)])}</div>` : '<div class="dw-nxt max"><small>최고 단계</small>모두 켜졌습니다</div>';
-    const ms = synMembers(k).map((id) => { const d = DEF['unit:' + id], st = onIds.has(id) ? 'on' : benchIds.has(id) ? 'bench' : 'off';
-      return `<span class="mm s-${st}" title="${d.name} · ${{ on: '출전', bench: '창고', off: '없음' }[st]}"><img src="${ART.tokenURL(id, 0, d.cls)}" alt=""><b>${d.t}</b></span>`; }).join('');
-    const peerNote = T.kind === 'peer' ? `<div class="dw-leg">같은 등급의 서로 다른 딱지 수 · 지금 ${sc.peerT || '-'}등급</div>` : '<div class="dw-leg"><i class="on"></i>출전 <i class="bench"></i>창고 <i class="off"></i>없음 · 판의 점선 = 적용 중</div>';
+    const ms = T.members.length || T.kind === 'peer' ? synMembers(k).map((id) => { const d = memberDef(T, id), st = T.kind === 'job' ? itemState(id) : onIds.has(id) ? 'on' : benchIds.has(id) ? 'bench' : 'off';
+      return `<span class="mm s-${st}${T.kind === 'job' ? ' it' : ''}" title="${d.name} · ${{ on: T.kind === 'job' ? '출전 딱지가 쥠' : '출전', bench: '창고', off: '없음' }[st]}"><img src="${memberImg(T, id)}" alt=""><b>${d.t}</b></span>`; }).join('') : '';
+    const peerNote = T.kind === 'job' ? `<div class="dw-leg">${CLS[T.cls].name} 전직 무기 · <i class="on"></i>출전 딱지가 쥠 <i class="bench"></i>창고 <i class="off"></i>없음</div>` : T.kind === 'peer' ? `<div class="dw-leg">같은 등급의 서로 다른 딱지 수 · 지금 ${sc.peerT || '-'}등급</div>` : '<div class="dw-leg"><i class="on"></i>출전 <i class="bench"></i>창고 <i class="off"></i>없음 · 판의 점선 = 적용 중</div>';
     el.style.setProperty('--cc', T.col);
     el.innerHTML = `<div class="dw-h"><span class="sico" style="--c:${T.col}">${T.short}</span><b>${T.name}</b>${pegs}<button class="dx" data-close aria-label="닫기">✕</button></div>${cur}${nx}${ms ? `<div class="dw-m">${ms}</div>` : ''}${peerNote}<button class="dw-more" data-more>자세히 ›</button>`;
     el.hidden = false;
@@ -1465,7 +1477,7 @@
       if (drag.on && drag.hover) { const ok = drag.hover.r >= PLAYER_ROW; fillCell(drag.hover.i, ok ? '#2f6fd6' : '#e8436b', 0.28); }
       const items = [
         ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
-        ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)], synMem = ui.synOpen && !B ? new Set(synMembers(ui.synOpen)) : null; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
+        ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)], synMem = ui.synOpen && !B ? new Set(TRAITS[ui.synOpen].kind === 'job' ? R.board.filter((b) => b.item && TRAITS[ui.synOpen].members.includes(b.item.id)).map((b) => b.id) : synMembers(ui.synOpen)) : null; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
           if (selU && drag.on) return { y: c.y, f: () => {} }; // 끄는 동안 원래 자리는 비워 둔다(잔상 없음)
           return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : synMem && synMem.has(u.id) ? TRAITS[ui.synOpen].col : null, dash: can || (!selU && synMem && synMem.has(u.id)) }) }; }),
       ].sort((a, b) => a.y - b.y);

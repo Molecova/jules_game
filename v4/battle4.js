@@ -29,17 +29,18 @@
   }
 
   /** 카드 → 능력치(시너지·유물 제외). 화면 표시와 전투 생성에 함께 쓴다 */
-  function unitStats(card) {
+  function unitStats(card, itemMul = 1) {
     const d = def('unit', card.id), m = STAR[card.star];
     const s = { hp: d.hp * m, atk: d.atk * m, as: d.as, range: d.range, armor: d.armor || 0, crit: d.crit || 0.05, critDmg: 1.75, dodge: d.dodge || 0,
       lifesteal: 0, spell: 1 + (d.spellBonus || 0), heal: 1, mana: d.startMana || 0, manaPerHit: 12, fx: null };
     if (card.item) {
-      const it = def('item', card.item.id), k = ITSTAR[card.item.star], st = it.st;
+      const it = def('item', card.item.id), k = ITSTAR[card.item.star] * itemMul, st = it.st;
       if (st.atk) s.atk *= 1 + st.atk * k;
       if (st.as) s.as *= 1 + st.as * k;
       if (st.hp) s.hp *= 1 + st.hp * k;
       if (st.armor) s.armor += st.armor * k;
       if (st.range) s.range += st.range;
+      if (st.melee) s.range = 1; // 도적 무기: 근접 공격
       if (st.crit) s.crit += st.crit * k;
       if (st.dodge) s.dodge += st.dodge * Math.min(k, 1.6);
       if (st.lifesteal) s.lifesteal += st.lifesteal * k;
@@ -122,6 +123,7 @@
     function synergyCounts(cards) {
       const seen = new Set();
       for (const c of cards) seen.add(c.id);
+      const items = new Set(cards.filter((c) => c.item).map((c) => c.item.id));
       // 동급: 등급별 서로 다른 딱지 수, 가장 많은 등급(같으면 높은 등급)
       const byT = {};
       for (const id of seen) { const t = def('unit', id).t; byT[t] = (byT[t] || 0) + 1; }
@@ -130,7 +132,7 @@
       // 특성 시너지: 'count'·'peer' 는 단계 수, 'combo' 는 전원이 모이면 1
       const tcounts = {}, ttiers = {};
       for (const [k, T] of Object.entries(V.TRAITS)) {
-        const n = T.kind === 'peer' ? peerN : T.members.filter((m) => seen.has(m)).length;
+        const n = T.kind === 'peer' ? peerN : T.kind === 'job' ? T.members.filter((m) => items.has(m)).length : T.members.filter((m) => seen.has(m)).length;
         tcounts[k] = n;
         ttiers[k] = T.kind === 'combo' ? (n === T.members.length ? 1 : 0) : T.th.filter((x) => n >= x).length;
       }
@@ -169,7 +171,8 @@
     }
 
     function makeAlly(card, cell, syn) {
-      const d = def('unit', card.id), s = unitStats(card), cls = d.cls;
+      const T0 = syn.ttiers || {}, artisan = T0.artisan && def('unit', card.id).traits.includes('artisan') ? [1, 1.25, 1.5, 1.75][T0.artisan] : 1;
+      const d = def('unit', card.id), s = unitStats(card, artisan), cls = d.cls;
       const e = baseEntity(s, 0, cell, {
         def: d, card, uidRef: card.uid, cls, artId: d.id, passive: d.passive, star: card.star, lo: loadoutOf(card), rot: card.rot,
         dodge: s.dodge, lifesteal: s.lifesteal, critDmg: s.critDmg, spell: s.spell, healMult: s.heal, manaPerHit: s.manaPerHit,
@@ -190,20 +193,27 @@
       if (p === 'frenzy') e.lifesteal += 0.15;
       // 특성 시너지
       const T = syn.ttiers || {}, my = (k) => d.traits.includes(k);
-      if (T.knight && my('knight')) { e.armor += [0, 0.15, 0.3, 0.35][T.knight]; if (T.knight >= 3) e.maxHp *= 1.1; }
+      const job = card.item ? def('item', card.item.id).job : null, J = (k) => job === k ? T[k] || 0 : 0;
       if (T.novice) { e.dmgMul = (e.dmgMul || 1) * 1.08; e.manaCost = (e.manaCost || 1) * 0.9; e.armor += 0.08; }
-      if (T.guardian) { e.synShield = [0, 150, 400, 700][T.guardian]; if (T.guardian >= 2 && my('guardian')) e.armor += T.guardian >= 3 ? 0.2 : 0.1; }
-      if (T.company >= 2 && my('company')) e.as *= T.company >= 3 ? 1.35 : 1.2;
-      if (T.marksman && my('marksman')) { e.crit += [0, 0.25, 0.35, 0.4][T.marksman]; e.critDmg += [0, 0.3, 0.6, 0.8][T.marksman]; if (T.marksman >= 3) e.range += 1; }
-      if (T.wild) { e.regen = [0, 0.01, 0.02, 0.03][T.wild]; e.wildSummon = [1, 1, 1.6, 2.2][T.wild]; }
-      if (T.flame) { if (my('flame')) { e.procs.add('burnHit'); e.atk *= T.flame >= 2 ? 1.3 : 1.15; } if (T.flame >= 2) e.burnBoost = 1.6; }
-      if (T.arcane) { if (my('arcane')) mana += 40; if (T.arcane >= 2) e.manaPerHit *= 1.4; }
-      if (T.stars) { e.crit += 0.25; e.critDmg += 0.6; e.as *= 1.15; }
       if (T.mentor) { if (d.id === 'apprentice') e.spell *= 2; if (d.id === 'archmage') e.manaCost = (e.manaCost || 1) * 0.7; }
+      if (T.twins && my('twins')) { e.spell *= 1.3; e.manaCost = (e.manaCost || 1) * 0.85; }
+      if (T.stars) { e.crit += 0.25; e.critDmg += 0.6; e.as *= 1.15; }
+      if (T.noble && my('noble')) { e.maxHp *= [1, 1.12, 1.24, 1.36][T.noble]; e.armor += [0, 0, 0.08, 0.15][T.noble]; }
+      if (T.wild) { e.regen = [0, 0.01, 0.02, 0.03][T.wild]; e.wildSummon = [1, 1, 1.6, 2.2][T.wild]; }
       if (T.veteran && my('veteran')) { e.atk *= [1, 1.25, 1.4, 1.5][T.veteran]; if (T.veteran >= 3) e.vetHeal = true; }
-      if (T.shadow && my('shadow')) { e.crit += [0, 0.15, 0.25, 0.35][T.shadow]; e.critDmg += [0, 0, 0.3, 0.6][T.shadow]; e.dodge = (e.dodge || 0) + [0, 0.1, 0.15, 0.2][T.shadow]; }
       if (T.gale) { e.as *= [1, 1.08, 1.16, 1.25][T.gale]; if (my('gale')) e.as *= 1.1; }
       if (T.peer && d.t === syn.peerT) { const k = [1, 1.12, 1.2, 1.3][T.peer]; e.maxHp *= k; e.atk *= k; }
+      // 무기 전직: 그 전직 무기를 쥔 딱지만
+      if (J('j_knight')) { e.armor += [0, 0.15, 0.25][J('j_knight')]; if (J('j_knight') >= 2) e.maxHp *= 1.1; }
+      if (J('j_merc')) e.atk *= [1, 1.15, 1.3][J('j_merc')];
+      if (J('j_assassin')) { e.crit += [0, 0.15, 0.3][J('j_assassin')]; e.critDmg += [0, 0.3, 0.6][J('j_assassin')]; }
+      if (J('j_hunter')) { e.as *= [1, 1.15, 1.3][J('j_hunter')]; if (J('j_hunter') >= 2) e.atk *= 1.1; }
+      if (J('j_sniper')) { e.critDmg += [0, 0.4, 0.8][J('j_sniper')]; if (J('j_sniper') >= 2) e.range += 1; }
+      if (J('j_rogue')) { e.dodge = (e.dodge || 0) + [0, 0.12, 0.22][J('j_rogue')]; e.as *= [1, 1.12, 1.25][J('j_rogue')]; }
+      if (J('j_elemental')) e.spell *= [1, 1.2, 1.4][J('j_elemental')];
+      if (J('j_priest')) e.healMult *= [1, 1.25, 1.5][J('j_priest')];
+      if (T.j_priest >= 2) e.synShield = 150;
+      if (J('j_magus')) { mana += [0, 20, 40][J('j_magus')]; e.manaPerHit *= [1, 1.2, 1.4][J('j_magus')]; }
       if (global.__synExtra) global.__synExtra(card, e, syn, d); // 시험용 시너지 훅(게임에서는 비어 있음)
       // 유물
       if (cls === 'war' && has('whetstone')) e.atk *= 1.08;
@@ -627,6 +637,7 @@
           if (src.dmgMul) m *= src.dmgMul;
           if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
+          if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + 0.08 * (src.focusN || 0);
           return m;
