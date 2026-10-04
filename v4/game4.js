@@ -352,7 +352,8 @@
     while (!cb.done) cb.step(1 / 30);
     const won = judge(cb);
     const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
-    const r = { won, gold: cb.goldBonus || 0, t: cb.t, hpLeft: al.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, al.reduce((x, u) => x + u.maxHp, 0)) };
+    const fo = cb.units.filter((u) => u.side === 1 && !u.summon && !u.object);
+    const r = { won, gold: cb.goldBonus || 0, t: cb.t, hpLeft: al.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, al.reduce((x, u) => x + u.maxHp, 0)), foeLeft: fo.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, fo.reduce((x, u) => x + u.maxHp, 0)) };
     B = null;
     return r;
   }

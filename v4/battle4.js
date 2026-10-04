@@ -177,6 +177,7 @@
       if (T.stars) { e.crit += 0.2; e.critDmg += 0.5; }
       if (T.mentor) { if (d.id === 'apprentice') e.spell *= 2; if (d.id === 'archmage') e.manaCost = (e.manaCost || 1) * 0.7; }
       if (T.veteran && my('veteran')) { e.atk *= [1, 1.15, 1.3, 1.5][T.veteran]; if (T.veteran >= 3) e.vetHeal = true; }
+      if (global.__synExtra) global.__synExtra(card, e, syn, d); // 시험용 시너지 훅(게임에서는 비어 있음)
       // 유물
       if (cls === 'war' && has('whetstone')) e.atk *= 1.08;
       if (cls === 'arc' && has('feather')) e.as *= 1.08;
