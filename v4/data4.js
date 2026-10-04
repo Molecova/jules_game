@@ -209,9 +209,9 @@
   ];
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.88, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1, phoenix: false },
-    hard: { name: '어려움', desc: '적이 더 강하고 라운드 수입 −1골드', foe: 1.12, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 1.09, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.22, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.34, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
