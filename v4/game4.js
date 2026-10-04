@@ -49,7 +49,7 @@
   const has = (r) => R && R.relics.includes(r);
   const benchSize = () => V.BENCH + (has('bigbag') ? 2 : 0);
   const deployMax = () => R.lv + (has('flag') ? 1 : 0);
-  const skillSlots = (u) => def(u).slots || 2;
+  const skillSlots = () => 1; // 스킬 칩은 유닛당 1칸
 
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
@@ -386,7 +386,7 @@
     const won = judge(cb);
     const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
     const fo = cb.units.filter((u) => u.side === 1 && !u.summon && !u.object);
-    const r = { won, gold: cb.goldBonus || 0, t: cb.t, hpLeft: al.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, al.reduce((x, u) => x + u.maxHp, 0)), foeLeft: fo.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, fo.reduce((x, u) => x + u.maxHp, 0)) };
+    const r = { casts: al.map((u) => u.def.id + ':' + JSON.stringify(u.castCount || {})), won, gold: cb.goldBonus || 0, t: cb.t, hpLeft: al.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, al.reduce((x, u) => x + u.maxHp, 0)), foeLeft: fo.reduce((x, u) => x + (u.dead ? 0 : Math.max(0, u.hp)), 0) / Math.max(1, fo.reduce((x, u) => x + u.maxHp, 0)) };
     B = null;
     return r;
   }
@@ -576,7 +576,7 @@
     el.style.width = ((ML - 20) * kScale) + 'px'; el.style.height = ((CS * ROWS + 8) * kScale) + 'px';
     el.classList.toggle('narrow', (ML - 20) * kScale < 58); // 좁으면 아이콘 대신 왼쪽 색 띠
   }
-  // 전직 무기 상태: 출전 딱지가 쥠(on) · 창고나 창고 딱지에 있음(bench) · 없음(off)
+  // 스타일 무기 상태: 출전 딱지가 쥠(on) · 창고나 창고 딱지에 있음(bench) · 없음(off)
   function itemState(id) {
     if (R.board.some((u) => u.item && u.item.id === id)) return 'on';
     if (R.bench.some((c) => c && ((c.kind === 'item' && c.id === id) || (c.kind === 'unit' && c.item && c.item.id === id)))) return 'bench';
@@ -598,8 +598,8 @@
     let out = '';
     for (const [k, T] of Object.entries(TRAITS)) {
       const lines = T.kind === 'combo' ? T.desc : T.desc.map((d, i) => `(${T.th[i]}) ${d}`);
-      if (T.kind === 'job' && !out.includes('data-jobhead')) out += '<h3 data-jobhead style="margin:6px 0 0;font-size:15px">무기 전직 · 출전 딱지가 쥔 무기 종류 수</h3>';
-      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : T.kind === 'peer' ? '같은 등급 · ' + T.th.join('/') + '명' : T.kind === 'job' ? CLS[T.cls].name + ' 전직 · 무기 ' + T.th.join('/') + '종' : '성격 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
+      if (T.kind === 'job' && !out.includes('data-jobhead')) out += '<h3 data-jobhead style="margin:6px 0 0;font-size:15px">무기 스타일 · 출전 딱지가 쥔 무기 종류 수</h3>';
+      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : T.kind === 'peer' ? '같은 등급 · ' + T.th.join('/') + '명' : T.kind === 'job' ? CLS[T.cls].name + ' 스타일 · 무기 ' + T.th.join('/') + '종' : '성격 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
     }
     return out;
   }
@@ -737,7 +737,7 @@
       const eq = shop ? '' : [...c.skills.map((x) => def(x).name + starTxt(x.star)), c.item ? def(c.item).name + starTxt(c.item.star) : null].filter(Boolean).join(' · ');
       body = `<p>${hl(d.trait)}<br><span class="meta">사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span>${unitLadder(d, c.star)}</p>${sl}`;
     } else if (c.kind === 'skill') {
-      body = `<p>${hl(d.desc)}<br><span class="meta">마나 ${skMana(d, c.star)} · 기본 공격 약 ${Math.ceil(skMana(d, c.star) / 12)}번에 한 번${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
+      body = `<p>${hl(d.desc)}<br><span class="meta">재사용 ${secTxt(BT4.chipCd(d, c.star))}초마다 저절로${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
     } else {
       body = `<p>${hl(d.desc)}<br><span class="meta">끼우면 ${d.feel}</span>${itemLadder(d, c.star, BASE_E)}</p>`;
     }
@@ -745,7 +745,7 @@
     const btns = shop
       ? `<button class="btn pri" data-act="buy" ${R.gold < d.t ? 'disabled' : ''}>구매 · ${d.t}골드${n >= 2 ? ' → ★2' : ''}</button><button class="btn" data-act="close">닫기</button>`
       : `<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button><button class="btn" data-act="close">닫기</button>`;
-    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : c.kind === 'item' && d.job ? ' · <b style="color:' + TRAITS[d.job].col + '">' + TRAITS[d.job].name + ' 전직</b>' : ''}${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
+    el.innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="dh"><img src="${imgOf(c, 104)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b><div class="meta">${CLS[d.cls].name} ${KINDNAME[c.kind]} · ${d.t}등급(${TIERNAME[d.t]})${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : c.kind === 'item' && d.job ? ' · <b style="color:' + TRAITS[d.job].col + '">' + TRAITS[d.job].name + ' 스타일</b>' : ''}${shop && n ? ` · 보유 ${n}장` : ''}</div></div></div>
       <div class="ddesc">${body}</div><div class="dbtn">${btns}</div>`;
   }
 
@@ -767,8 +767,8 @@
     spellSlow: () => '스킬에 맞은 적 둔화',
     spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(35 * k)}</em>)`,
     healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 ${atkAmt(e, 0.45 * e.healMult * k)} 치유`,
-    hourglass: (e, k) => `스킬 사용 시 주변 아군 마나 <em>+${Math.round(15 * k)}</em>`,
-    echo: () => '3번 시전마다 한 번 더(위력 60%)',
+    hourglass: (e, k) => `고유기 사용 시 주변 아군 마나 <em>+${Math.round(15 * k)}</em>`,
+    echo: () => '고유기 3번마다 한 번 더(위력 60%)',
     stunEvery: (e, k) => `5타마다 기절 <em>${(0.8 * Math.min(1.6, k)).toFixed(1)}초</em>`,
     thorns: (e, k) => `근접 피해 <em>${Math.round(20 * Math.min(1.6, k))}%</em> 반사`,
     giantSlayer: (e, k) => `정예·보스 피해 <em>+${Math.round(25 * Math.min(1.6, k))}%</em>`,
@@ -786,7 +786,7 @@
     abyss: () => '스킬에 맞은 적 화상(초당 <em>35</em>), 스킬 피해의 <em>25%</em> 회복',
     stormHit: (e, k) => `기본 공격이 주변 적 둘에게 번개 ${atkAmt(e, 0.35 * Math.min(1.6, k))}`,
   };
-  function itemText(it, star, e) {
+  function itemText(it, star, e, noAct) {
     const k = BT4.ITSTAR[star], st = it.st, parts = [];
     if (st.atk) parts.push(`공격력 <em>+${pct(st.atk * k)}%</em>`);
     if (st.as) parts.push(`공속 <em>+${pct(st.as * k)}%</em>`);
@@ -801,6 +801,7 @@
     if (st.mana) parts.push(`시작 마나 <em>+${Math.round(st.mana * Math.min(k, 1.6))}</em>`);
     if (st.manaPerHit) parts.push(`공격당 마나 <em>+${Math.round(st.manaPerHit * k)}</em>`);
     if (it.fx && FXTEXT[it.fx]) parts.push(FXTEXT[it.fx](e, k));
+    if (it.act && !noAct) parts.push(`<b>액티브</b> ${secTxt(BT4.chipCd(it.act, star))}초마다 ${it.act.name}: ${skillMain(it.act, star, e)}`);
     return parts.join(' · ');
   }
   // 스킬 부가 효과(성급과 무관)
@@ -818,7 +819,6 @@
     return ex.join(' · ');
   }
   // 스킬 주 수치(성급에 따라 커짐)
-  const skMana = (sd, star) => Math.max(30, (sd.mana || 80) - ((star || 1) - 1) * 8); // battle4 skillMana 와 같은 식
   function skillMain(sd, star, e) {
     const k = BT4.SKSTAR[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult;
     let main = '';
@@ -834,6 +834,10 @@
       case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
       case 'mana': main = `주변 아군 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
       case 'heavy': main = `피해 ${atkAmt(e, sd.power * k)}`; break;
+      case 'guard': main = `받는 피해 <em>−${pct((sd.red || 0.25) + 0.05 * (star - 1))}%</em> ${sd.dur || 5}초`; break;
+      case 'curse': main = `피해 <em>${P}</em> · 약화 ${sd.weak || 6}초`; break;
+      case 'markRandom': main = `적 ${sd.n || 2}명 받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
+      case 'summon': main = sd.summon === 'hawk' ? `매 소환(최대 ${sd.max || 1})` : '골렘 소환'; break;
       case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · 회복 <em>${Math.round(P * H)}</em>`; break;
       default: main = sd.desc;
     }
@@ -845,7 +849,7 @@
   const wider = (sd) => ((BT4.expandCells(sd, 3) || sd.cells || []).length > (sd.cells || []).length);
   const skillLadder = (sd, cur, e) => ladder((st) => skillMain(sd, st, e) + (st === 3 && wider(sd) ? ' · 범위 확장' : ''), cur);
   const itemLadder = (it, cur, e) => ladder((st) => itemText(it, st, e), cur);
-  const unitLadder = (d, cur) => ladder((st) => { const u = BT4.unitStats({ id: d.id, star: st, skills: [], item: null }); return `체력 <em>${Math.round(u.hp)}</em> · 공격 <em>${Math.round(u.atk)}</em> · 스킬 위력 <em>${pct(BT4.POW[st] * (1 + (d.spellBonus || 0)))}%</em>`; }, cur);
+  const unitLadder = (d, cur) => ladder((st) => { const u = BT4.unitStats({ id: d.id, star: st, skills: [], item: null }); return `체력 <em>${Math.round(u.hp)}</em> · 공격 <em>${Math.round(u.atk)}</em>${d.ult ? ` · ${d.ult.name} ${skillMain(d.ult, 1, { pow: BT4.POW[st], spell: 1 + (d.spellBonus || 0), healMult: 1, atk: u.atk })}` : ''}`; }, cur);
   // ---------- 딱지 정보: 트레이딩 카드(A안) ----------
   // 딱지를 탭하면 큰 유닛 카드가 가운데로. 체력·공격은 그림 모서리 배지, 칩 줄을 탭하면 그 칩 카드가 앞으로,
   // 뒤집으면 뒷면에 ★1·★2·★3 성급표. 적 딱지도 같은 카드(붉은 테 + 행동 예고)
@@ -873,6 +877,7 @@
   const secTxt = (x) => (x < 10 ? x.toFixed(1) : String(Math.round(x)));
   const firstOf = (ci) => ci.start > 0 && ci.first < ci.every - 0.3;
   const castTxt = (ci) => (ci ? `<span class="cast">${CLOCK}약 <em>${secTxt(ci.every)}초</em>마다 · 기본 공격 ${ci.atk}번${firstOf(ci) ? ` · 첫 시전 <em>${secTxt(ci.first)}초</em>` : ''}</span>` : '');
+  const cdTxt = (cd, label = '') => `<span class="cast">${CLOCK}${label}<em>${secTxt(cd)}초</em>마다</span>`;
   const castShort = (ci) => (ci ? `<span class="cast">${CLOCK}<em>${secTxt(ci.every)}초</em>마다${firstOf(ci) ? ` · 첫 <em>${secTxt(ci.first)}초</em>` : ''}</span>` : '');
   const XSVG = '<svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
   // 아이콘 + 값 칸(오른 값은 초록 ▲)
@@ -900,7 +905,7 @@
       tstat('target', '#5a6b8a', '사거리', e.range + '칸', e.range > d.range),
       tstat('shield', '#2e9e6b', '받는 피해', '−' + pct(e.armor) + '%', e.armor > (d.armor || 0) + 1e-6),
       tstat('crit', '#c8333f', '치명타', pct(Math.min(1, e.crit)) + '%', e.crit > (d.crit || 0.05) + 1e-6),
-      tstat('spark', '#7a4fc0', '스킬 위력', pct(e.spell * e.pow) + '%', e.spell * e.pow > POWBASE(c) + 1e-6),
+      tstat('spark', '#7a4fc0', '고유기·스킬 위력', pct(e.spell * e.pow) + '%', e.spell * e.pow > POWBASE(c) + 1e-6),
       tstat('flame', '#e8643b', '초당 피해', Math.round(e.atk * e.as), Math.round(e.atk * e.as) > Math.round(d.atk * m * d.as)),
     ].join('');
     let socks = '';
@@ -908,11 +913,11 @@
       const x = c.skills[k];
       if (!x) { socks += `<div class="sk empty">빈 스킬 칸</div>`; continue; }
       const sd = def(x);
-      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span class="skw"><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${castShort(castInfo(e, k))}</span>${drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}<button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
+      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span class="skw"><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${cdTxt(BT4.chipCd(sd, x.star))}</span><button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
     }
     const rg = manaRegenOf(e), st0 = e.bars && e.bars[0] ? Math.round(e.bars[0].mana) : 0;
-    const manaRow = c.skills.length ? `<div class="tc-mana">${DROP}<span>마나: 공격 1번 <em>+${Math.round((e.manaPerHit || 12) * (e.manaGain || 1))}</em> · 맞으면 최대 +10${rg ? ` · 초당 <em>+${secTxt(rg)}</em>` : ''}${st0 ? ` · 시작 <em>${st0}</em>` : ''}</span></div>` : '';
-    if (c.item) { const it = def(c.item); socks += `<div class="sk wp" data-info="item" role="button" tabindex="0" style="--kc:${CLS[it.cls].col}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star) ? ' ' + starTxt(c.item.star) : ''}</b>${itemText(it, c.item.star, e)}</span><button class="unq" data-un="item" aria-label="${it.name} 해제">해제</button></div>`; }
+    const manaRow = d.ult ? `<div class="tc-mana">${DROP}<span>고유기 마나: 공격 1번 <em>+${Math.round((e.manaPerHit || 12) * (e.manaGain || 1))}</em> · 맞으면 최대 +10${rg ? ` · 초당 <em>+${secTxt(rg)}</em>` : ''}${st0 ? ` · 시작 <em>${st0}</em>` : ''}</span></div>` : '';
+    if (c.item) { const it = def(c.item); socks += `<div class="sk wp" data-info="item" role="button" tabindex="0" style="--kc:${CLS[it.cls].col}"><img src="${imgOf(c.item, 60)}" alt=""><span class="skw"><span><b>${it.name}${starTxt(c.item.star) ? ' ' + starTxt(c.item.star) : ''}</b>${itemText(it, c.item.star, e, true)}</span>${it.act ? `<span class="cast">${CLOCK}<em>${secTxt(BT4.chipCd(it.act, c.item.star))}초</em>마다 ${it.act.name}: ${skillMain(it.act, c.item.star, e)}</span>` : ''}</span><button class="unq" data-un="item" aria-label="${it.name} 해제">해제</button></div>`; }
     else socks += `<div class="sk empty">빈 무기 칸</div>`;
     const anim = ui.flipAnim; ui.flipAnim = false;
     let body;
@@ -924,7 +929,7 @@
     } else {
       body = cardFront({ img: imgOf(c, 200), trs: d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name}</i>`).join(''),
         hp: e.maxHp, atk: Math.round(e.atk), hpUp: e.maxHp > Math.round(d.hp * m), atkUp: Math.round(e.atk) > Math.round(d.atk * m),
-        typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: hl(d.trait), stats, socks: `<div class="tc-sock">${manaRow}${socks}</div>` });
+        typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: d.ult ? `<div class="ult"><div class="ult-h"><i>고유기</i><b>${d.ult.name}</b>${drop(e.bars && e.bars[0] ? e.bars[0].max : d.ult.mana)}</div><div class="ult-m">${skillMain(d.ult, 1, e)} · ${hl(d.ult.desc)}</div>${castShort(castInfo(e, 0))}</div>` : `<div class="ult psv"><div class="ult-h"><i>패시브</i></div><div class="ult-m">${hl(d.trait)}</div></div>`, stats, socks: `<div class="tc-sock">${manaRow}${socks}</div>` });
     }
     const card = tradingCard({ anim, cc: CLS[d.cls].col, tc: `var(--t${d.t})`, coin: d.t, name: d.name, tag: c.star > 1 ? `<i class="st">${starTxt(c.star)}</i>` : '', body, h: ui.flip ? ui.flipH : 0 });
     const btns = [onBoard ? '<button class="wbtn" data-act="tobench">창고로</button>' : '', `<button class="wbtn" data-act="flip"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${ui.flip ? '앞면' : '뒤집기'}</button>`, '<button class="wbtn" data-act="close">닫기</button>'].filter(Boolean);
@@ -938,8 +943,8 @@
         const head = isItem ? `<small>${CLS[sd.cls].name} 아이템 · ${sd.t}등급 · 끼우면 ${sd.feel}</small>` : `<small>${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ${d.name}에 장착</small>`;
         sub = `<button class="scbg" data-act="subclose" aria-label="칩 카드 닫기"></button>
           <div class="scard ${isItem ? 'k-item' : 'k-skill'}" style="--cc:${CLS[sd.cls].col};--tc:var(--t${sd.t})" role="dialog" aria-label="${sd.name}">
-            <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}</div>
-            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem ? '<br>' + castTxt(castInfo(e, k)) : ''}</p>
+            <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : `<span class="drop cdb">${secTxt(BT4.chipCd(sd, x.star))}초</span>`}</div>
+            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem ? '<br>' + cdTxt(BT4.chipCd(sd, x.star), '재사용 ') : ''}</p>
             <div class="sc-r">${isItem ? '' : patternGrid(sd, x.star)}<div class="sc-l">${lad}</div></div>
             <div class="sc-b"><button class="wbtn" data-un="${isItem ? 'item' : k}">${isItem ? '아이템' : '칩'} 빼기</button><button class="wbtn" data-act="subclose">돌아가기</button></div>
           </div>`;
@@ -1139,7 +1144,7 @@
     const nx = next ? `<div class="dw-nxt"><small>${next}명이면 · ${next - n}명 더</small>${hl(T.desc[combo ? 0 : th.indexOf(next)])}</div>` : '<div class="dw-nxt max"><small>최고 단계</small>모두 켜졌습니다</div>';
     const ms = T.members.length || T.kind === 'peer' ? synMembers(k).map((id) => { const d = memberDef(T, id), st = T.kind === 'job' ? itemState(id) : onIds.has(id) ? 'on' : benchIds.has(id) ? 'bench' : 'off';
       return `<span class="mm s-${st}${T.kind === 'job' ? ' it' : ''}" title="${d.name} · ${{ on: T.kind === 'job' ? '출전 딱지가 쥠' : '출전', bench: '창고', off: '없음' }[st]}"><img src="${memberImg(T, id)}" alt=""><b>${d.t}</b></span>`; }).join('') : '';
-    const peerNote = T.kind === 'job' ? `<div class="dw-leg">${CLS[T.cls].name} 전직 무기 · <i class="on"></i>출전 딱지가 쥠 <i class="bench"></i>창고 <i class="off"></i>없음</div>` : T.kind === 'peer' ? `<div class="dw-leg">같은 등급의 서로 다른 딱지 수 · 지금 ${sc.peerT || '-'}등급</div>` : '<div class="dw-leg"><i class="on"></i>출전 <i class="bench"></i>창고 <i class="off"></i>없음 · 판의 점선 = 적용 중</div>';
+    const peerNote = T.kind === 'job' ? `<div class="dw-leg">${CLS[T.cls].name} 스타일 무기 · <i class="on"></i>출전 딱지가 쥠 <i class="bench"></i>창고 <i class="off"></i>없음</div>` : T.kind === 'peer' ? `<div class="dw-leg">같은 등급의 서로 다른 딱지 수 · 지금 ${sc.peerT || '-'}등급</div>` : '<div class="dw-leg"><i class="on"></i>출전 <i class="bench"></i>창고 <i class="off"></i>없음 · 판의 점선 = 적용 중</div>';
     el.style.setProperty('--cc', T.col);
     el.innerHTML = `<div class="dw-h"><span class="sico" style="--c:${T.col}">${T.short}</span><b>${T.name}</b>${pegs}<button class="dx" data-close aria-label="닫기">✕</button></div>${cur}${nx}${ms ? `<div class="dw-m">${ms}</div>` : ''}${peerNote}<button class="dw-more" data-more>자세히 ›</button>`;
     el.hidden = false;
@@ -1848,9 +1853,9 @@
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 흰색 · 2 녹색 · 3 파랑 · 4 보라 · 5 노랑. 딱지 테두리 색은 클래스(전사 남색 · 궁수 빨강 · 마법사 청록).</p>
         <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 시너지 줄의 ‘시너지’ 버튼으로 전체 목록을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
-        <p><b>장착</b> 유닛마다 스킬 2개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 아이템에 따라 역할이 바뀝니다.</p>
+        <p><b>장착</b> 유닛마다 스킬 칩 1개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 스킬 칩은 재사용 대기시간마다 저절로 쓰고(★마다 10% 짧게), 아이템은 패시브 효과나 일정 시간마다 쓰는 액티브가 있습니다. 같은 스타일 무기를 여러 종류 쥐면 스타일 시너지가 켜집니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
-        <p><b>마나</b> 스킬마다 마나 막대가 따로 있습니다. 기본 공격 1번에 +12, 피해를 받으면 받은 만큼(한 번에 최대 +10) 차고, 가득 찬 스킬부터 씁니다. 딱지 카드의 시계 표시는 기본 공격만 셌을 때의 시전 주기라, 맞으면 더 빨리 씁니다. 스킬 ★이 오르면 마나가 8씩 줄어듭니다.</p>
+        <p><b>고유기</b> 유닛마다 고유기가 하나 있고(광전사·석궁병·화염술사는 패시브), 마나가 가득 차면 씁니다. 마나는 기본 공격 1번에 +12, 피해를 받으면 받은 만큼(한 번에 최대 +10) 찹니다. 딱지 카드의 시계 표시는 기본 공격만 셌을 때의 주기라, 맞으면 더 빨리 씁니다. 유닛 ★이 오르면 고유기 위력이 오릅니다.</p>
         <p><b>수입</b> 라운드마다 5 + 이자(10골드당 1, 최대 5). 이기면 +1.</p>
         <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템). 창고가 가득 차 있으면 판 위 빈칸에 ‘창고’ 딱지로 놓이고, 창고에 빈칸이 생기면 저절로 들어갑니다.</p>
         <p><b>패배</b> 한 번 지면 원정이 끝납니다.</p></div><button class="btn" data-m="close">닫기</button>`);
@@ -1866,7 +1871,7 @@
       else if (tab === 'syn') list = synList(null);
       else list = POOL[tab].slice().sort((a, b) => (CORDER.indexOf(a.cls) - CORDER.indexOf(b.cls)) || a.t - b.t).map((d) => {
         const c = mk(tab, d.id);
-        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? d.desc : `${d.desc}<br><i>${d.feel}</i>`;
+        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.ult ? '고유기 · ' : '패시브 · '}${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? `${d.desc}<br>재사용 ${BT4.chipCd(d, 1)}초` : `${d.desc}<br><i>${d.feel}</i>`;
         return `<div class="cx k-${tab} tier${d.t}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
       }).join('');
       $('codexList').innerHTML = list;
@@ -1887,6 +1892,8 @@
     for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) u.skills = u.skills.filter(known);
     R.bench = R.bench.map((c) => (c && !known(c) ? null : c));
     for (const k of ['unit', 'skill', 'item']) if (R.shop && R.shop[k]) R.shop[k] = R.shop[k].map((c) => (known(c) ? c : null));
+    // 스킬 칩 1칸으로 바뀐 뒤: 칩이 둘 이상 끼워진 딱지는 첫 칩만 남기고 나머지는 창고로(넘치면 판 위 창고 딱지)
+    for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) while (u.skills.length > skillSlots(u)) toBench(u.skills.pop());
     fixBench(); showMap();
   };
   $('codexBtn').onclick = openCodex;

@@ -49,6 +49,46 @@
 
   // 마법사는 뒤에서 버티는 시간이 길어 체력·공격을 조금 더 준다
   for (const u of UNITS) if (u.cls === 'mag') { u.hp = Math.round(u.hp * 1.15 / 10) * 10; u.atk = Math.round(u.atk * 1.1); }
+
+  // ---- 고유기: 유닛마다 하나, 마나가 차면 쓴다(스킬과 같은 형식). 패시브만 가진 유닛은 광전사·석궁병·화염술사 ----
+  const A8 = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]], S3 = [[0, 0], ...A8];
+  const SQ5U = []; for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) SQ5U.push([x, y]);
+  const ULT = {
+    squire: { name: '돌진 베기', mode: 'facing', effect: 'dmg', cells: [[1, 0], [2, 0]], power: 320, mana: 60, drain: 0.3, icon: 'slash', desc: '앞 2칸을 베고 준 피해의 30% 회복' },
+    shieldman: { name: '방패 세우기', mode: 'self', effect: 'taunt', cells: A8, power: 180, mana: 70, icon: 'shield', desc: '자신 보호막 180 + 주변 1칸 적 3초 도발' },
+    merc: { name: '현상금 사냥', mode: 'lowest', effect: 'dmg', power: 200, mana: 70, bounty: true, icon: 'dagger', desc: '체력 비율이 가장 낮은 적을 벤다. 쓰러뜨리면 골드 +1(전투당 2)' },
+    hammer: { name: '내려찍기', mode: 'target', effect: 'dmg', cells: S3, power: 70, mana: 80, stun: 1, icon: 'quake', desc: '대상과 주변 1칸 피해 + 1초 기절' },
+    duelist: { name: '일섬', mode: 'single', effect: 'dmg', power: 130, mana: 70, crit: true, nextCrit: true, icon: 'slash', desc: '대상에게 확정 치명 일격, 다음 공격도 치명' },
+    warden: { name: '수호 진형', mode: 'self', effect: 'guard', cells: S3, power: 0, mana: 80, dur: 5, red: 0.35, icon: 'shield', desc: '자신과 주변 1칸 아군 5초간 받는 피해 −35%' },
+    paladin: { name: '신성한 망치', mode: 'self', effect: 'lightrain', cells: S3, power: 250, mana: 90, icon: 'cross', desc: '주변 1칸 적 피해, 같은 범위 아군 회복' },
+    blademaster: { name: '용의 숨결', mode: 'facing', effect: 'dmg', cells: [[1, -1], [1, 0], [1, 1], [2, -1], [2, 0], [2, 1]], power: 250, mana: 100, burn: { dps: 45, dur: 4 }, icon: 'fire', desc: '앞쪽 2×3 화염 + 4초 화상(초당 45)' },
+    archer: { name: '집중 사격', mode: 'volley', effect: 'dmg', focus: true, count: 3, power: 50, mana: 60, icon: 'arrow', desc: '대상에게 화살 3연사' },
+    venom: { name: '독침', mode: 'single', effect: 'dmg', power: 40, mana: 60, poison: { dps: 20, dur: 6 }, slow: 1, icon: 'skull', desc: '대상 피해 + 6초 중독(초당 20) + 1초 둔화' },
+    scout: { name: '기습 사격', mode: 'farthest', effect: 'dmg', power: 110, mana: 70, icon: 'target', desc: '가장 먼 적에게 강한 화살' },
+    hunter: { name: '매 부르기', mode: 'selfOnly', effect: 'summon', summon: 'hawk', max: 1, power: 0, mana: 110, icon: 'wind', desc: '매를 부른다(이미 있으면 매 체력 회복)' },
+    arbalest: { name: '연쇄 볼트', mode: 'targetFacing', effect: 'dmg', cells: [[0, 0], [1, 0], [2, 0]], power: 360, mana: 80, icon: 'arrow', desc: '대상과 그 뒤 2칸을 꿰뚫는다' },
+    ranger: { name: '마무리 사격', mode: 'lowest', effect: 'dmg', power: 150, mana: 90, finisher: 0.25, icon: 'target', desc: '체력 비율이 가장 낮은 적에게 강한 화살. 맞고 체력 25% 이하면 처형(보스 제외)' },
+    windarcher: { name: '돌풍 화살', mode: 'targetFacing', effect: 'dmg', cells: [[0, 0], [0, -1], [0, 1], [0, -2], [0, 2]], power: 170, mana: 90, icon: 'wind', desc: '대상과 양옆 2칸까지 화살 5발' },
+    ninja: { name: '별빛 관통', mode: 'line3', effect: 'dmg', power: 280, mana: 110, icon: 'star', desc: '바라보는 방향 세 줄을 끝까지 꿰뚫는다' },
+    apprentice: { name: '마력탄', mode: 'single', effect: 'dmg', power: 200, mana: 50, icon: 'star', desc: '대상에게 마력탄' },
+    acolyte: { name: '약초 뿌리기', mode: 'self', effect: 'heal', cells: S3, power: 350, mana: 60, icon: 'heart', desc: '자신 중심 3×3 아군 회복' },
+    monk: { name: '지식의 흐름', mode: 'self', effect: 'mana', cells: SQ5U, power: 40, mana: 70, icon: 'drop', desc: '주변 2칸 다른 아군 마나 +40' },
+    cryo: { name: '별자리 표식', mode: 'selfOnly', effect: 'markRandom', n: 4, vuln: { amt: 0.4, dur: 8 }, power: 0, mana: 80, icon: 'star', desc: '무작위 적 넷 8초간 받는 피해 +40%' },
+    summoner: { name: '골렘 소환', mode: 'selfOnly', effect: 'summon', summon: 'stonegolem', max: 1, power: 0, mana: 130, icon: 'quake', desc: '돌 골렘 소환(이미 있으면 골렘 체력 회복)' },
+    archmage: { name: '비전 폭풍', mode: 'volley', effect: 'dmg', count: 6, power: 115, mana: 100, icon: 'star', desc: '무작위 적에게 마력탄 6발' },
+    warlock: { name: '저주의 낙인', mode: 'selfOnly', effect: 'curse', n: 2, power: 180, mana: 90, weak: 6, drain: 0.5, icon: 'skull', desc: '공격력이 가장 높은 적 둘에게 피해 + 6초 약화, 준 피해의 50% 회복' },
+    bishop: { name: '성스러운 빛', mode: 'all', effect: 'shield', power: 220, heal: 240, mana: 120, icon: 'cross', desc: '모든 아군 보호막 220 + 회복 240' },
+  };
+  // 고유기가 들어간 뒤 맞춘 기본 능력치(측정 기준)
+  const STATFIX = { archer: { hp: 0.9, atk: 0.82 }, venom: { hp: 0.9, atk: 0.9 }, pyro: { atk: 0.9 }, monk: { hp: 1.15, atk: 1.15 }, hunter: { atk: 0.9 }, cryo: { hp: 1.1, atk: 1.1 },
+    archmage: { hp: 1.2, atk: 1.2 }, warlock: { hp: 1.1, atk: 1.1 }, bishop: { hp: 1.2, atk: 1.1 }, blademaster: { atk: 0.84 } };
+  for (const u of UNITS) { const f = STATFIX[u.id]; if (f) { if (f.hp) u.hp = Math.round(u.hp * f.hp / 10) * 10; if (f.atk) u.atk = Math.round(u.atk * f.atk); } }
+  for (const u of UNITS) {
+    const o = ULT[u.id]; if (!o) continue;
+    u.ult = Object.assign({ kind: 'ult', id: 'u_' + u.id, cls: u.cls, t: u.t }, o);
+    u.trait = `${o.name}: ${o.desc}`;
+    delete u.passive; delete u.startMana; delete u.spellBonus; delete u.slots;
+  }
   const gs = (id) => GD.SKILLS.find((s) => s.id === id) || {};
   const SKX = {
     healarrow: { mode: 'lowestAlly', effect: 'heal', icon: 'heart', mana: 60, power: 260, desc: '가장 다친 아군에게 치유 화살(260 회복)' },
@@ -87,19 +127,19 @@
   // 스킬 밸런스(시뮬레이션 측정 기준): 빗나가기 쉬운 줄·범위 스킬은 위력을 높이고,
   // 반드시 맞는 단일 대상 스킬과 지나치게 센 지원 스킬은 낮춘다
   const SKBAL = {
-    pierce: { power: 285 }, ice: { power: 330 }, judgment: { power: 560 }, rain: { power: 270 }, spread: { power: 150 },
+    pierce: { power: 360 }, ice: { power: 330 }, judgment: { power: 560 }, rain: { power: 270 }, spread: { power: 150 },
     cross: { power: 205 }, whirl: { power: 280 }, bladestorm: { power: 320 }, earth: { power: 680 }, frostnova: { power: 500 }, bash: { power: 300 },
     poisonarrow: { power: 55, poison: { dps: 40, dur: 6 }, desc: '대상에게 피해 + 6초 중독(초당 40)' },
     huntmark: { power: 20, vuln: { amt: 0.25, dur: 5 }, desc: '대상 5초 취약(받는 피해 +25%)' }, heavy: { power: 1.8, desc: '대상에게 공격력 ×1.8 피해' },
     bleedcut: { power: 80, bleed: { dps: 40, dur: 5 }, desc: '앞쪽 3칸을 베고 5초 출혈(초당 40)' },
-    fire: { power: 100 }, meteor: { power: 380 },
+    fire: { power: 85 }, meteor: { power: 320 },
     fortify: { power: 120, dur: 3, red: 0.3, desc: '3초간 받는 피해 −30%, 체력 120 회복' },
     manaflow: { power: 45, desc: '주변 1칸 다른 아군 마나 +45' },
     taunt: { power: 260, desc: '주변 2칸 적이 3초간 자신만 노린다. 보호막 260' },
     light: { power: 240 },
     // 중첩 측정(같은 스킬 반복·여러 딱지) 뒤 손본 지원 스킬
     wall: { power: 160, mana: 80, desc: '같은 줄 좌우 2칸 아군에게 보호막 160' },
-    aid: { power: 150, mana: 60 },
+    aid: { power: 220, mana: 60 },
     secondwind: { power: 200, mana: 70, desc: '자신 보호막 200 + 해로운 효과 제거' },
     purify: { power: 110, desc: '체력이 가장 낮은 아군 110 회복 + 해로운 효과 제거' },
     healarrow: { power: 130, desc: '가장 다친 아군에게 치유 화살(130 회복)' },
@@ -115,16 +155,16 @@
   const BOX3x3 = [[1, -1], [1, 0], [1, 1], [2, -1], [2, 0], [2, 1], [3, -1], [3, 0], [3, 1]];
   const N_ = (id, name, cls, t, o) => Object.assign({ kind: 'skill', id, name, cls, t }, o);
   SKILLS.push(
-    N_('shatter', '파쇄 일격', 'war', 4, { mode: 'facing', effect: 'dmg', cells: BOX3x3, power: 430, mana: 100, stun: 1, icon: 'quake', desc: '앞쪽 3×3을 내려찍고 1초 기절' }),
+    N_('shatter', '파쇄 일격', 'war', 4, { mode: 'facing', effect: 'dmg', cells: BOX3x3, power: 360, mana: 100, stun: 1, icon: 'quake', desc: '앞쪽 3×3을 내려찍고 1초 기절' }),
     N_('execution', '처형', 'war', 4, { mode: 'lowest', effect: 'dmg', power: 520, mana: 90, execute: 2, icon: 'dagger', desc: '체력 비율이 가장 낮은 적. 체력 절반 이하면 피해 ×2' }),
     N_('resolve', '결의', 'any', 4, { mode: 'selfOnly', effect: 'fortify', power: 340, mana: 90, dur: 4, red: 0.35, icon: 'shield', desc: '4초간 받는 피해 −35%, 체력 340 회복' }),
     N_('arrowstorm', '폭풍 화살', 'arc', 4, { mode: 'volley', effect: 'dmg', power: 140, mana: 100, count: 6, icon: 'arrow', desc: '무작위 적에게 화살 6발' }),
     N_('railshot', '꿰뚫는 저격', 'arc', 4, { mode: 'line', effect: 'dmg', power: 760, mana: 100, stun: 0.8, icon: 'target', desc: '끝까지 꿰뚫고 맞은 적 0.8초 기절' }),
-    N_('firestorm', '화염 폭풍', 'mag', 4, { mode: 'target', effect: 'dmg', cells: SQ5, power: 260, mana: 120, burn: { dps: 50, dur: 4 }, icon: 'fire', desc: '대상 중심 5×5 피해 + 4초 화상(초당 50)' }),
+    N_('firestorm', '화염 폭풍', 'mag', 4, { mode: 'target', effect: 'dmg', cells: SQ5, power: 200, mana: 120, burn: { dps: 40, dur: 4 }, icon: 'fire', desc: '대상 중심 5×5 피해 + 4초 화상(초당 40)' }),
     N_('thunder', '뇌우', 'mag', 4, { mode: 'chain', effect: 'dmg', power: 340, mana: 110, jumps: 7, stun: 0.5, icon: 'bolt', desc: '대상에서 가까운 적으로 7번 튀고 0.5초 기절' }),
-    N_('quakeking', '대지 붕괴', 'war', 5, { mode: 'self', effect: 'dmg', cells: RING5, power: 560, mana: 130, stun: 1.5, icon: 'quake', desc: '주변 2칸 안 모든 적 피해 + 1.5초 기절' }),
-    N_('skyarrows', '천 개의 화살', 'arc', 5, { mode: 'volley', effect: 'dmg', power: 170, mana: 130, count: 10, icon: 'arrow', desc: '무작위 적에게 화살 10발' }),
-    N_('cataclysm', '종말의 불꽃', 'mag', 5, { mode: 'target', effect: 'tele', cells: SQ5, power: 600, mana: 140, delay: 1, burn: { dps: 70, dur: 4 }, icon: 'fire', desc: '1초 뒤 대상 중심 5×5에 불벼락 + 4초 화상(초당 70)' }),
+    N_('quakeking', '대지 붕괴', 'war', 5, { mode: 'self', effect: 'dmg', cells: RING5, power: 400, mana: 130, stun: 1.2, icon: 'quake', desc: '주변 2칸 안 모든 적 피해 + 1.2초 기절' }),
+    N_('skyarrows', '천 개의 화살', 'arc', 5, { mode: 'volley', effect: 'dmg', power: 140, mana: 130, count: 10, icon: 'arrow', desc: '무작위 적에게 화살 10발' }),
+    N_('cataclysm', '종말의 불꽃', 'mag', 5, { mode: 'target', effect: 'tele', cells: SQ5, power: 340, mana: 140, delay: 1, burn: { dps: 70, dur: 4 }, icon: 'fire', desc: '1초 뒤 대상 중심 5×5에 불벼락 + 4초 화상(초당 70)' }),
   );
 
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
@@ -152,12 +192,27 @@
     I_('frostorb', '서리 오브', 'mag', 1, 'orb', { spell: 0.12 }, 'spellSlow', '스킬 위력 +12%. 스킬에 맞은 적 둔화', '제어'),
     I_('firestaff', '화염 지팡이', 'mag', 2, 'staff', { spell: 0.3 }, 'spellBurn', '스킬 위력 +30%. 스킬에 맞은 적 화상', '공격'),
     I_('prayerbook', '성서', 'mag', 2, 'book', { heal: 0.1 }, 'healer', '치유 +10%. 다친 아군이 있으면 기본 공격 대신 그 아군을 공격력의 45%만큼 치유', '힐러'),
-    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 25 }, 'hourglass', '마나 25로 시작. 스킬을 쓰면 주변 1칸 아군 마나 +15', '지원'),
+    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 25 }, 'hourglass', '마나 25로 시작. 고유기를 쓰면 주변 1칸 아군 마나 +15', '지원'),
     I_('manaring', '마나 반지', 'mag', 2, 'ring', { mana: 10 }, 'manaRegen', '마나 10으로 시작. 초당 마나 +3', '빠른 시전'),
     I_('lifeorb', '생명의 수정', 'mag', 3, 'orb', { spell: 0.3, heal: 0.14, hp: 0.15 }, 'spellLeech', '스킬 위력 +30%, 치유 +14%, 체력 +15%. 스킬 피해의 25% 회복', '흡혈 마법사'),
     I_('stormstaff', '폭풍의 지팡이', 'mag', 4, 'staff', { spell: 0.18, manaPerHit: 3 }, 'stormHit', '스킬 위력 +18%. 기본 공격이 가까운 적 둘에게 번개(공격력 35%)', '연쇄 공격'),
-    I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.4, mana: 20 }, 'echo', '스킬 위력 +40%, 마나 20으로 시작. 3번 시전마다 한 번 더(60%)', '폭딜'),
+    I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.4, mana: 20 }, 'echo', '스킬 위력 +40%, 마나 20으로 시작. 고유기 3번마다 한 번 더(60%)', '폭딜'),
   ];
+  // 아이템 액티브: 재사용 대기시간마다 저절로 쓰는 기술(스킬과 같은 형식). 나머지 아이템 효과는 패시브
+  const ITEM_ACT = {
+    longsword: [{ name: '베어 넘기기', cd: 8, mode: 'facing', effect: 'dmg', cells: [[1, -1], [1, 0], [1, 1]], power: 170, icon: 'slash' }, '8초마다 앞쪽 3칸 베기'],
+    buckler: [{ name: '방패 막기', cd: 10, mode: 'selfOnly', effect: 'shield', power: 160, icon: 'shield' }, '10초마다 자신 보호막'],
+    shortbow: [{ name: '속사', cd: 7, mode: 'volley', effect: 'dmg', focus: true, count: 2, power: 90, icon: 'arrow' }, '7초마다 대상에게 화살 2발'],
+    longbow: [{ name: '관통 사격', cd: 10, mode: 'line', effect: 'dmg', power: 200, icon: 'arrow' }, '10초마다 끝까지 관통하는 화살'],
+    quiver: [{ name: '그림자 찌르기', cd: 9, mode: 'leap', effect: 'dmg', power: 220, icon: 'dagger' }, '9초마다 체력이 가장 낮은 적 옆으로 뛰어들어 찌르기'],
+    wand: [{ name: '마력 화살', cd: 6, mode: 'single', effect: 'dmg', power: 130, icon: 'star' }, '6초마다 대상에게 마력 화살'],
+    flamebow: [{ name: '불화살', cd: 9, mode: 'target', effect: 'dmg', cells: [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]], power: 140, burn: { dps: 30, dur: 3 }, icon: 'fire' }, '9초마다 대상 중심 십자 불화살'],
+    dragonslayer: [{ name: '그림자 일격', cd: 10, mode: 'lowest', effect: 'dmg', power: 300, icon: 'dagger' }, '10초마다 체력 비율이 가장 낮은 적 일격'],
+    eagleeye: [{ name: '매의 눈 저격', cd: 10, mode: 'farthest', effect: 'dmg', power: 340, icon: 'target' }, '10초마다 가장 먼 적 저격'],
+    warhammer: [{ name: '땅 울리기', cd: 11, mode: 'self', effect: 'dmg', cells: [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]], power: 150, slow: 2, icon: 'quake' }, '11초마다 주변 1칸 적 피해 + 2초 둔화'],
+  };
+  for (const it of ITEMS) { const a = ITEM_ACT[it.id]; if (!a) continue; it.act = Object.assign({ kind: 'act', id: 'a_' + it.id, cls: it.cls, t: it.t }, a[0]); it.desc += '. ' + a[1]; }
+
   // 보스 전용 아이템(5등급): 상점에 나오지 않고 보스 전리품으로만 확률적으로 떨어진다. 한 판에 한 장씩
   const SP_ = (...a) => Object.assign(I_(...a), { special: true });
   ITEMS.push(
@@ -171,14 +226,14 @@
 
   // 시너지
   // 유닛(성격) 10종: 'count' = 서로 다른 딱지 수, 'combo' = 지정한 딱지가 전부, 'peer' = 같은 등급 딱지 수
-  // 무기(전직) 9종: 'job' = 출전 딱지가 쥔 그 전직 무기의 종류 수. 효과는 그 무기를 쥔 딱지가 받는다
+  // 무기 스타일 9종: 'job' = 출전 딱지가 쥔 그 스타일 무기의 종류 수. 효과는 그 무기를 쥔 딱지가 받는다
   const TRAITS = {
     novice: { name: '견습', short: '견', col: '#8a9a5b', kind: 'combo', members: ['squire', 'archer', 'apprentice'],
-      desc: ['견습 셋이 모이면 모든 아군 피해 +8%, 스킬 마나 −10%, 받는 피해 −8%'] },
+      desc: ['견습 셋이 모이면 모든 아군 피해 +8%, 고유기 마나 −10%, 받는 피해 −8%'] },
     mentor: { name: '스승과 제자', short: '스', col: '#a8508a', kind: 'combo', members: ['archmage', 'apprentice'],
-      desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 스킬 마나 −30%'] },
+      desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 고유기 마나 −30%'] },
     twins: { name: '불과 얼음', short: '남', col: '#d0603a', kind: 'combo', members: ['pyro', 'cryo'],
-      desc: ['남매가 함께면 둘 다 스킬 위력 +30%, 스킬 마나 −15%'] },
+      desc: ['남매가 함께면 둘 다 스킬 위력 +30%, 고유기 마나 −15%'] },
     stars: { name: '별의 인도', short: '별', col: '#c48a00', kind: 'combo', members: ['cryo', 'ninja', 'bishop'],
       desc: ['셋이 모이면 모든 아군 치명타 +25%, 치명 피해 +60%, 공격 속도 +15%'] },
     artisan: { name: '장인', short: '장', col: '#8a6a3c', kind: 'count', th: [2, 3, 4], members: ['shieldman', 'hammer', 'crossbow', 'arbalest', 'monk'],
@@ -193,7 +248,7 @@
       desc: ['모든 아군 공격 속도 +8%, 질풍 +10% 더', '모든 아군 공격 속도 +16%, 질풍 +10% 더', '모든 아군 공격 속도 +25%, 질풍 +10% 더'] },
     peer: { name: '동급', short: '동', col: '#9a7b3a', kind: 'peer', th: [3, 4, 5], members: [],
       desc: ['같은 등급 딱지 3명: 그 딱지들 체력·공격 +12%', '같은 등급 4명: 체력·공격 +20%', '같은 등급 5명: 체력·공격 +30%'] },
-    // ---- 무기 전직 ----
+    // ---- 무기 스타일 ----
     j_knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'job', cls: 'war', th: [2, 3], members: ['buckler', 'holymace', 'towershield'],
       desc: ['기사 무기를 쥔 딱지 받는 피해 −15%', '받는 피해 −25%, 체력 +10%'] },
     j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer'],
@@ -272,10 +327,10 @@
   };
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.7, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.73, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 0.76, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 0.9, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.59, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.6, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 0.61, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 0.68, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)

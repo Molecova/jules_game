@@ -10,6 +10,8 @@
   const POW = [0, 1, 1.7, 2.8];     // 유닛 별에 따른 스킬 위력
   const SKSTAR = [0, 1, 1.7, 2.6];   // 스킬 칩 별
   const ITSTAR = [0, 1, 1.6, 2.5];   // 아이템 별
+  // 스킬 칩·아이템 액티브: 재사용 대기시간(마나 8당 1초, ★마다 10% 짧게)
+  const chipCd = (d, star = 1) => (d.cd || Math.max(5, Math.round((d.mana || 80) / 8))) * (1 - 0.1 * (star - 1));
   const def = (kind, id) => V.DEF[kind + ':' + id];
   const clsCol = (c) => (V.CLS[c] ? V.CLS[c].col : '#e8436b');
 
@@ -83,6 +85,7 @@
         case 'self': cells = cs.map(([x, y]) => abs(u.cell, x, y)); break;
         case 'target': cells = cs.map(([x, y]) => abs(t.cell, x, y)); break;
         case 'line': for (let f = 1; f < 12; f++) { const i = rel(u.cell, f, 0, dir); if (i < 0) break; cells.push(i); } break;
+        case 'line3': for (const sd of [-1, 0, 1]) for (let f = 1; f < 12; f++) { const i = rel(u.cell, f, sd, dir); if (i < 0) break; cells.push(i); } break;
         case 'selfOnly': cells = [u.cell]; break;
         case 'single': cells = [t.cell]; break;
       }
@@ -177,8 +180,13 @@
         def: d, card, uidRef: card.uid, cls, artId: d.id, passive: d.passive, star: card.star, lo: loadoutOf(card), rot: card.rot,
         dodge: s.dodge, lifesteal: s.lifesteal, critDmg: s.critDmg, spell: s.spell, healMult: s.heal, manaPerHit: s.manaPerHit,
         thorns: 0, regen: 0, procs: new Set(), pow: POW[card.star], ifx: s.fx, ifxK: s.fxK || 1,
-        skills: card.skills.map((x) => { const sd = def('skill', x.id); return { def: sd, star: x.star, cells: expandCells(sd, x.star) }; }),
+        skills: d.ult ? [{ def: d.ult, star: 1, cells: d.ult.cells }] : [], // 마나 막대 = 고유기
       });
+      // 스킬 칩 1칸(재사용 대기시간)과 아이템 액티브
+      const c0 = card.skills[0];
+      if (c0) { const sd = def('skill', c0.id), cd = chipCd(sd, c0.star); e.chip = { def: sd, star: c0.star, cells: expandCells(sd, c0.star), cd, t: Math.min(3, cd * 0.5) }; }
+      const act = card.item && def('item', card.item.id).act;
+      if (act) { const cd = chipCd(act, card.item.star); e.act = { def: act, star: card.item.star, cells: expandCells(act, card.item.star), cd, t: cd * 0.6 }; }
       e.star = 1; // 엔진 STAR_MULT 를 쓰지 않도록(능력치는 이미 반영됨)
       let mana = s.mana;
       const p = d.passive;
@@ -205,7 +213,7 @@
       if (T.veteran && my('veteran')) { e.atk *= [1, 1.25, 1.4, 1.5][T.veteran]; if (T.veteran >= 3) e.vetHeal = true; }
       if (T.gale) { e.as *= [1, 1.08, 1.16, 1.25][T.gale]; if (my('gale')) e.as *= 1.1; }
       if (T.peer && d.t === syn.peerT) { const k = [1, 1.12, 1.2, 1.3][T.peer]; e.maxHp *= k; e.atk *= k; }
-      // 무기 전직: 그 전직 무기를 쥔 딱지만
+      // 무기 스타일: 그 스타일 무기를 쥔 딱지만
       if (J('j_knight')) { e.armor += [0, 0.15, 0.25][J('j_knight')]; if (J('j_knight') >= 2) e.maxHp *= 1.1; }
       if (J('j_merc')) e.atk *= [1, 1.15, 1.3][J('j_merc')];
       if (J('j_assassin')) { e.crit += [0, 0.15, 0.3][J('j_assassin')]; e.critDmg += [0, 0.3, 0.6][J('j_assassin')]; }
@@ -263,7 +271,7 @@
       const e = baseEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, side, cell, {
         def: d, artId: d.id, cls: 'melee', summon: true, skills: [], procs: new Set(), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, pow: k, spell: 1,
       });
-      e.ability = null; e.maxMana = 0;
+      e.ability = null; e.maxMana = 0; e.owner = owner || null; e.summonId = id;
       e.popT = 0.35;
       return e;
     }
@@ -337,17 +345,23 @@
       u.dir = dir;
       const col = u.side ? '#e8436b' : clsCol(d.cls);
       cb.float(u.px, u.py - 38, d.name + (s.star > 1 ? ' ' + '★'.repeat(s.star) : ''), u.side ? '#ffd0da' : '#fffdf7', true);
+      const cc = (u.castCount = u.castCount || {}); cc[d.id] = (cc[d.id] || 0) + 1; // 시험·기록용
       const Hm = H(u);
       const cellsOf = () => skillCells(u, t, d, dir, s.cells);
       const allies = (cells) => cells.map((i) => cb.occ[i]).filter((v) => v && v.side === u.side && !v.dead && !v.object);
       switch (d.effect) {
         case 'dmg': {
-          if (d.mode === 'lowest' || d.mode === 'leap') {
-            const v = cb.alive(foe).filter((x) => !x.object).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+          if (d.mode === 'lowest' || d.mode === 'leap' || d.mode === 'farthest' || d.mode === 'single') {
+            const pool = cb.alive(foe).filter((x) => !x.object);
+            const v = d.mode === 'single' ? (t && !t.dead ? t : pool[0]) : d.mode === 'farthest' ? pool.sort((a, b) => grid.dist(u.cell, b.cell) - grid.dist(u.cell, a.cell))[0] : pool.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
             if (!v) break;
-            if (d.mode === 'leap') leapTo(cb, u, v); else if (!SLASH.has(d.id)) cb.beam(u.px, u.py, v.px, v.py, col, 0.35);
-            if (SLASH.has(d.id)) slashOne(cb, v, d.id === 'assassinate'); else tiles(cb, [v.cell], col);
-            applySkillHit(cb, u, v, P, d);
+            if (d.mode === 'leap') leapTo(cb, u, v); else if (!SLASH.has(d.id) && d.mode !== 'single') cb.beam(u.px, u.py, v.px, v.py, col, 0.35);
+            if (SLASH.has(d.id) || d.slash) slashOne(cb, v, d.id === 'assassinate' || d.crit); else tiles(cb, [v.cell], col);
+            const dealt = applySkillHit(cb, u, v, P, d);
+            if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
+            if (d.finisher && !v.dead && !v.boss && v.hp / v.maxHp <= d.finisher) { cb.float(v.px, v.py - 30, '처형!', '#f5c400', true); cb.kill(v, u); }
+            if (d.bounty && v.dead && (u.bountyN || 0) < 2) { u.bountyN = (u.bountyN || 0) + 1; cb.goldBonus = (cb.goldBonus || 0) + 1; cb.float(u.px, u.py - 52, '+1골드', '#f5c400', true); }
+            if (d.nextCrit) u.nextCrit = true;
             break;
           }
           if (d.mode === 'chain') {
@@ -366,7 +380,7 @@
           if (d.mode === 'volley') {
             const ts = AC.shuffle(cb.alive(foe).slice());
             const n = (d.count || 3) + (s.star >= 3 ? 2 : 0);
-            for (let j = 0; j < n; j++) { const v = ts[j % Math.max(1, ts.length)]; if (v) cb.projectiles.push({ x: u.px, y: u.py, tgt: v, src: u, dmg: P, crit: false, kind: 'spell', speed: 480 + j * 30, color: col }); }
+            for (let j = 0; j < n; j++) { const v = d.focus && t && !t.dead ? t : ts[j % Math.max(1, ts.length)]; if (v) cb.projectiles.push({ x: u.px, y: u.py, tgt: v, src: u, dmg: P, crit: false, kind: 'spell', speed: 480 + j * 30, color: col }); }
             break;
           }
           const cells = cellsOf();
@@ -439,6 +453,30 @@
           const cells = cellsOf();
           tiles(cb, cells, '#6ab0e8');
           for (const a of allies(cells)) if (a !== u && a.ability) addMana(a, (d.power || 30) * k);
+          break;
+        }
+        case 'guard': { // 수호 진형: 범위 아군 받는 피해 감소
+          const cells = cellsOf(); tiles(cb, cells, '#9aa3b2');
+          const red = (d.red || 0.25) + 0.05 * (((u.card && u.card.star) || 1) - 1);
+          for (const a of allies(cells)) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, red); a.st.fort = Math.max(a.st.fort || 0, d.dur || 5); cb.ring(a.px, a.py, '#c3cbd6', 22); }
+          break;
+        }
+        case 'summon': { // 소환: 최대 수까지 부르고, 꽉 차 있으면 소환물 체력 회복
+          const mine = cb.units.filter((x) => x.summon && !x.dead && x.owner === u && x.summonId === d.summon);
+          if (mine.length < (d.max || 1)) {
+            const cell = grid.neighbors[u.cell].find((n) => !cb.occ[n]);
+            if (cell !== undefined) { const g = makeSummon(d.summon, cell, u.side, u); if (d.summon === 'stonegolem') { g.maxHp = g.hp = Math.round(g.hp * 0.75); } cb.spawn(g); cb.ring(g.px, g.py, '#9bff8a', 26, 0.6); }
+          } else for (const m of mine) { cb.heal(m, m.maxHp * 0.4, u); cb.ring(m.px, m.py, '#9bff8a', 20); }
+          break;
+        }
+        case 'markRandom': {
+          for (const v of AC.shuffle(cb.alive(foe).filter((x) => !x.object)).slice(0, d.n || 2)) { addStatus(cb, v, 'vuln', d.vuln, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '표식', '#e2d0ff'); }
+          break;
+        }
+        case 'curse': {
+          let dealt = 0;
+          for (const v of cb.alive(foe).filter((x) => !x.object).sort((a, b) => b.atk - a.atk).slice(0, d.n || 2)) { cb.beam(u.px, u.py, v.px, v.py, '#b04fd0', 0.5); tiles(cb, [v.cell], '#b04fd0'); dealt += applySkillHit(cb, u, v, P, d); }
+          if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
           break;
         }
         case 'heavy':
@@ -743,6 +781,12 @@
               if (u.auraT <= 0) { u.auraT = 4; for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.05 * u.healMult, u); cb.ring(u.px, u.py, '#fff2b0', 34, 0.5); }
             }
             if (u.ifx === 'manaRegen' && u.ability) addMana(u, 3 * Math.min(1.6, u.ifxK) * dt);
+            // 스킬 칩·아이템 액티브: 대기시간이 끝나면 저절로(기절 중에는 멈춤)
+            for (const k of ['chip', 'act']) {
+              const c = u[k]; if (!c || u.stun > 0) continue;
+              c.t -= dt;
+              if (c.t <= 0) { const tg = u.target && !u.target.dead ? u.target : cb.nearestEnemy(u); if (tg) { execSkill(cb, u, tg, c); c.t = c.cd; } else c.t = 0.3; }
+            }
             if (u.ifx === 'sageStone' && u.ability) addMana(u, 5 * dt);
             if (u.passive === 'dragonBreath' && !u.breathed && u.hp / u.maxHp <= 0.5) {
               u.breathed = true;
@@ -817,5 +861,5 @@
     return { facing, rel, skillCells, synergyCounts, makeAlly, makeFoe, makeSummon, hooks, loadoutOf, wpArt, unitStats, foePreview: foeMul };
   }
 
-  global.BT4 = { create, unitStats, expandCells, STAR, POW, SKSTAR, ITSTAR };
+  global.BT4 = { create, unitStats, expandCells, chipCd, STAR, POW, SKSTAR, ITSTAR };
 })(window);
