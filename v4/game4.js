@@ -3,7 +3,7 @@
   'use strict';
   const GD = window.GD, V = window.V4, ART = window.ART, SFX = window.SFX;
   const { MONSTERS, ACTS, BOSS_INFO } = GD;
-  const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, RELICS, NODE, STARTS, DIFF } = V;
+  const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, RELICS, NODE, DIFF } = V;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   // 설명 글의 수치(10%, 220, 1.5초, +1 …)를 형광펜으로
@@ -45,28 +45,24 @@
   const deployMax = () => R.lv + (has('flag') ? 1 : 0);
   const skillSlots = (u) => def(u).slots || 2;
 
-  function newRun(startId, diff) {
-    const S = STARTS.find((s) => s.id === startId) || STARTS[0];
+  // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
+  function newRun(diff) {
     R = {
-      v: 4, diff, act: 1, round: 0, gold: 5, lv: 3, xp: 0, streak: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
+      v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, streak: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
       board: [], bench: Array(V.BENCH).fill(null), shop: { unit: [], skill: [], item: [] }, locked: { unit: false, skill: false, item: false },
       pool: {}, map: null, pos: null, path: [], node: null, freeRolls: 0, oddsBonus: 0, enemies: [], mode: 'map',
       stats: { wins: 0, battles: 0, merges: 0, goldEarned: 0, kills: 0, time: 0, elites: 0, bosses: 0 },
     };
     for (const d of [...UNITS, ...SKILLS, ...ITEMS]) R.pool[keyOf(d.kind, d.id)] = POOL_N[d.t];
-    const spots = [[1, 3], [3, 3], [2, 5]];
-    S.units.forEach(([id, sk, it], i) => {
-      const u = mk('unit', id); take(u);
-      u.skills = sk.map((s) => take(mk('skill', s)));
-      if (it) u.item = take(mk('item', it));
-      const d = DEF['unit:' + id];
-      const [x, y] = d.range > 1 ? [[1, 5], [3, 5], [2, 5]][i % 3] : spots[i];
-      u.x = x; u.y = y;
-      if (R.board.some((b) => b.x === x && b.y === y)) { u.x = [0, 4, 2][i]; }
-      R.board.push(u);
-    });
     R.map = genMap(1);
-    rollAll(true);
+  }
+  const START_GOLD = 6;
+  // 첫 상점 유닛 줄: 1골드 전사·궁수·마법사 하나씩(무작위) + 보통 뽑기 둘, 자리는 섞음
+  function starterRow() {
+    const one = (cls) => { const c = POOL.unit.filter((d) => d.t === 1 && d.cls === cls && R.pool[keyOf('unit', d.id)] > 0); return c.length ? mk('unit', c[rnd(c.length)].id) : rollCard('unit', 1); };
+    const row = [one('war'), one('arc'), one('mag'), rollCard('unit', rollTier('unit')), rollCard('unit', rollTier('unit'))];
+    for (let i = row.length - 1; i > 0; i--) { const j = rnd(i + 1); [row[i], row[j]] = [row[j], row[i]]; }
+    R.shop.unit = row;
   }
   function take(c) { R.pool[keyOf(c.kind, c.id)] = Math.max(0, (R.pool[keyOf(c.kind, c.id)] || 0) - 1); return c; }
   function giveBack(c) { R.pool[keyOf(c.kind, c.id)] = (R.pool[keyOf(c.kind, c.id)] || 0) + copies(c.star); }
@@ -186,12 +182,20 @@
     if (free < 0 && owned(c.kind, c.id) < 2) { if (!quiet) toast('창고가 가득 찼어요. 팔거나 배치하세요'); return false; }
     R.gold -= p; R.shop[kind][i] = null; ui.sel = null;
     take(c);
-    if (free >= 0) R.bench[free] = c; else R.bench.push(c);
+    // 출전 자리가 남으면 산 딱지를 바로 판에(근접은 앞줄 가운데부터, 원거리는 뒷줄)
+    const spot = c.kind === 'unit' && owned(c.kind, c.id) < 2 && R.board.length < deployMax() ? freeSpot(def(c).range > 1) : null;
+    if (spot) { c.x = spot[0]; c.y = spot[1]; R.board.push(c); }
+    else if (free >= 0) R.bench[free] = c; else R.bench.push(c);
     if (!quiet) SFX.play('coin');
     tryMerge(c.kind, c.id, 1, quiet);
     fixBench();
     if (!quiet) renderPlay();
     return true;
+  }
+  function freeSpot(ranged) {
+    const cols = [2, 1, 3, 0, 4], rows = ranged ? [ROWS - 1, ROWS - 2, PLAYER_ROW] : [PLAYER_ROW, PLAYER_ROW + 1, ROWS - 1];
+    for (const y of rows) for (const x of cols) if (!R.board.some((u) => u.x === x && u.y === y)) return [x, y];
+    return null;
   }
   function sellCard(c, from, i) {
     const g = price(c);
@@ -263,6 +267,7 @@
     let inc = null;
     if (R.round > 1) { inc = income(); R.gold += inc.total; R.stats.goldEarned += inc.total; addXp(2); }
     rollAll(R.round === 1);
+    if (R.round === 1 && !allUnits().length) starterRow();
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
     R.mode = R.enemies.length ? 'fight' : 'rest';
     if (quiet) return inc;
@@ -1575,18 +1580,17 @@
     }
   }
   function setupRun() {
-    let st = 'order', diff = 'normal';
+    let diff = 'normal';
     const render = () => {
-      openSheet(`<span class="eyebrow">출정 준비</span><h2>어떤 부대로 떠날까요?</h2>
-        <div class="starts">${STARTS.map((S) => `<button class="startopt${S.id === st ? ' on' : ''}" data-st="${S.id}"><span class="discs">${S.units.map(([id, sk, it]) => `<img src="${ART.discURL(id, 0, DEF['unit:' + id].cls, { level: 1, weapon: it ? battleApi.wpArt(DEF['item:' + it]) : null, skills: sk.map((x) => ({ col: CLS[DEF['skill:' + x].cls].col, icon: DEF['skill:' + x].icon })) }, 80)}" alt="">`).join('')}</span><b>${S.name}</b><small>${S.desc}</small></button>`).join('')}</div>
-        <div class="diffs">${Object.entries(DIFF).map(([k, D]) => `<button class="diff${k === diff ? ' on' : ''}" data-df="${k}"><b>${D.name}</b><small>${D.desc}</small></button>`).join('')}</div>
+      openSheet(`<span class="eyebrow">출정 준비</span><h2>난이도를 고르세요</h2>
+        <p class="lead" style="margin:0;color:var(--muted);font-size:12px">부대 없이 ${START_GOLD}골드로 떠납니다. 첫 상점에 1골드 전사·궁수·마법사가 하나씩 나옵니다.</p>
+        <div class="diffs">${Object.entries(DIFF).map(([k, D]) => `<button class="diff d-${k}${k === diff ? ' on' : ''}" data-df="${k}"><b>${D.name}</b><small>${D.desc}</small></button>`).join('')}</div>
         <div class="dbtn"><button class="btn" data-x>돌아가기</button><button class="btn go" data-go>출정!</button></div>`);
       $('sheetIn').onclick = (e) => {
-        const a = e.target.closest('[data-st]'), b = e.target.closest('[data-df]');
-        if (a) { st = a.dataset.st; return render(); }
+        const b = e.target.closest('[data-df]');
         if (b) { diff = b.dataset.df; return render(); }
         if (e.target.closest('[data-x]')) return closeSheet();
-        if (e.target.closest('[data-go]')) { clearSave(); newRun(st, diff); SFX.play('start'); showMap(); toast('지도에서 다음 칸을 고르고 출발하세요'); }
+        if (e.target.closest('[data-go]')) { clearSave(); newRun(diff); SFX.play('start'); showMap(); toast('지도에서 다음 칸을 고르고 출발하세요'); }
       };
     };
     render();

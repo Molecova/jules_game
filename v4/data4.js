@@ -206,16 +206,11 @@
     boss: { name: '보스', icon: 'skull', col: '#232a3b', info: '막의 주인. 이기면 유물과 4·5등급 유닛을 고릅니다. 지면 원정 끝.' },
   };
 
-  const STARTS = [
-    { id: 'order', name: '기사단', desc: '단단한 앞줄과 회복. 처음 하기 좋은 부대.', units: [['squire', ['cross'], 'longsword'], ['shieldman', ['taunt'], null], ['acolyte', ['light'], null]] },
-    { id: 'guild', name: '사냥꾼 길드', desc: '긴 사거리로 뒤에서 쏜다. 앞줄 하나를 잘 지켜야 한다.', units: [['archer', ['pierce'], 'shortbow'], ['venom', ['poisonarrow'], null], ['squire', ['bash'], 'buckler']] },
-    { id: 'tower', name: '마법 탑', desc: '스킬 한 방이 강하다. 마나가 차기 전까지 버텨야 한다.', units: [['apprentice', ['fire'], 'wand'], ['acolyte', [], null], ['shieldman', ['bash'], null]] },
-  ];
-
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.99, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.1, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.25, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.95, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.05, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.12, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.33, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
@@ -269,5 +264,5 @@
     });
   }
 
-  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, STARTS, DIFF };
+  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, DIFF };
 })(window);
