@@ -488,9 +488,10 @@
     cv.width = cv.height = S * 2;
     const c = cv.getContext('2d');
     c.scale(2, 2);
-    const r = S * 0.36;
-    drawToken(c, token(id, side, r, 2, kind), S * 0.46, S * 0.48, r, {});
-    drawLoadout(c, S * 0.46, S * 0.48, r, lo);
+    // 화면 그림은 평평하게, 정가운데에(장비 칩·무기가 들어가도록 반지름 0.34)
+    const r = S * 0.34;
+    drawToken(c, token(id, side, r, 2, kind), S * 0.5, S * 0.5, r, { flat: true });
+    drawLoadout(c, S * 0.5, S * 0.5, r, lo);
     const url = cv.toDataURL();
     discCache.set(key, url);
     return url;
@@ -606,15 +607,15 @@
 
   /** 보드 위에 딱지 그리기: 두께(옆면), 그림자, 기울기, 들림, 찌그러짐, 번쩍임 */
   function drawToken(ctx, spr, x, y, r, o = {}) {
-    const lift = o.lift || 0, thick = Math.max(2.5, r * 0.15), sq = o.squash || 0;
+    // 얇은 두께(반지름의 7%) + 그림자 하나. flat 은 화면 그림용(두께·그림자 없음)
+    const lift = o.lift || 0, thick = o.flat ? 0 : Math.max(1.4, r * 0.07), sq = o.squash || 0;
     ctx.save();
     if (o.alpha != null) ctx.globalAlpha = o.alpha;
-    ctx.fillStyle = 'rgba(35,42,59,.24)';
-    ell(ctx, x + 2 + lift * 0.4, y + thick + 2 + lift * 0.9, r * (1 + lift * 0.01), r * (0.98 + lift * 0.01)); ctx.fill();
+    if (!o.flat) { ctx.fillStyle = `rgba(20,25,35,${Math.max(0.12, 0.3 - lift * 0.015)})`; ell(ctx, x + 1 + lift * 0.3, y + r * 0.5 + thick + lift * 0.5, r * Math.max(0.7, 0.95 - lift * 0.01), r * Math.max(0.36, 0.5 - lift * 0.008)); ctx.fill(); }
     ctx.translate(x, y - lift);
     ctx.scale(1 + sq, 1 - sq);
     // 옆면(두께)
-    circ(ctx, 0, thick, r - 1); ctx.fillStyle = spr.rimDark || INK; ctx.fill(); ink(ctx, Math.max(1.6, r * 0.08)); ctx.stroke();
+    if (thick) { circ(ctx, 0, thick, r - 1); ctx.fillStyle = spr.rimDark || INK; ctx.fill(); ink(ctx, Math.max(1, r * 0.04)); ctx.stroke(); }
     ctx.rotate(o.rot || 0);
     ctx.drawImage(spr, -r, -r, r * 2, r * 2);
     if (o.flash > 0) { circ(ctx, 0, 0, r - 1); ctx.fillStyle = `rgba(255,255,255,${Math.min(0.75, o.flash * 6)})`; ctx.fill(); }

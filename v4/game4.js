@@ -1179,10 +1179,14 @@
       c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1.2; rrPath(c, px + 0.5, py + 0.5, s - 1, s - 1, 7); c.stroke();
       if (rr() < 0.18) { c.fillStyle = 'rgba(35,42,59,.1)'; c.beginPath(); c.arc(px + s / 2, py + s / 2, 8, 0, 7); c.fill(); }
     }
-    // 전선 리본
-    const my = M + CS * PLAYER_ROW;
-    c.fillStyle = '#c8333f'; c.fillRect(ML - 4, my - 3, BW + 8, 6);
-    c.fillStyle = 'rgba(255,255,255,.6)'; for (let x = ML; x < ML + BW; x += 14) { c.beginPath(); c.moveTo(x, my - 1.5); c.lineTo(x + 5, my); c.lineTo(x, my + 1.5); c.fill(); }
+    // 전선: 손으로 그은 붉은 점선 + 양 끝 깃발
+    const my = M + CS * PLAYER_ROW, fx = ML - 6, fw = BW + 12;
+    c.save(); c.strokeStyle = '#c8333f'; c.lineWidth = 3; c.lineCap = 'round'; c.setLineDash([9, 5]);
+    c.beginPath(); c.moveTo(fx + 4, my); for (let x = fx + 4; x <= fx + fw - 4; x += 4) c.lineTo(x, my + Math.sin(x / 9) * 1.6); c.stroke(); c.restore();
+    for (const X of [fx + 5, fx + fw - 5]) {
+      c.strokeStyle = '#3a2210'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(X, my + 5); c.lineTo(X, my - 14); c.stroke();
+      c.fillStyle = '#c8333f'; c.beginPath(); c.moveTo(X, my - 14); c.lineTo(X + (X < fx + fw / 2 ? 11 : -11), my - 10.5); c.lineTo(X, my - 7); c.closePath(); c.fill(); c.strokeStyle = '#7a1424'; c.lineWidth = 1; c.stroke();
+    }
     // 테에 인쇄한 좌표와 진영
     c.fillStyle = '#f3e3c6'; c.font = "700 10px 'IBM Plex Sans KR', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle';
     'ABCDE'.split('').forEach((ch, i) => { c.fillText(ch, ML + i * CS + CS / 2, H - (M - 6) / 2); c.fillText(ch, ML + i * CS + CS / 2, (M - 6) / 2); });
@@ -1214,7 +1218,6 @@
     if (o.popT > 0) { const t = 1 - o.popT / 0.35; sq = 0.2 * Math.sin(t * Math.PI * 2) * (1 - t); }
     if (o.hitT > 0) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
     // 판에 놓인 느낌: 딱지 아래 그림자(들어 올리면 옅어짐)
-    ctx.save(); ctx.globalAlpha = (o.alpha == null ? 1 : o.alpha) * (o.lift ? 0.6 : 1); ctx.fillStyle = 'rgba(20,25,35,.35)'; ctx.beginPath(); ctx.ellipse(x + 2, y + r * 0.72, r * 0.95, r * 0.36, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     if (o.glow) { ctx.save(); ctx.strokeStyle = o.glow; ctx.lineWidth = 3; ctx.setLineDash(o.dash ? [5, 4] : []); ctx.lineDashOffset = -performance.now() / 50; ctx.beginPath(); ctx.arc(x, y + 2, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha });
     const ty = y - (o.lift || 0);
