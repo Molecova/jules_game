@@ -662,7 +662,7 @@
     const s = ui.sel;
     $('benchN').textContent = `${R.bench.filter(Boolean).length}/${benchSize()}`;
     if (!s || s.from === 'shop') $('benchHint').innerHTML = `출전 <b>${R.board.length}/${deployMax()}</b>`;
-    else $('benchHint').textContent = s.c.kind === 'unit' ? '칸을 탭하거나 끌어서 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지에 끌거나 탭해 장착`;
+    else $('benchHint').textContent = s.c.kind === 'unit' ? '끌어서 배치·이동, 상점으로 끌면 판매' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지에 끌거나 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
     patchKids($('bench'), R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" data-n="${i + 1}" aria-label="빈 칸"></button>`;
@@ -685,6 +685,10 @@
     if (unitSheet) renderUnitSheet(s);
     else if (foeCard) renderFoeCard(ui.foe);
     if (peek) { renderDetail(s, $('peek')); $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
+    // 끄는 동안 상점 카드 칸 전체가 판매 자리로 바뀐다
+    const sz = $('sellZone'), sellOn = drag.on && !!s && s.from !== 'shop';
+    sz.hidden = !sellOn; if (!sellOn) sz.classList.remove('over');
+    if (sellOn) sz.innerHTML = `<b>여기에 놓아 판매</b><span>${def(s.c).name}${starTxt(s.c.star) ? ' ' + starTxt(s.c.star) : ''} · <em>+${price(s.c)}골드</em></span>${s.c.kind === 'unit' && (s.c.skills.length || s.c.item) ? '<small>장착한 스킬·아이템은 창고로 돌아가요</small>' : ''}`;
     const row = $('scards'); row.dataset.row = tab;
     for (const k of [tab]) row.innerHTML = R.shop[k].map((c, i) => {
       if (!c) return `<div class="card sold" aria-hidden="true"></div>`;
@@ -847,7 +851,7 @@
   // 아이콘 + 값 칸(오른 값은 초록 ▲)
   const tstat = (ic, col, label, v, up) => `<span class="${up ? 'up' : ''}" title="${label}" aria-label="${label} ${v}"><i style="color:${col}">${IC[ic]}</i>${v}</span>`;
   function tradingCard(o) {
-    return `<div class="tcard${o.anim ? ' flipin' : ''}${o.foe ? ' foe' : ''}" style="--cc:${o.cc};--tc:${o.tc}" role="dialog" aria-label="${o.name} 카드">
+    return `<div class="tcard${o.anim ? ' flipin' : ''}${o.foe ? ' foe' : ''}${o.h ? ' fixh' : ''}" style="--cc:${o.cc};--tc:${o.tc}${o.h ? `;height:${o.h}px` : ''}" role="dialog" aria-label="${o.name} 카드">
       <div class="tc-top"><span class="co">${o.coin}</span><b>${o.name}</b>${o.tag}<button class="tc-x" data-act="close" aria-label="닫기">${XSVG}</button></div>
       ${o.body}
     </div>`;
@@ -895,8 +899,8 @@
         hp: e.maxHp, atk: Math.round(e.atk), hpUp: e.maxHp > Math.round(d.hp * m), atkUp: Math.round(e.atk) > Math.round(d.atk * m),
         typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: hl(d.trait), stats, socks: `<div class="tc-sock">${manaRow}${socks}</div>` });
     }
-    const card = tradingCard({ anim, cc: CLS[d.cls].col, tc: `var(--t${d.t})`, coin: d.t, name: d.name, tag: c.star > 1 ? `<i class="st">${starTxt(c.star)}</i>` : '', body });
-    const btns = [onBoard ? '<button class="wbtn" data-act="tobench">창고로</button>' : '', `<button class="wbtn" data-act="flip"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${ui.flip ? '앞면' : '뒤집기'}</button>`, `<button class="wbtn red" data-act="sell">판매 +${price(c)}</button>`].filter(Boolean);
+    const card = tradingCard({ anim, cc: CLS[d.cls].col, tc: `var(--t${d.t})`, coin: d.t, name: d.name, tag: c.star > 1 ? `<i class="st">${starTxt(c.star)}</i>` : '', body, h: ui.flip ? ui.flipH : 0 });
+    const btns = [onBoard ? '<button class="wbtn" data-act="tobench">창고로</button>' : '', `<button class="wbtn" data-act="flip"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${ui.flip ? '앞면' : '뒤집기'}</button>`, '<button class="wbtn" data-act="close">닫기</button>'].filter(Boolean);
     let sub = '';
     const oi = ui.openInfo;
     if (oi && !ui.flip) {
@@ -1030,7 +1034,7 @@
     if (b.dataset.info != null) { ui.openInfo = ui.openInfo === b.dataset.info ? null : b.dataset.info; SFX.play('click'); return renderPlay(); }
     if (b.dataset.act === 'noop') return;
     const a = b.dataset.act;
-    if (a === 'flip') { ui.flip = !ui.flip; ui.flipAnim = true; ui.openInfo = null; SFX.play('card'); return renderPlay(); }
+    if (a === 'flip') { const tc = document.querySelector('#usheet .tcard'); if (!ui.flip && tc) ui.flipH = tc.offsetHeight; ui.flip = !ui.flip; ui.flipAnim = true; ui.openInfo = null; SFX.play('card'); return renderPlay(); }
     if (a === 'subclose') { ui.openInfo = null; return renderPlay(); }
     if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i, false, ui.sel.kind); }
     else if (a === 'tobench') { const i = R.bench.indexOf(null); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
@@ -1184,6 +1188,7 @@
     const over = document.elementFromPoint(e.clientX, e.clientY), slot = over && over.closest('[data-b]');
     document.querySelectorAll('.slot.over').forEach((x) => x !== slot && x.classList.remove('over'));
     if (slot) slot.classList.add('over');
+    $('sellZone').classList.toggle('over', !!(over && over.closest('#sellZone')));
     drag.hover = cellFromPoint(e.clientX, e.clientY);
   });
   function dragEnd(e, cancel) {
@@ -1205,6 +1210,8 @@
   window.addEventListener('pointercancel', (e) => dragEnd(e, true));
   function dropAt(x, y) {
     const s = ui.sel; if (!s) return renderPlay();
+    const oz = document.elementFromPoint(x, y);
+    if (oz && oz.closest('#sellZone')) { const g = sellCard(s.c, s.from, s.i); ui.sel = null; SFX.play('coin'); toast(`${def(s.c).name} 판매 +${g}골드`); return renderPlay(); }
     const cell = cellFromPoint(x, y);
     if (cell) {
       if (s.from === 'board' && s.c.x === cell.c && s.c.y === cell.r) { ui.sel = null; return renderPlay(); }
@@ -1771,7 +1778,7 @@
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
         <p><b>상점 단계</b> 칸에 들어가면 내 진영과 상점 세 줄이 보입니다. 적 배치는 ‘적 필드 보기’로 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
-        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지.</p>
+        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지. 딱지나 칩을 상점 카드 칸으로 끌어다 놓으면 판매합니다.</p>
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 흰색 · 2 녹색 · 3 파랑 · 4 보라 · 5 노랑. 딱지 테두리 색은 클래스(전사 남색 · 궁수 빨강 · 마법사 청록).</p>
         <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 시너지 줄의 ‘시너지’ 버튼으로 전체 목록을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>

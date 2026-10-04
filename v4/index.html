@@ -152,6 +152,18 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .seg button.ready::after { content: "★2"; position: absolute; top: 1px; right: 4px; font: 700 8px/12px var(--body); background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 3px; }
 .srow { height: calc(clamp(84px, 13.4vh, 114px) + var(--card-extra, 0px)); }
 .srow .cards { height: 100%; }
+.srow { position: relative; }
+/* 딱지를 끄는 동안 상점 카드 칸을 덮는 판매 자리 */
+.sellzone { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 3px dashed #c8333f; border-radius: 7px; background: repeating-linear-gradient(135deg, #fff1ec 0 10px, #ffe4dc 10px 20px); color: #8a1f2a; text-align: center; pointer-events: auto; }
+.sellzone[hidden] { display: none; }
+.sellzone b { font: 400 18px var(--display); }
+.sellzone span { font-size: 12px; font-weight: 700; }
+.sellzone em { font-style: normal; color: #a8501a; }
+.sellzone small { font-size: 10px; opacity: .8; }
+.sellzone.over { background: #c8333f; color: #fff; border-style: solid; }
+.sellzone.over em { color: #ffe08a; }
+.tcard.fixh { box-sizing: border-box; }
+.tcard.fixh .tc-back { flex: 1; overflow: auto; }
 .srow .cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .mini { display: inline-flex; align-items: center; gap: 3px; height: 34px; border: 2px solid var(--ink); border-radius: 9px; padding: 0 9px; background: var(--card); font: 700 10.5px/1 var(--body); }
 .mini small { font: inherit; }
@@ -694,7 +706,7 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
               <button class="mini" data-roll="unit" id="rollBtn" aria-label="이 줄 다시 뽑기"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><small data-cost>1골드</small></button>
               <button class="mini lk" data-lock="unit" id="lockBtn" aria-label="이 줄 잠금">잠금</button>
             </div>
-            <div class="srow"><div class="cards" data-row="unit" id="scards"></div></div>
+            <div class="srow"><div class="cards" data-row="unit" id="scards"></div><div class="sellzone" id="sellZone" hidden></div></div>
           </div>
           <div class="detail" id="detail" hidden></div>
         </div>
