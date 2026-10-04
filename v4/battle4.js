@@ -90,7 +90,7 @@
     }
     const tiles = (cb, cells, color, life = 0.45) => { for (const i of cells) cb.fx.push({ kind: 'tile', cell: i, color, life, t: 0 }); };
     // ---------- 베기 연출: 초승달 모양 오린 종이 띠(모든 베기 스킬 공통) ----------
-    const SLASH = new Set(['cross', 'bleedcut', 'earth', 'whirl', 'bladestorm', 'shadowstep', 'assassinate', 'charge', 'heavy']);
+    const SLASH = new Set(['cross', 'bleedcut', 'earth', 'whirl', 'bladestorm', 'shadowstep', 'assassinate', 'charge', 'heavy', 'shatter', 'execution', 'quakeking']);
     const STRIP_LIFE = 0.6;
     const scars = (cb, cells, delay = 0.1) => { for (const i of cells) cb.fx.push({ kind: 'scar', cell: i, delay, life: delay + 0.7, t: 0 }); };
     // 앞쪽 범위(facing): 앞으로 뻗은 줄 하나 + 옆으로 가장 넓은 줄 하나
@@ -296,7 +296,14 @@
     }
     function cleanse(t) { const st = t.st; delete st.burn; delete st.poison; delete st.bleed; delete st.slow; delete st.weak; delete st.vuln; t.stun = 0; }
     const H = (u) => (u && u.healMult) || 1;
-    function giveShield(a, amt, src) { amt = Math.round(amt); a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
+    // 보호막은 쌓여도 최대 체력의 50%까지(같은 스킬을 자주 쓰면 끝없이 쌓이던 문제)
+    const SHIELD_CAP = 0.5;
+    function giveShield(a, amt, src) { amt = Math.round(Math.min(amt, Math.max(0, a.maxHp * SHIELD_CAP - a.shield))); if (amt <= 0) return; a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
+    // 가속: 같은 스킬은 겹치지 않고 시간만 새로 고친다. 서로 다른 가속을 다 곱해도 최대 ×2
+    function addHaste(a, key, dur, amt) {
+      const L = (a.st.haste = a.st.haste || []), h = L.find((x) => x.key === key);
+      if (h) { h.t = Math.max(h.t, dur); h.amt = Math.max(h.amt, amt); } else L.push({ key, t: dur, amt });
+    }
     const lowestAlly = (cb, side, needHurt) => cb.alive(side).filter((x) => !x.object && (!needHurt || x.hp < x.maxHp)).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
 
     // ---------- 스킬 ----------
@@ -346,7 +353,7 @@
           if (d.mode === 'chain') {
             let cur = t, amt = P, from = u;
             const hit = new Set();
-            for (let n = 0; n < 4 + (s.star >= 3 ? 2 : 0) && cur; n++) {
+            for (let n = 0; n < (d.jumps || 4) + (s.star >= 3 ? 2 : 0) && cur; n++) {
               hit.add(cur);
               cb.beam(from.px, from.py, cur.px, cur.py, '#b48cff', 0.35);
               tiles(cb, [cur.cell], col);
@@ -410,14 +417,15 @@
         case 'fortify': u.st.fort = d.dur || 5; u.st.fortRed = d.red || 0.4; cb.heal(u, P * Hm, u); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
-          if (a) { a.atk *= 1.3 + 0.1 * ((s.star || 1) - 1); a.as *= 1.2; cb.ring(a.px, a.py, '#f5c400', 26, 0.6); cb.float(a.px, a.py - 22, '축복', '#f5c400'); }
+          // 축복: 6초간(다시 걸면 시간만 새로). 예전에는 영구히 곱해져 같은 딱지에 끝없이 쌓였다
+          if (a) { a.st.bless = { t: 6, amt: Math.max(a.st.bless && a.st.bless.t > 0 ? a.st.bless.amt : 0, 1.3 + 0.1 * ((s.star || 1) - 1)) }; addHaste(a, 'bless', 6, 1.2); cb.ring(a.px, a.py, '#f5c400', 26, 0.6); cb.float(a.px, a.py - 22, '축복', '#f5c400'); }
           break;
         }
         case 'haste': case 'timewarp': {
           const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#f5c400');
           const amt = (d.amt || 1.25) + 0.08 * ((s.star || 1) - 1);
-          for (const a of list) { (a.st.haste = a.st.haste || []).push({ t: d.dur || 6, amt }); cb.ring(a.px, a.py, '#f5c400', 18); }
+          for (const a of list) { addHaste(a, d.id, d.dur || 6, amt); cb.ring(a.px, a.py, '#f5c400', 18); }
           if (d.effect === 'timewarp') for (const v of cb.alive(foe)) { addStatus(cb, v, 'slow', 3 + (s.star - 1), u); cb.ring(v.px, v.py, '#6aa8ff', 18); }
           break;
         }
@@ -618,7 +626,7 @@
         asMod: (u, cb) => {
           let m = 1;
           if (u.st.slow > 0) m *= 0.6;
-          if (u.st.haste) for (const h of u.st.haste) m *= h.amt;
+          if (u.st.haste) { let hm = 1; for (const h of u.st.haste) hm *= h.amt; m *= Math.min(2, hm); }
           if (u.passive === 'frenzy') m *= 1 + 0.6 * Math.max(0, 1 - u.hp / u.maxHp);
           if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.25 * Math.min(1.6, u.ifxK);
           if (u.side === 0 && has('drum') && cb.t < 4) m *= 1.25;
@@ -628,6 +636,7 @@
           let m = 1;
           if (src.st && src.st.weak > 0) m *= 0.7;
           if (src.dmgMul) m *= src.dmgMul;
+          if (src.st && src.st.bless && src.st.bless.t > 0) m *= src.st.bless.amt;
           if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
@@ -722,6 +731,7 @@
             const st = u.st;
             for (const k of ['slow', 'weak', 'fort', 'parry']) if (st[k] > 0) st[k] -= dt;
             if (st.vuln) { st.vuln.t -= dt; if (st.vuln.t <= 0) delete st.vuln; }
+            if (st.bless) { st.bless.t -= dt; if (st.bless.t <= 0) delete st.bless; }
             if (st.haste) st.haste = st.haste.filter((h) => (h.t -= dt) > 0);
             if (u.forcedT > 0 && (!u.forced || u.forced.dead)) u.forcedT = 0;
             if (u.ifx === 'towerGuard') {

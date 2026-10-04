@@ -58,7 +58,7 @@
     fire: { power: 200 }, chain: { power: 240 }, meteor: { power: 520 }, blizzard: { power: 200 }, ice: { power: 190 },
     frostnova: { power: 170 }, manaflow: { power: 40, mana: 55 }, light: { power: 240 },
     timewarp: { mode: 'all', effect: 'timewarp', icon: 'wind', mana: 100, dur: 5, amt: 1.3, desc: '모든 아군 5초간 가속, 모든 적 3초 둔화' },
-    bless: { desc: '공격력이 가장 높은 아군 공격력 +30%, 공격 속도 +20%' },
+    bless: { desc: '공격력이 가장 높은 아군 6초간 주는 피해 +30%, 공격 속도 +20%' },
     judgment: { power: 240, mana: 90, desc: '끝까지 꿰뚫고 맞은 적 5초 취약(받는 피해 +30%)' },
     drainlife: { power: 260, desc: '대상에게 피해, 준 피해의 60% 회복' },
   };
@@ -87,20 +87,45 @@
   // 스킬 밸런스(시뮬레이션 측정 기준): 빗나가기 쉬운 줄·범위 스킬은 위력을 높이고,
   // 반드시 맞는 단일 대상 스킬과 지나치게 센 지원 스킬은 낮춘다
   const SKBAL = {
-    pierce: { power: 285 }, ice: { power: 330 }, judgment: { power: 410 }, rain: { power: 270 }, spread: { power: 150 },
+    pierce: { power: 285 }, ice: { power: 330 }, judgment: { power: 560 }, rain: { power: 270 }, spread: { power: 150 },
     cross: { power: 205 }, whirl: { power: 280 }, bladestorm: { power: 320 }, earth: { power: 680 }, frostnova: { power: 500 }, bash: { power: 300 },
     poisonarrow: { power: 55, poison: { dps: 40, dur: 6 }, desc: '대상에게 피해 + 6초 중독(초당 40)' },
     huntmark: { power: 20, vuln: { amt: 0.25, dur: 5 }, desc: '대상 5초 취약(받는 피해 +25%)' }, heavy: { power: 1.8, desc: '대상에게 공격력 ×1.8 피해' },
     bleedcut: { power: 80, bleed: { dps: 40, dur: 5 }, desc: '앞쪽 3칸을 베고 5초 출혈(초당 40)' },
-    fire: { power: 100 }, meteor: { power: 380 }, healarrow: { power: 180, desc: '가장 다친 아군에게 치유 화살(180 회복)' },
+    fire: { power: 100 }, meteor: { power: 380 },
     fortify: { power: 120, dur: 3, red: 0.3, desc: '3초간 받는 피해 −30%, 체력 120 회복' },
-    purify: { power: 150, desc: '체력이 가장 낮은 아군 150 회복 + 해로운 효과 제거' },
     manaflow: { power: 45, desc: '주변 1칸 다른 아군 마나 +45' },
-    adrenaline: { amt: 1.6, desc: '자신 5초간 공격 속도 +60%' },
     taunt: { power: 260, desc: '주변 2칸 적이 3초간 자신만 노린다. 보호막 260' },
     light: { power: 240 },
+    // 중첩 측정(같은 스킬 반복·여러 딱지) 뒤 손본 지원 스킬
+    wall: { power: 160, mana: 80, desc: '같은 줄 좌우 2칸 아군에게 보호막 160' },
+    aid: { power: 150, mana: 60 },
+    secondwind: { power: 200, mana: 70, desc: '자신 보호막 200 + 해로운 효과 제거' },
+    purify: { power: 110, desc: '체력이 가장 낮은 아군 110 회복 + 해로운 효과 제거' },
+    healarrow: { power: 130, desc: '가장 다친 아군에게 치유 화살(130 회복)' },
+    timewarp: { mana: 110, amt: 1.25, desc: '모든 아군 5초간 공격 속도 +25%, 모든 적 3초 둔화' },
+    adrenaline: { amt: 1.8, mana: 50, desc: '자신 5초간 공격 속도 +80%(다시 쓰면 시간만 새로)' },
+    warcry: { amt: 1.3, desc: '주변 2칸 아군 6초간 공격 속도 +30%' },
   };
   for (const sk of SKILLS) if (SKBAL[sk.id]) Object.assign(sk, SKBAL[sk.id]);
+
+  // 4·5등급 스킬: 위력이 크고 마나도 많이 든다(수치는 그대로 쓴다)
+  const SQ5 = []; for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) SQ5.push([x, y]);
+  const RING5 = SQ5.filter(([x, y]) => x || y);
+  const BOX3x3 = [[1, -1], [1, 0], [1, 1], [2, -1], [2, 0], [2, 1], [3, -1], [3, 0], [3, 1]];
+  const N_ = (id, name, cls, t, o) => Object.assign({ kind: 'skill', id, name, cls, t }, o);
+  SKILLS.push(
+    N_('shatter', '파쇄 일격', 'war', 4, { mode: 'facing', effect: 'dmg', cells: BOX3x3, power: 430, mana: 100, stun: 1, icon: 'quake', desc: '앞쪽 3×3을 내려찍고 1초 기절' }),
+    N_('execution', '처형', 'war', 4, { mode: 'lowest', effect: 'dmg', power: 520, mana: 90, execute: 2, icon: 'dagger', desc: '체력 비율이 가장 낮은 적. 체력 절반 이하면 피해 ×2' }),
+    N_('resolve', '결의', 'any', 4, { mode: 'selfOnly', effect: 'fortify', power: 340, mana: 90, dur: 4, red: 0.35, icon: 'shield', desc: '4초간 받는 피해 −35%, 체력 340 회복' }),
+    N_('arrowstorm', '폭풍 화살', 'arc', 4, { mode: 'volley', effect: 'dmg', power: 140, mana: 100, count: 6, icon: 'arrow', desc: '무작위 적에게 화살 6발' }),
+    N_('railshot', '꿰뚫는 저격', 'arc', 4, { mode: 'line', effect: 'dmg', power: 760, mana: 100, stun: 0.8, icon: 'target', desc: '끝까지 꿰뚫고 맞은 적 0.8초 기절' }),
+    N_('firestorm', '화염 폭풍', 'mag', 4, { mode: 'target', effect: 'dmg', cells: SQ5, power: 260, mana: 120, burn: { dps: 50, dur: 4 }, icon: 'fire', desc: '대상 중심 5×5 피해 + 4초 화상(초당 50)' }),
+    N_('thunder', '뇌우', 'mag', 4, { mode: 'chain', effect: 'dmg', power: 340, mana: 110, jumps: 7, stun: 0.5, icon: 'bolt', desc: '대상에서 가까운 적으로 7번 튀고 0.5초 기절' }),
+    N_('quakeking', '대지 붕괴', 'war', 5, { mode: 'self', effect: 'dmg', cells: RING5, power: 560, mana: 130, stun: 1.5, icon: 'quake', desc: '주변 2칸 안 모든 적 피해 + 1.5초 기절' }),
+    N_('skyarrows', '천 개의 화살', 'arc', 5, { mode: 'volley', effect: 'dmg', power: 170, mana: 130, count: 10, icon: 'arrow', desc: '무작위 적에게 화살 10발' }),
+    N_('cataclysm', '종말의 불꽃', 'mag', 5, { mode: 'target', effect: 'tele', cells: SQ5, power: 600, mana: 140, delay: 1, burn: { dps: 70, dur: 4 }, icon: 'fire', desc: '1초 뒤 대상 중심 5×5에 불벼락 + 4초 화상(초당 70)' }),
+  );
 
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
   const I_ = (id, name, cls, t, shape, st, fx, desc, feel) => ({ kind: 'item', id, name, cls, t, shape, st, fx, desc, feel });
@@ -197,8 +222,8 @@
   const ODDS = { 3: [70, 30, 0, 0, 0], 4: [50, 38, 12, 0, 0], 5: [35, 38, 24, 3, 0], 6: [25, 33, 30, 10, 2], 7: [18, 27, 33, 18, 4], 8: [12, 20, 33, 26, 9], 9: [8, 15, 32, 30, 15] };
   const XPNEED = { 3: 6, 4: 10, 5: 16, 6: 24, 7: 32, 8: 44 };
   const MAXLV = 9, LAST_ACT = 5;
-  const POOL_N = [0, 15, 12, 10, 9, 6];
-  const MAXT = { unit: 5, skill: 3, item: 4 };
+  const POOL_N = [0, 30, 25, 20, 15, 10]; // 공용 풀: 카드 한 종류당 등급별 장수
+  const MAXT = { unit: 5, skill: 5, item: 4 };
   const BENCH = 8;
 
   const RELICS = {
@@ -247,10 +272,10 @@
   };
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.79, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.89, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 0.97, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.23, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.7, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.73, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 0.76, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 0.9, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
