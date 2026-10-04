@@ -1149,13 +1149,16 @@
     5: { a: '#dad2e6', b: '#c9bedb', foe: ['#c9aacd', '#b996be'], deep: '#1b1520' },
   };
   function rrPath(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
-  function boardBg(act) {
-    if (boardCache[act]) return boardCache[act];
+  // 칸은 막마다 땅 다섯 가지를 섞어 깐다(TERRAIN4). 라운드마다 새로 깔고 같은 라운드 동안은 그대로
+  function boardBg(act, round = 0) {
+    const key = act + ':' + round;
+    if (boardCache[key]) return boardCache[key];
+    for (const k of Object.keys(boardCache)) delete boardCache[k];
     const L = ACT_LOOK[act] || ACT_LOOK[1];
     const cv = document.createElement('canvas');
     cv.width = W * 2; cv.height = H * 2;
     const c = cv.getContext('2d'); c.scale(2, 2);
-    let seed = act * 77 + 3; const rr = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    let seed = (act * 77 + round * 131 + 3) % 233280; const rr = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
     const BW = CS * COLS, BH = CS * ROWS;
     // 나무 테(결)
     const wood = c.createLinearGradient(0, 0, W, H); wood.addColorStop(0, '#8a5a32'); wood.addColorStop(0.5, '#6e4426'); wood.addColorStop(1, '#5a361d');
@@ -1173,11 +1176,7 @@
     // 칸: 둥근 모서리, 위는 밝고 아래는 어두운 홈
     for (const cell of grid.cells) {
       const foe = cell.r < PLAYER_ROW, px = cell.x - CS / 2 + 3, py = cell.y - CS / 2 + 3, s = CS - 6;
-      c.fillStyle = foe ? L.foe[(cell.c + cell.r) % 2] : (cell.c + cell.r) % 2 ? L.a : L.b; rrPath(c, px, py, s, s, 7); c.fill();
-      const g = c.createLinearGradient(px, py, px + s, py + s); g.addColorStop(0, 'rgba(255,255,255,.45)'); g.addColorStop(0.45, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.16)');
-      c.fillStyle = g; rrPath(c, px, py, s, s, 7); c.fill();
-      c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1.2; rrPath(c, px + 0.5, py + 0.5, s - 1, s - 1, 7); c.stroke();
-      if (rr() < 0.18) { c.fillStyle = 'rgba(35,42,59,.1)'; c.beginPath(); c.arc(px + s / 2, py + s / 2, 8, 0, 7); c.fill(); }
+      TERRAIN4.drawTile(c, act, px, py, s, foe ? L.foe[0] : null, (cell.c + cell.r) % 2 === 1, rr);
     }
     // 전선: 손으로 그은 붉은 점선 + 양 끝 깃발
     const my = M + CS * PLAYER_ROW, fx = ML - 6, fw = BW + 12;
@@ -1192,7 +1191,7 @@
     'ABCDE'.split('').forEach((ch, i) => { c.fillText(ch, ML + i * CS + CS / 2, H - (M - 6) / 2); c.fillText(ch, ML + i * CS + CS / 2, (M - 6) / 2); });
     c.save(); c.translate(W - (M - 6) / 2, M + CS * 1.5); c.rotate(Math.PI / 2); c.fillStyle = '#ffb0a8'; c.fillText('적 진영', 0, 0); c.restore();
     c.save(); c.translate(W - (M - 6) / 2, M + CS * 4.5); c.rotate(Math.PI / 2); c.fillStyle = '#b8d4ff'; c.fillText('아군 진영', 0, 0); c.restore();
-    boardCache[act] = cv;
+    boardCache[key] = cv;
     return cv;
   }
   const tokenR = (kind) => (kind === 'boss' ? 31 : kind === 'elite' ? 27 : 23);
@@ -1376,7 +1375,7 @@
     ctx.save();
     ctx.translate(0, -vy);
     if (B && B.vfx.shake > 0.2) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
-    ctx.drawImage(boardBg(R.act), 0, 0, W, H);
+    ctx.drawImage(boardBg(R.act, R.round), 0, 0, W, H);
     const now = performance.now();
     if (B && B.combat) {
       const cb = B.combat;
