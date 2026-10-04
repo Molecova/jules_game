@@ -89,6 +89,28 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .deploy { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .deploy b { color: var(--ink); }
 
+/* 시너지 레일: 판 왼쪽 나무 테의 홈에 박힌 패(아이콘 · 이름 · 단계 눈금 · 현재/다음) */
+.srail { position: absolute; display: flex; flex-direction: column; gap: 3px; padding: 4px 3px; overflow: hidden; }
+.ri { flex: none; height: 29px; display: grid; grid-template-columns: 13px minmax(0, 1fr); grid-template-rows: 1fr 1fr; column-gap: 3px; align-items: center; padding: 0 3px; border: 1.5px dashed var(--c); border-radius: 6px; background: rgba(255,248,230,.85); text-align: left; color: var(--ink); }
+.ri .ic { grid-row: span 2; width: 13px; height: 13px; border-radius: 3px; background: var(--c); color: #fff; font: 400 9px/13px var(--display); text-align: center; }
+.ri.combo .ic { border-radius: 50%; }
+.ri .nm { font: 700 9.5px/1 var(--body); letter-spacing: -.6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: end; }
+.ri .pp { display: flex; align-items: center; gap: 1.5px; align-self: start; padding-top: 2px; }
+.ri .pp i { width: 6px; height: 4px; border-radius: 1px; background: rgba(35,42,59,.15); }
+.ri .pp i.f { background: var(--c); }
+.ri .pp em { margin-left: auto; font: 700 8.5px/1 var(--body); font-style: normal; font-variant-numeric: tabular-nums; color: var(--muted); }
+.ri.on { border: 1.5px solid #1b1208; background: #fffdf6; box-shadow: 0 0 0 1.5px var(--c), 0 0 8px var(--c); }
+.ri.on .pp em { color: var(--ink); }
+.ri .nm.ln { font-size: 8.5px; letter-spacing: -.8px; }
+/* 화면이 넉넉하면(판이 폭에 막힘) 상점 카드에 설명 한 줄 */
+.card .dsc { display: none; }
+#scr-play.roomy .card { grid-template-rows: minmax(0, 1fr) auto auto; }
+#scr-play.roomy .card .dsc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; padding: 0 3px 4px; font: 600 8.5px/1.25 var(--body); letter-spacing: -.3px; color: var(--ink); text-align: center; opacity: .85; }
+.srail.narrow .ri { grid-template-columns: minmax(0, 1fr); border-left-width: 4px; border-left-style: solid; }
+.srail.narrow .ri .ic { display: none; }
+.rall { flex: none; margin-top: auto; height: 15px; border: none; background: none; padding: 0; font: 700 9px/15px var(--body); color: #f3e3c6; text-align: center; }
+.rnone { font-size: 9px; line-height: 1.3; color: #f3e3c6; opacity: .8; text-align: center; padding-top: 6px; }
+
 /* 창고 */
 .benchbox { flex: none; padding: 6px var(--g) 0; }
 .lbl { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); margin-bottom: 3px; white-space: nowrap; }
@@ -128,7 +150,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .seg button + button { border-left: 1.5px solid var(--line); }
 .seg button.on { background: var(--ink); color: var(--paper); }
 .seg button.ready::after { content: "★2"; position: absolute; top: 1px; right: 4px; font: 700 8px/12px var(--body); background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 3px; }
-.srow { height: clamp(84px, 13.4vh, 114px); }
+.srow { height: calc(clamp(84px, 13.4vh, 114px) + var(--card-extra, 0px)); }
 .srow .cards { height: 100%; }
 .srow .cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .mini { display: inline-flex; align-items: center; gap: 3px; height: 34px; border: 2px solid var(--ink); border-radius: 9px; padding: 0 9px; background: var(--card); font: 700 10.5px/1 var(--body); }
@@ -487,8 +509,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
         <b class="time" id="tugT">0:00</b>
         <div><small id="tugF">적 100%</small><span class="tbar"><i id="tugFi"></i></span></div>
       </div>
-      <div class="boardwrap" id="boardwrap"><canvas id="cv" aria-label="전투 보드"></canvas><div class="bstamp" id="bstamp"></div></div>
-      <div class="syn" id="syn"></div>
+      <div class="boardwrap" id="boardwrap"><canvas id="cv" aria-label="전투 보드"></canvas><div class="srail" id="srail" aria-label="시너지"></div><div class="bstamp" id="bstamp"></div></div>
       <div id="prepUI" style="display:contents">
         <div class="benchbox" id="benchbox">
           <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint"></span></div>

@@ -271,8 +271,9 @@
 
   // ---------- 적 편성 ----------
   const CS = 64, COLS = 5, ROWS = 6, PLAYER_ROW = 3, M = 22; // M: 판 테두리(좌표가 찍히는 나무 테)
-  const W = CS * COLS + M * 2, H = CS * ROWS + M * 2;
-  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: M, oy: M, diag: true });
+  const ML = 96; // 왼쪽 테: 시너지 레일이 박히는 자리
+  const W = ML + CS * COLS + M, H = CS * ROWS + M * 2;
+  const grid = AC.squareGrid(COLS, ROWS, CS, { ox: ML, oy: M, diag: true });
   function genEnemies(kind) {
     const A = ACTS[R.act], out = [], used = new Set(R.board.map((u) => grid.idx(u.x, u.y)));
     const t = window.__tune || {};
@@ -480,31 +481,36 @@
     return '<div class="pat" aria-hidden="true">' + g.map((v) => `<i class="${v}"></i>`).join('') + '</div>';
   }
   // 시너지 줄: 작은 패 모양 칩(글자 + 현재/다음 단계). 켜진 것 → 모자란 것 순, 한 줄에 들어가는 만큼만
-  function synHTML(cards) {
+  // 시너지 목록: 클래스 + 특성, 켜진 것 → 많이 모인 것 순
+  function synItems(cards) {
     const sc = battleApi.synergyCounts(cards), items = [];
     for (const k of Object.keys(SYN)) {
       const n = sc.counts[k]; if (!n) continue;
-      const th = SYN[k].th, tier = sc.tiers[k];
-      items.push({ on: tier, n, name: CLS[k].name, html: `<button class="sc cls${tier ? ' on' : ''}" data-syn="${k}" style="--c:${CLS[k].col}" aria-label="${CLS[k].name} ${n}"><b>${CLS[k].short}</b><small>${n}/${th.find((t) => n < t) || th[th.length - 1]}</small></button>` });
+      const th = SYN[k].th;
+      items.push({ attr: `data-syn="${k}"`, col: CLS[k].col, short: CLS[k].short, name: CLS[k].name, th, n, m: th.find((t) => n < t) || th[th.length - 1], tier: sc.tiers[k], cls: true });
     }
     for (const [k, T] of Object.entries(TRAITS)) {
       const n = sc.tcounts[k]; if (!n) continue;
-      const tier = sc.ttiers[k], need = T.kind === 'combo' ? T.members.length : (T.th.find((t) => n < t) || T.th[T.th.length - 1]);
-      items.push({ on: tier, n: n / need, name: T.name.replace(/ /g, ''), html: `<button class="sc${tier ? ' on' : ''}${T.kind === 'combo' ? ' combo' : ''}" data-tr="${k}" style="--c:${T.col}" aria-label="${T.name} ${n}/${need}"><b>${T.short}</b><small>${n}/${need}</small></button>` });
+      const combo = T.kind === 'combo', th = combo ? [T.members.length] : T.th;
+      items.push({ attr: `data-tr="${k}"`, col: T.col, short: T.short, name: T.name.replace(/ /g, '').replace('스승과제자', '스승제자'), th, n, m: th.find((t) => n < t) || th[th.length - 1], tier: sc.ttiers[k], combo });
     }
-    items.sort((a, b) => (b.on > 0) - (a.on > 0) || b.on - a.on || b.n - a.n);
-    // 켜진 것 앞 세 개는 이름까지
-    let named = 0;
-    for (const x of items) if (x.on && named < 3) { named++; x.html = x.html.replace('</b>', `</b>${x.name}`); }
-    return `<div class="scs">${items.map((x) => x.html).join('')}</div><button class="sc all" data-allsyn>전체 <em data-more></em>›</button>`;
+    return items.sort((a, b) => (b.tier > 0) - (a.tier > 0) || b.tier - a.tier || b.n / b.m - a.n / a.m);
   }
-  // 한 줄에 다 안 들어가는 칩은 숨기고 개수만 "전체" 옆에
-  function fitSyn() {
-    const box = document.querySelector('#syn .scs'); if (!box) return;
-    const w = box.clientWidth; let hid = 0;
-    for (const el of box.children) { el.hidden = false; }
-    for (const el of box.children) if (hid || el.offsetLeft - box.offsetLeft + el.offsetWidth > w) { el.hidden = true; hid++; }
-    const m = document.querySelector('#syn [data-more]'); if (m) m.textContent = hid ? `+${hid} ` : '';
+  // 판 왼쪽 테에 박힌 시너지 레일: 아이콘 · 이름 · 단계 눈금 · 현재/다음
+  function renderRail() {
+    const el = $('srail'), items = synItems(R.board);
+    const h = el.clientHeight || 300, rowH = 29, fit = Math.max(1, Math.floor((h - 18 + 3) / (rowH + 3)));
+    const shown = items.length > fit ? items.slice(0, fit - 1) : items, more = items.length - shown.length;
+    el.innerHTML = shown.map((x) => `<button class="ri${x.tier ? ' on' : ''}${x.combo ? ' combo' : ''}" ${x.attr} style="--c:${x.col}" aria-label="${x.name} ${x.n}/${x.m}"><span class="ic">${x.short}</span><span class="nm${x.name.length >= 4 ? ' ln' : ''}">${x.name}</span><span class="pp">${x.th.map((t) => `<i class="${x.n >= t ? 'f' : ''}"></i>`).join('')}<em>${x.n}/${x.m}</em></span></button>`).join('')
+      + (items.length ? '' : '<span class="rnone">딱지를 놓으면 시너지가 여기에</span>')
+      + `<button class="rall" data-allsyn>${more ? `+${more} · ` : ''}전체 ›</button>`;
+  }
+  function placeRail() {
+    const el = $('srail'), cv = $('cv');
+    if (!cv.offsetWidth) return;
+    el.style.left = (cv.offsetLeft + 8 * kScale) + 'px'; el.style.top = (cv.offsetTop + (M - 4) * kScale) + 'px';
+    el.style.width = ((ML - 20) * kScale) + 'px'; el.style.height = ((CS * ROWS + 8) * kScale) + 'px';
+    el.classList.toggle('narrow', (ML - 20) * kScale < 58); // 좁으면 아이콘 대신 왼쪽 색 띠
   }
   // 시너지 전체 목록(도감·시트 공용). cards 가 있으면 진행도와 보유 표시
   function synList(cards) {
@@ -600,7 +606,7 @@
     const combat = !!B;
     $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('tug').hidden = !combat;
     $('scr-play').classList.toggle('combat', combat);
-    $('syn').innerHTML = synHTML(R.board); fitSyn();
+
     if (combat) { renderBattlePanel(); fitBoard(); return; }
     renderPrep();
     fitBoard();
@@ -636,7 +642,7 @@
       const unit = c.kind === 'unit';
       return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드${unit ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}">
         <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
-        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}</button>`;
+        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}<span class="dsc">${esc(unit ? d.trait : d.desc)}</span></button>`;
     }).join('');
     $('lvBtn').textContent = R.lv >= MAXLV ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= MAXLV;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
@@ -899,7 +905,7 @@
   }
   $('statBtn').onclick = openStats;
 
-  $('syn').addEventListener('click', (e) => {
+  $('srail').addEventListener('click', (e) => {
     if (e.target.closest('[data-allsyn]')) return openSynSheet();
     const t = e.target.closest('[data-tr]');
     if (t) { const T = TRAITS[t.dataset.tr]; return toast(`${T.name}(${T.members.map((m) => DEF['unit:' + m].name).join('·')}): ${T.kind === 'combo' ? T.desc[0] : T.th.map((n, i) => n + '명 ' + T.desc[i]).join(' → ')}`); }
@@ -916,21 +922,20 @@
   const viewY = () => (mineOnly() ? CS * PLAYER_ROW : 0);
   const viewH = () => (mineOnly() ? CS * (ROWS - PLAYER_ROW) + M * 2 : H);
   function fitBoard() {
-    const wrap = $('boardwrap'), scr = $('scr-play');
+    const wrap = $('boardwrap');
     const vh = viewH();
-    if (mineOnly()) {
-      const w = wrap.getBoundingClientRect().width;
-      if (!w) return;
-      kScale = Math.max(0.4, Math.min((w - 24) / W, (scr.clientHeight * (scr.clientHeight < 640 ? 0.25 : scr.clientHeight < 720 ? 0.28 : scr.clientHeight < 780 ? 0.32 : 0.36)) / vh));
-      wrap.style.height = Math.round(vh * kScale + 6) + 'px';
-    } else {
-      wrap.style.height = '';
-      const r = wrap.getBoundingClientRect();
-      if (!r.width || !r.height) return;
-      kScale = Math.max(0.4, Math.min((r.width - 24) / W, (r.height - 4) / vh));
+    const r = wrap.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    kScale = Math.max(0.4, Math.min((r.width - 24) / W, (r.height - 4) / vh));
+    // 판이 폭에 막혀 위아래가 남으면 그만큼 상점 카드를 키운다(최대 +56px)
+    if (!B) {
+      const cur = ui.cardExtra || 0, total = r.height + cur, need = vh * Math.min((r.width - 24) / W, (total - 4) / vh) + 10;
+      const extra = Math.max(0, Math.min(56, Math.floor(total - need)));
+      if (extra !== cur) { ui.cardExtra = extra; $('scr-play').style.setProperty('--card-extra', extra + 'px'); $('scr-play').classList.toggle('roomy', extra >= 30); return requestAnimationFrame(fitBoard); }
     }
     canvas.style.width = Math.round(W * kScale) + 'px'; canvas.style.height = Math.round(vh * kScale) + 'px';
     canvas.width = Math.round(W * kScale * DPR); canvas.height = Math.round(vh * kScale * DPR);
+    if (R) { placeRail(); renderRail(); }
     draw();
   }
   function cellFromPoint(x, y) { const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale + viewY()); }
@@ -1032,8 +1037,12 @@
     for (let k = 0; k < 26; k++) { const y = rr() * H; c.beginPath(); c.moveTo(0, y); c.bezierCurveTo(W * 0.3, y + rr() * 6 - 3, W * 0.7, y + rr() * 6 - 3, W, y + rr() * 4 - 2); c.stroke(); }
     c.strokeStyle = '#3a2210'; c.lineWidth = 3; rrPath(c, 1.5, 1.5, W - 3, H - 3, 11); c.stroke();
     // 인쇄판 받침
-    c.fillStyle = L.deep; rrPath(c, M - 6, M - 6, BW + 12, BH + 12, 6); c.fill();
-    c.fillStyle = 'rgba(0,0,0,.25)'; rrPath(c, M - 6, M + BH, BW + 12, 6, 3); c.fill();
+    c.fillStyle = L.deep; rrPath(c, ML - 6, M - 6, BW + 12, BH + 12, 6); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.25)'; rrPath(c, ML - 6, M + BH, BW + 12, 6, 3); c.fill();
+    // 시너지 레일 홈(왼쪽 테를 판 자리)
+    const rg = c.createLinearGradient(6, 0, ML - 10, 0); rg.addColorStop(0, '#2e1c0e'); rg.addColorStop(0.15, '#3f2716'); rg.addColorStop(1, '#4a2f1b');
+    c.fillStyle = rg; rrPath(c, 6, M - 6, ML - 16, BH + 12, 8); c.fill();
+    c.strokeStyle = 'rgba(255,220,170,.25)'; c.lineWidth = 1; rrPath(c, 6.5, M - 5.5, ML - 17, BH + 11, 8); c.stroke();
     // 칸: 둥근 모서리, 위는 밝고 아래는 어두운 홈
     for (const cell of grid.cells) {
       const foe = cell.r < PLAYER_ROW, px = cell.x - CS / 2 + 3, py = cell.y - CS / 2 + 3, s = CS - 6;
@@ -1045,12 +1054,11 @@
     }
     // 전선 리본
     const my = M + CS * PLAYER_ROW;
-    c.fillStyle = '#c8333f'; c.fillRect(M - 4, my - 3, BW + 8, 6);
-    c.fillStyle = 'rgba(255,255,255,.6)'; for (let x = M; x < M + BW; x += 14) { c.beginPath(); c.moveTo(x, my - 1.5); c.lineTo(x + 5, my); c.lineTo(x, my + 1.5); c.fill(); }
+    c.fillStyle = '#c8333f'; c.fillRect(ML - 4, my - 3, BW + 8, 6);
+    c.fillStyle = 'rgba(255,255,255,.6)'; for (let x = ML; x < ML + BW; x += 14) { c.beginPath(); c.moveTo(x, my - 1.5); c.lineTo(x + 5, my); c.lineTo(x, my + 1.5); c.fill(); }
     // 테에 인쇄한 좌표와 진영
     c.fillStyle = '#f3e3c6'; c.font = "700 10px 'IBM Plex Sans KR', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle';
-    'ABCDE'.split('').forEach((ch, i) => { c.fillText(ch, M + i * CS + CS / 2, H - (M - 6) / 2); c.fillText(ch, M + i * CS + CS / 2, (M - 6) / 2); });
-    for (let y = 0; y < ROWS; y++) c.fillText(String(ROWS - y), (M - 6) / 2, M + y * CS + CS / 2);
+    'ABCDE'.split('').forEach((ch, i) => { c.fillText(ch, ML + i * CS + CS / 2, H - (M - 6) / 2); c.fillText(ch, ML + i * CS + CS / 2, (M - 6) / 2); });
     c.save(); c.translate(W - (M - 6) / 2, M + CS * 1.5); c.rotate(Math.PI / 2); c.fillStyle = '#ffb0a8'; c.fillText('적 진영', 0, 0); c.restore();
     c.save(); c.translate(W - (M - 6) / 2, M + CS * 4.5); c.rotate(Math.PI / 2); c.fillStyle = '#b8d4ff'; c.fillText('아군 진영', 0, 0); c.restore();
     boardCache[act] = cv;
@@ -1554,7 +1562,7 @@
   $('overTitle').onclick = title;
   $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet') && ui.screen === 'title') closeSheet(); });
   document.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && !b.closest('#row') && !b.closest('#bench')) SFX.play('click', 0.05); });
-  new ResizeObserver(() => { if (ui.screen === 'play') { fitBoard(); fitSyn(); renderPrepPeek(); } if (ui.screen === 'map') renderMap(); }).observe($('phone'));
+  new ResizeObserver(() => { if (ui.screen === 'play') { fitBoard(); renderPrepPeek(); } if (ui.screen === 'map') renderMap(); }).observe($('phone'));
   function renderPrepPeek() { if (!B && ui.sel && ui.sel.from === 'shop') $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
   
 
