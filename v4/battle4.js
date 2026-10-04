@@ -405,7 +405,7 @@
           break;
         }
         case 'parry': giveShield(u, P * Hm, u); u.st.parry = 4; cb.ring(u.px, u.py, '#c3cbd6', 30); break;
-        case 'fortify': u.st.fort = 5; cb.heal(u, P * Hm, u); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
+        case 'fortify': u.st.fort = d.dur || 5; u.st.fortRed = d.red || 0.4; cb.heal(u, P * Hm, u); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
           if (a) { a.atk *= 1.3 + 0.1 * ((s.star || 1) - 1); a.as *= 1.2; cb.ring(a.px, a.py, '#f5c400', 26, 0.6); cb.float(a.px, a.py - 22, '축복', '#f5c400'); }
@@ -436,7 +436,7 @@
           if (!dead) { cb.heal(u, 150 * Hm, u); break; }
           const cell = freeNear(cb, dead.cell);
           if (cell === undefined) break;
-          dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, 0.5 + 0.15 * ((s.star || 1) - 1))); dead.mana = 0; if (dead.bars) for (const b of dead.bars) b.mana = 0; dead.moving = null; dead.st = {};
+          dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, (d.power || 0.5) + 0.12 * ((s.star || 1) - 1))); dead.mana = 0; if (dead.bars) for (const b of dead.bars) b.mana = 0; dead.moving = null; dead.st = {};
           dead.cell = cell; cb.occ[cell] = dead; dead.px = grid.cells[cell].x; dead.py = grid.cells[cell].y; dead.popT = 0.35;
           cb.ring(dead.px, dead.py, '#fff2b0', 34, 0.8);
           cb.float(dead.px, dead.py - 28, '테이프로 붙였다!', '#c48a00', true);
@@ -573,6 +573,7 @@
           const cell = grid.neighbors[u.cell].find((n) => !cb.occ[n]);
           if (cell !== undefined) cb.spawn(makeSummon('hawk', cell, 0, u));
         }
+        if (u.ifx === 'ambush') u.ambush = 3;
         if (u.ifx === 'infiltrate') {
           const far = cb.alive(1).sort((a, c) => grid.dist(u.cell, c.cell) - grid.dist(u.cell, a.cell))[0];
           if (far) leapTo(cb, u, far);
@@ -598,12 +599,13 @@
         // 성서: 다친 아군이 있으면 기본 공격 대신 치유
         preAttack: (u, t, cb) => {
           if (u.nextCrit) { u.nextCrit = false; u.critSave = u.crit; u.crit = 1; }
+          else if (u.ambush > 0) { u.ambush--; u.critSave = u.crit; u.crit = 1; } // 기습: 첫 공격들 확정 치명
           if (u.ifx !== 'healer') return false;
           const a = lowestAlly(cb, u.side, true);
           if (!a || a.hp / a.maxHp > 0.92) return false;
           addMana(u, u.manaPerHit || 10);
           cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.25);
-          cb.heal(a, u.atk * 1.0 * u.healMult * u.ifxK, u);
+          cb.heal(a, u.atk * 0.45 * u.healMult * u.ifxK, u);
           return true;
         },
         onCast: (u, t, cb) => {
@@ -639,14 +641,14 @@
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
-          if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + 0.08 * (src.focusN || 0);
+          if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + (src.passive === 'focus' ? 0.08 : 0.05) * (src.focusN || 0);
           return m;
         },
         dmgTakenMod: (t, cb, src, kind) => {
           let m = 1;
           if (src && src.pierce && kind === 'atk' && t.armor > 0) m /= 1 - t.armor;
           if (t.st.vuln && t.st.vuln.t > 0) m *= 1 + t.st.vuln.amt;
-          if (t.st.fort > 0) m *= 0.6;
+          if (t.st.fort > 0) m *= 1 - (t.st.fortRed || 0.4);
           if (t.side === 0 && cb.t < 5 && has('sandglass')) m *= 0.8;
           if (t.side === 0) for (const n of grid.neighbors[t.cell]) { const w = cb.occ[n]; if (w && w.side === 0 && w.passive === 'guardAura') { m *= 0.9; break; } }
           return m;
@@ -671,7 +673,7 @@
               cb.beam(t.px, t.py, v.px, v.py, '#b48cff', 0.25); cb.damage(u, v, u.atk * 0.35 * Math.min(1.6, u.ifxK), 'splash');
             }
           }
-          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.4 * u.healMult * u.ifxK, u); }
+          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.25 * u.healMult * u.ifxK, u); }
           if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 1.8 * u.healMult * u.ifxK, u); } }
           if (u.passive === 'pierce4' && u.atkN % 4 === 0) {
             const dir = facing(u, t), cells = [];
@@ -694,7 +696,7 @@
           if (kind === 'atk') {
             const pr = src.procs || new Set();
             if (pr.has('burnHit')) addStatus(cb, t, 'burn', { dps: 25, dur: 3 }, src);
-            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 25 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
+            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 15 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
             if (pr.has('cleaveHit')) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== src.side && v !== t) cb.damage(src, v, dmg * 0.25, 'splash'); }
             if (src.ifx === 'markAura') addStatus(cb, t, 'vuln', { dur: 3, amt: 0.1 * Math.min(2, src.ifxK) }, src);
             if (src.passive === 'heavyBolt' && src.side === 0) {
@@ -708,9 +710,9 @@
           }
           if (kind === 'spell') {
             const pr = src.procs || new Set();
-            if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 22 * src.ifxK, dur: 3 }, src);
+            if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 35 * src.ifxK, dur: 4 }, src);
             if (pr.has('spellSlow')) addStatus(cb, t, 'slow', 2 * Math.min(1.6, src.ifxK), src);
-            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * (src.passive === 'hex' ? 0.25 : 0.15) * (src.healMult || 1), src);
+            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * (src.passive === 'hex' ? 0.25 : 0.25) * (src.healMult || 1), src);
           }
         },
         onHeal: () => fx.play('heal', 0.15),

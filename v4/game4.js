@@ -703,16 +703,17 @@
   const atkAmt = (e, mult) => (e.atk ? `<em>${Math.round(e.atk * mult)}</em>` : `공격력의 <em>${pct(mult)}%</em>`);
   const FXTEXT = {
     infiltrate: () => '전투 시작 시 적 뒤로 도약',
-    healMace: (e, k) => `공격마다 가장 다친 아군 ${atkAmt(e, 0.4 * e.healMult * k)} 회복`,
+    ambush: () => '첫 <em>3</em>번 공격 확정 치명(기습)',
+    healMace: (e, k) => `공격마다 가장 다친 아군 ${atkAmt(e, 0.25 * e.healMult * k)} 회복`,
     bloodrage: () => '주변 적에게 25% 튐, 체력 50% 이하 공속 +25%',
     towerGuard: () => '4초마다 주변 적 도발, 맞으면 주변 아군 보호막',
-    poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(25 * k)}</em>, 최대 3중첩)`,
+    poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(15 * k)}</em>, 최대 3중첩)`,
     quiverHeal: (e, k) => `3타마다 치유 화살 ${atkAmt(e, 1.8 * e.healMult * k)}`,
     hawkFocus: () => '사냥매 소환, 같은 적을 계속 쏘면 피해 증가',
     markAura: (e, k) => `맞힌 적 받는 피해 <em>+${Math.round(10 * Math.min(2, k))}%</em>, 주변 아군 공속 <em>+${Math.round(10 * k)}%</em>`,
     spellSlow: () => '스킬에 맞은 적 둔화',
-    spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(22 * k)}</em>)`,
-    healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 ${atkAmt(e, 1.0 * e.healMult * k)} 치유`,
+    spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(35 * k)}</em>)`,
+    healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 ${atkAmt(e, 0.45 * e.healMult * k)} 치유`,
     hourglass: (e, k) => `스킬 사용 시 주변 아군 마나 <em>+${Math.round(15 * k)}</em>`,
     echo: () => '3번 시전마다 한 번 더(위력 60%)',
     stunEvery: (e, k) => `5타마다 기절 <em>${(0.8 * Math.min(1.6, k)).toFixed(1)}초</em>`,
@@ -723,7 +724,7 @@
     evasive: () => '회피하면 다음 공격 치명타',
     headshot: (e, k) => `치명 피해 <em>+${Math.round(40 * Math.min(1.6, k))}%</em>`,
     manaRegen: (e, k) => `초당 마나 <em>+${(3 * Math.min(1.6, k)).toFixed(1)}</em>`,
-    spellLeech: () => '스킬 피해의 15% 회복',
+    spellLeech: () => '스킬 피해의 <em>25%</em> 회복',
     stormHit: (e, k) => `기본 공격이 주변 적 둘에게 번개 ${atkAmt(e, 0.35 * Math.min(1.6, k))}`,
   };
   function itemText(it, star, e) {
@@ -772,9 +773,9 @@
       case 'haste': case 'timewarp': main = `공속 <em>+${Math.round(((sd.amt || 1.25) + 0.08 * (star - 1) - 1) * 100)}%</em> ${sd.dur || 6}초${sd.effect === 'timewarp' ? ` · 적 둔화 ${3 + star - 1}초` : ''}`; break;
       case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
       case 'mana': main = `주변 아군 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
-      case 'revive': main = `쓰러진 아군을 체력 <em>${pct(Math.min(0.9, 0.5 + 0.15 * (star - 1)))}%</em>로 부활`; break;
+      case 'revive': main = `쓰러진 아군을 체력 <em>${pct(Math.min(0.9, (sd.power || 0.5) + 0.12 * (star - 1)))}%</em>로 부활`; break;
       case 'heavy': main = `피해 ${atkAmt(e, sd.power * k)}`; break;
-      case 'fortify': main = `5초 받는 피해 −40% · 회복 <em>${Math.round(P * H)}</em>`; break;
+      case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · 회복 <em>${Math.round(P * H)}</em>`; break;
       default: main = sd.desc;
     }
     return main;
