@@ -13,11 +13,8 @@
     any: { name: '공용', short: '공', col: '#4b5160', plastic: '#6b7180', art: 'any' },
   };
 
-  const SYN = {
-    war: { th: [2, 4, 6], desc: ['전사 체력 +15%', '전사 체력 +30%, 받는 피해 −10%', '모든 아군 받는 피해 −15%'] },
-    arc: { th: [2, 4, 6], desc: ['궁수 공격 속도 +20%', '궁수 공격 속도 +40%', '궁수 공격 속도 +60%, 사거리 +1'] },
-    mag: { th: [2, 4, 6], desc: ['모든 아군 스킬 위력 +20%, 마법사 마나 획득 +25%', '모든 아군 스킬 위력 +40%, 마법사 마나 획득 +25%', '스킬 위력 +50%, 마법사 마나 30으로 시작'] },
-  };
+  // 클래스(전사·궁수·마법사) 시너지는 없앴다. 클래스는 장비·스킬 장착 제한과 카드 색에만 쓴다
+  const SYN = {};
 
   const U = (id, name, cls, t, hp, atk, as, range, trait, extra) => Object.assign({ kind: 'unit', id, name, cls, t, hp, atk, as, range, trait }, extra || {});
   const UNITS = [
@@ -123,27 +120,34 @@
   // 특성 시너지 10종: 유닛마다 2개. kind 'count' = 정해진 수만큼 모이면, 'combo' = 지정한 유닛이 전부 모이면
   const TRAITS = {
     knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'count', th: [2, 3, 4], members: ['squire', 'warden', 'blademaster', 'paladin', 'arbalest'],
-      desc: ['기사 받는 피해 −15%', '기사 받는 피해 −30%', '기사 받는 피해 −40%, 체력 +15%'] },
+      desc: ['기사 받는 피해 −15%', '기사 받는 피해 −30%', '기사 받는 피해 −35%, 체력 +10%'] },
     novice: { name: '견습', short: '견', col: '#8a9a5b', kind: 'combo', members: ['squire', 'archer', 'apprentice'],
-      desc: ['견습 셋이 모이면 모든 아군 피해 +15%, 스킬 마나 −15%, 받는 피해 −15%'] },
+      desc: ['견습 셋이 모이면 모든 아군 피해 +8%, 스킬 마나 −10%, 받는 피해 −8%'] },
     guardian: { name: '수호자', short: '수', col: '#5b6475', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'warden', 'acolyte', 'monk', 'hammer', 'paladin'],
       desc: ['전투 시작 시 모든 아군 보호막 150', '모든 아군 보호막 400, 수호자 받는 피해 −10%', '모든 아군 보호막 700, 수호자 받는 피해 −20%'] },
     company: { name: '용병단', short: '용', col: '#b07a2a', kind: 'count', th: [2, 3, 4], members: ['merc', 'duelist', 'crossbow', 'hammer', 'scout'],
       desc: ['승리하면 골드 +1', '승리하면 골드 +2, 용병단 공격 속도 +20%', '승리하면 골드 +3, 용병단 공격 속도 +35%'] },
     marksman: { name: '명사수', short: '명', col: '#2e7d5b', kind: 'count', th: [2, 3, 4], members: ['venom', 'crossbow', 'ranger', 'ninja', 'arbalest', 'windarcher'],
-      desc: ['명사수 치명타 +15%', '명사수 치명타 +25%, 치명 피해 +40%', '명사수 치명타 +25%, 치명 피해 +40%, 사거리 +1'] },
+      desc: ['명사수 치명타 +25%, 치명 피해 +30%', '명사수 치명타 +35%, 치명 피해 +60%', '명사수 치명타 +40%, 치명 피해 +80%, 사거리 +1'] },
     wild: { name: '야생', short: '야', col: '#5fa043', kind: 'count', th: [2, 4, 6], members: ['archer', 'venom', 'hunter', 'acolyte', 'scout', 'windarcher', 'summoner'],
       desc: ['모든 아군 초당 체력 1% 재생', '모든 아군 초당 체력 2% 재생, 소환물 체력·공격 +60%', '모든 아군 초당 체력 3% 재생, 소환물 체력·공격 +120%'] },
     arcane: { name: '비전', short: '비', col: '#6a4fc0', kind: 'count', th: [2, 4], members: ['monk', 'cryo', 'archmage', 'bishop', 'pyro', 'summoner'],
-      desc: ['비전 유닛 마나 +25로 시작', '비전 유닛 마나 +25로 시작, 모든 아군 마나 획득 +30%'] },
+      desc: ['비전 유닛 마나 +40으로 시작', '비전 유닛 마나 +40으로 시작, 모든 아군 마나 획득 +40%'] },
     stars: { name: '별의 인도', short: '별', col: '#c48a00', kind: 'combo', members: ['cryo', 'ninja', 'bishop'],
-      desc: ['셋이 모이면 모든 아군 치명타 +20%, 치명 피해 +50%'] },
+      desc: ['셋이 모이면 모든 아군 치명타 +25%, 치명 피해 +60%, 공격 속도 +15%'] },
     mentor: { name: '스승과 제자', short: '스', col: '#a8508a', kind: 'combo', members: ['archmage', 'apprentice'],
       desc: ['둘이 함께면 견습 마법사 스킬 위력 ×2, 대마법사 스킬 마나 −30%'] },
     veteran: { name: '베테랑', short: '베', col: '#7a5a3c', kind: 'count', th: [2, 4, 6], members: ['shieldman', 'merc', 'duelist', 'hunter', 'ranger', 'blademaster', 'berserker', 'warlock'],
-      desc: ['베테랑 공격력 +15%', '베테랑 공격력 +30%', '베테랑 공격력 +50%, 적을 쓰러뜨리면 체력 15% 회복'] },
+      desc: ['베테랑 공격력 +25%', '베테랑 공격력 +40%', '베테랑 공격력 +50%, 적을 쓰러뜨리면 체력 15% 회복'] },
     flame: { name: '불꽃', short: '불', col: '#e0602a', kind: 'count', th: [2, 3], members: ['berserker', 'pyro', 'warlock'],
-      desc: ['불꽃 유닛의 기본 공격이 3초 화상', '모든 아군 화상 피해 +60%, 불꽃 유닛 공격력 +20%'] },
+      desc: ['불꽃 유닛의 기본 공격이 3초 화상, 불꽃 유닛 공격력 +15%', '모든 아군 화상 피해 +60%, 불꽃 유닛 공격력 +30%'] },
+    shadow: { name: '그림자', short: '그', col: '#4a3f6b', kind: 'count', th: [2, 3, 4], members: ['venom', 'scout', 'merc', 'duelist', 'warlock', 'ninja'],
+      desc: ['그림자 치명타 +15%, 회피 +10%', '그림자 치명타 +25%, 치명 피해 +30%, 회피 +15%', '그림자 치명타 +35%, 치명 피해 +60%, 회피 +20%'] },
+    gale: { name: '질풍', short: '질', col: '#2f8fd0', kind: 'count', th: [2, 4, 6], members: ['archer', 'apprentice', 'pyro', 'hunter', 'berserker', 'windarcher', 'blademaster'],
+      desc: ['모든 아군 공격 속도 +8%, 질풍 +10% 더', '모든 아군 공격 속도 +16%, 질풍 +10% 더', '모든 아군 공격 속도 +25%, 질풍 +10% 더'] },
+    // 동급: 멤버 없이 '같은 등급의 서로 다른 딱지' 수를 센다(가장 많은 등급 하나)
+    peer: { name: '동급', short: '동', col: '#9a7b3a', kind: 'peer', th: [3, 4, 5], members: [],
+      desc: ['같은 등급 딱지 3명: 그 딱지들 체력·공격 +12%', '같은 등급 4명: 체력·공격 +20%', '같은 등급 5명: 체력·공격 +30%'] },
   };
   for (const u of UNITS) u.traits = Object.keys(TRAITS).filter((k) => TRAITS[k].members.includes(u.id));
 
@@ -209,9 +213,9 @@
   ];
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 1.09, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.22, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.34, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.99, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1.1, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.25, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)

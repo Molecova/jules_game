@@ -501,11 +501,6 @@
   // 시너지 목록: 클래스 + 특성, 켜진 것 → 많이 모인 것 순
   function synItems(cards) {
     const sc = battleApi.synergyCounts(cards), items = [];
-    for (const k of Object.keys(SYN)) {
-      const n = sc.counts[k]; if (!n) continue;
-      const th = SYN[k].th;
-      items.push({ attr: `data-syn="${k}"`, col: CLS[k].col, short: CLS[k].short, name: CLS[k].name, th, n, m: th.find((t) => n < t) || th[th.length - 1], tier: sc.tiers[k], cls: true });
-    }
     for (const [k, T] of Object.entries(TRAITS)) {
       const n = sc.tcounts[k]; if (!n) continue;
       const combo = T.kind === 'combo', th = combo ? [T.members.length] : T.th;
@@ -542,10 +537,7 @@
     let out = '';
     for (const [k, T] of Object.entries(TRAITS)) {
       const lines = T.kind === 'combo' ? T.desc : T.desc.map((d, i) => `(${T.th[i]}) ${d}`);
-      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : '기본 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
-    }
-    for (const [k, S] of Object.entries(SYN)) {
-      out += block(k, CLS[k].name, CLS[k].col, CLS[k].short, '클래스 · ' + S.th.join('/') + '명', S.desc.map((d, i) => `(${S.th[i]}) ${d}`), UNITS.filter((u) => u.cls === k).map((u) => u.id), sc ? sc.tiers[k] : 0, sc ? sc.counts[k] : 0, sc ? S.th.find((x) => sc.counts[k] < x) || S.th[S.th.length - 1] : S.th[0]);
+      out += block(k, T.name, T.col, T.short, T.kind === 'combo' ? '특별 조합 · 전원 필요' : T.kind === 'peer' ? '같은 등급 · ' + T.th.join('/') + '명' : '기본 · ' + T.th.join('/') + '명', lines, T.members, sc ? sc.ttiers[k] : 0, sc ? sc.tcounts[k] : 0, T.kind === 'combo' ? T.members.length : (sc ? T.th.find((x) => sc.tcounts[k] < x) || T.th[T.th.length - 1] : T.th[0]));
     }
     return out;
   }
@@ -1026,8 +1018,7 @@
   $('srail').addEventListener('click', (e) => {
     if (e.target.closest('[data-allsyn]')) return openSynSheet();
     const t = e.target.closest('[data-tr]');
-    if (t) { const T = TRAITS[t.dataset.tr]; return toast(`${T.name}(${T.members.map((m) => DEF['unit:' + m].name).join('·')}): ${T.kind === 'combo' ? T.desc[0] : T.th.map((n, i) => n + '명 ' + T.desc[i]).join(' → ')}`); }
-    const b = e.target.closest('[data-syn]'); if (!b) return; const k = b.dataset.syn; toast(`${CLS[k].name} ${SYN[k].th.join('/')}: ${SYN[k].desc.join(' → ')}`);
+    if (t) { const T = TRAITS[t.dataset.tr]; return toast(`${T.name}(${T.kind === 'peer' ? '같은 등급의 서로 다른 딱지' : T.members.map((m) => DEF['unit:' + m].name).join('·')}): ${T.kind === 'combo' ? T.desc[0] : T.th.map((n, i) => n + '명 ' + T.desc[i]).join(' → ')}`); }
   });
 
   // =====================================================================
