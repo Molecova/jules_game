@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>카드 원정대 시너지 레일 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 문서: 지금 화면 → 판 왼쪽 세로 시너지 레일 3안 → 추천. 폰 안은 게임 고유 종이 톤, 문서 바탕만 테마를 따른다. */
+:root {
+  --bg: #eeede8; --surface: #fbfaf6; --fg: #1f2329; --muted: #60656e; --line: #d6d3ca; --accent: #c8335a;
+  --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* 게임 화면 색(문서 테마와 무관하게 고정) */
+  --paper: #f4eedf; --paper2: #ebe2cc; --card: #fffdf6; --ink: #232a3b; --gmuted: #6d6a60; --gold: #f5c400; --golddk: #b98f00; --stamp: #d6335a; --mine: #2f6fd6; --foe: #e8436b; --ok: #2e9e6b;
+  --t1: #f7f5ef; --t2: #a6dcae; --t3: #9cc3f2; --t4: #c7aaf0; --t5: #f6d64e;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); padding-block: 28px 64px; padding-inline: 16px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 44px; }
+header { display: grid; gap: 8px; max-width: 72ch; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
+h1 { margin: 0; font: 400 clamp(30px, 5vw, 44px)/1.1 var(--display); text-wrap: balance; }
+h2 { margin: 0; font: 400 26px/1.2 var(--display); text-wrap: balance; }
+h3 { margin: 0; font: 700 18px/1.3 var(--body); }
+p { margin: 0; }
+.lead { color: var(--muted); }
+section { display: grid; gap: 18px; }
+.sechead { display: grid; gap: 4px; max-width: 72ch; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; align-items: start; }
+.prop { display: grid; gap: 12px; justify-items: center; min-width: 0; }
+.prop .txt { width: 100%; max-width: 360px; display: grid; gap: 6px; }
+.tag { display: inline-flex; gap: 8px; align-items: baseline; }
+.tag b { font: 400 22px var(--display); color: var(--accent); }
+ul.pts { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 3px; }
+ul.pts li b { color: var(--fg); font-weight: 600; }
+.reco { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 8px; max-width: 80ch; }
+
+/* 판 스타일 블록 */
+.style { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 22px; border-top: 1px solid var(--line); }
+.style .main { display: grid; gap: 8px; justify-items: center; }
+.style .main canvas { max-width: 100%; height: auto; border-radius: 4px; }
+.style .side { display: grid; gap: 12px; min-width: 0; }
+.thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.thumbs figure { margin: 0; display: grid; gap: 4px; justify-items: center; min-width: 0; }
+.thumbs canvas { width: 100%; max-width: 170px; height: auto; border-radius: 3px; }
+.thumbs figcaption, .cap { font-size: 12px; color: var(--muted); text-align: center; }
+.now { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: center; }
+.now img { width: 100%; max-width: 260px; border-radius: 4px; }
+.now ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.now ol li::marker { color: var(--accent); font-weight: 700; }
+@media (max-width: 760px) {
+  .style, .now { grid-template-columns: minmax(0, 1fr); }
+  .thumbs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===== 폰 프레임(390×844 축소) ===== */
+.phone-wrap { --s: .78; width: calc(390px * var(--s)); height: calc(844px * var(--s)); flex: none; max-width: 100%; }
+.phone { width: 390px; height: 844px; transform: scale(var(--s)); transform-origin: 0 0; border-radius: 34px; box-shadow: 0 0 0 9px #15191d, 0 20px 40px rgba(0,0,0,.25); overflow: hidden; position: relative;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='.6' fill='%23d9cfb5'/%3E%3C/svg%3E"); color: var(--ink); font: 13px/1.35 var(--body); display: flex; flex-direction: column; padding: 12px 0 10px; }
+@media (max-width: 380px) { .phone-wrap { --s: .7; } }
+.phone * { box-sizing: border-box; }
+.g { padding-inline: 16px; }
+.hud { display: flex; align-items: center; gap: 8px; height: 44px; flex: none; }
+.menu { width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 6px; background: var(--card); display: grid; place-items: center; flex: none; }
+.menu i, .menu i::before, .menu i::after { display: block; width: 13px; height: 2px; background: var(--ink); position: relative; content: ""; }
+.menu i::before { position: absolute; top: -5px; } .menu i::after { position: absolute; top: 5px; }
+.where { flex: 1; min-width: 0; line-height: 1.15; }
+.where b { display: block; font: 400 17px var(--display); }
+.where span { font-size: 11px; color: var(--gmuted); }
+.flame { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffe2c2; color: #a8501a; border: 1.5px solid #e0a070; }
+canvas.board { display: block; margin: 0 auto; }
+.coin { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.coin::before { content: ""; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 1.5px solid var(--ink); }
+.btn { border: 2px solid var(--ink); border-radius: 8px; background: var(--card); font: 700 13px var(--body); color: var(--ink); display: grid; place-items: center; }
+.go { background: var(--stamp); color: #fff; font: 400 20px var(--display); letter-spacing: .04em; border-radius: 10px; box-shadow: 0 3px 0 var(--ink); }
+.bench { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 4px; border-radius: 8px; background: #c9a77d; box-shadow: inset 0 2px 0 rgba(0,0,0,.18); }
+.bench i { aspect-ratio: 1; border-radius: 6px; background: #b8946a; box-shadow: inset 0 2px 3px rgba(0,0,0,.25); display: grid; place-items: center; }
+.bench i img { width: 100%; height: 100%; object-fit: contain; }
+.bench.slim i { aspect-ratio: auto; height: 34px; }
+.lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--gmuted); }
+.lbl b { color: var(--ink); }
+.syn { display: flex; gap: 4px; align-items: center; flex: none; overflow: hidden; }
+.sc { flex: none; height: 26px; min-width: 26px; padding: 0 6px; border: 2px solid var(--c); border-radius: 7px; background: var(--card); color: var(--c); display: inline-flex; align-items: center; gap: 4px; font: 700 11px var(--body); white-space: nowrap; }
+.sc b { font: 400 13px var(--display); }
+.sc.on { background: var(--c); color: #fff; border-color: var(--ink); }
+.sc small { font-size: 10px; color: inherit; opacity: .85; }
+.sc.dim { opacity: .75; border-style: dashed; padding: 0 5px; }
+.synall { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--gmuted); white-space: nowrap; }
+.econ { display: flex; align-items: stretch; height: 36px; border: 2px solid var(--ink); border-radius: 10px; background: var(--card); overflow: hidden; flex: none; }
+.econ > * { display: flex; align-items: center; padding: 0 9px; gap: 5px; white-space: nowrap; }
+.econ > * + * { border-left: 1.5px solid #d9cfb5; }
+.econ .int { font-size: 11px; color: var(--gmuted); font-weight: 600; }
+.econ .lv { flex: 1; min-width: 0; }
+.econ .lv b { font: 400 13px var(--display); background: var(--ink); color: var(--paper); border-radius: 4px; padding: 1px 6px; }
+.xpbar { flex: 1; height: 7px; border-radius: 4px; background: var(--paper2); overflow: hidden; border: 1px solid var(--ink); }
+.xpbar i { display: block; height: 100%; background: var(--mine); }
+.econ .up { background: #e8f0fd; font-weight: 700; color: var(--mine); font-size: 12px; }
+/* 상점 탭 */
+.tabs { display: flex; gap: 6px; align-items: stretch; height: 34px; flex: none; }
+.seg { flex: 1; display: flex; border: 2px solid var(--ink); border-radius: 9px; overflow: hidden; background: var(--paper2); }
+.seg span { flex: 1; display: grid; place-items: center; font: 700 12.5px var(--body); position: relative; }
+.seg span + span { border-left: 1.5px solid #cfc4a8; }
+.seg span.on { background: var(--ink); color: var(--paper); }
+.seg span .dot { position: absolute; top: 1px; right: 4px; font-size: 8px; background: var(--stamp); color: #fff; border-radius: 4px; padding: 0 3px; line-height: 12px; }
+.mini { display: inline-flex; align-items: center; gap: 3px; padding: 0 9px; border: 2px solid var(--ink); border-radius: 9px; background: var(--card); font: 700 11px var(--body); white-space: nowrap; }
+/* 카드 */
+.cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.cd { position: relative; border: 3px solid var(--cc); box-shadow: 0 0 0 1.5px var(--ink); border-radius: 8px; background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); display: grid; justify-items: center; align-content: start; overflow: hidden; min-width: 0; }
+.cd .pr { width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.cd .pr img { width: 84%; height: 84%; object-fit: contain; }
+.cd .nm { width: 100%; text-align: center; font: 700 10.5px/1.2 var(--body); padding: 1px 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.3px; }
+.cd .co { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 1.5px solid var(--ink); font: 700 10px/14px var(--body); text-align: center; z-index: 1; }
+.cd .tr { display: grid; justify-items: center; padding: 0 2px 4px; }
+.cd .tr i { font: 700 8.5px/1.3 var(--body); font-style: normal; color: var(--c); white-space: nowrap; }
+.cd .tr i::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--c); margin-right: 2px; vertical-align: 1px; }
+.cd.unit::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--cc); }
+.cd.ready { box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px var(--gold), 0 0 12px 3px rgba(245,196,0,.6); }
+.cd .own { position: absolute; top: 3px; right: 3px; font: 700 9px/1 var(--body); background: var(--stamp); color: #fff; border-radius: 4px; padding: 2px 3px; z-index: 1; }
+.cd.skill { border-radius: 4px; } .cd.item { border-radius: 3px; }
+.cd .desc { font-size: 8.5px; line-height: 1.25; color: var(--ink); text-align: center; padding: 0 3px 5px; }
+/* 시안 C: 적 미니맵 */
+.scout { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px; border: 2px solid var(--ink); border-radius: 10px; background: #f4e3e3; padding: 6px; flex: none; }
+.scout .ttl { grid-column: 1 / -1; display: flex; justify-content: space-between; font: 700 11px var(--body); }
+.scout .ttl b { font: 400 14px var(--display); color: #a8233f; }
+.foes { display: grid; gap: 3px; align-content: start; font-size: 11px; }
+.foes div { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 5px; align-items: center; }
+.foes img { width: 24px; height: 24px; }
+.foes span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.foes em { font-style: normal; font-size: 9px; padding: 0 4px; border-radius: 4px; background: #fff; border: 1px solid #c88; color: #a8233f; font-weight: 700; }
+/* 시안 B: 적 진영 라벨 */
+.zone { display: flex; justify-content: space-between; font: 700 10.5px var(--body); color: #a8233f; }
+.zone b { font-weight: 700; color: var(--gmuted); }
+/* ===== 시너지 레일 ===== */
+.field { display: flex; gap: 6px; align-items: stretch; flex: none; }
+.field canvas { display: block; }
+.rail { display: flex; flex-direction: column; gap: 4px; flex: none; }
+/* A: 글자 패 레일 */
+.ra { width: 48px; }
+.ra .r { position: relative; flex: 1 1 0; min-height: 0; max-height: 36px; border: 2px dashed var(--c); border-radius: 7px; background: var(--card); color: var(--c); display: grid; place-items: center; align-content: center; line-height: 1; }
+.ra .r b { font: 400 13px var(--display); }
+.ra .r small { font: 700 9px var(--body); color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 1px; }
+.ra .r.on { background: var(--c); color: #fff; border: 2px solid var(--ink); box-shadow: 1px 2px 0 var(--ink); }
+.ra .r.on small { color: #fff; }
+.ra .r.combo { border-radius: 17px; }
+.ra .r.cls::after { content: ""; position: absolute; left: 3px; right: 3px; bottom: 2px; height: 2px; border-radius: 1px; background: currentColor; opacity: .6; }
+.ra hr, .rb hr { border: none; height: 2px; background: #d9cfb5; margin: 2px 4px; }
+/* B: 이름 + 단계 눈금 레일 */
+.rb { width: 92px; }
+.rb .r { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 4px; align-items: center; height: 33px; padding: 0 4px; border: 1.5px solid var(--c); border-radius: 7px; background: var(--card); }
+.rb .r .ic { grid-row: span 2; width: 22px; height: 22px; border-radius: 6px; background: var(--c); color: #fff; font: 400 12px/22px var(--display); text-align: center; }
+.rb .r .nm { font: 700 10.5px/1.1 var(--body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.rb .r .pips { display: flex; gap: 2px; align-items: center; font: 700 9px/1 var(--body); color: var(--gmuted); font-variant-numeric: tabular-nums; }
+.rb .r .pips i { width: 9px; height: 5px; border-radius: 2px; background: var(--paper2); border: 1px solid #b9ae94; }
+.rb .r .pips i.f { background: var(--c); border-color: var(--ink); }
+.rb .r.on { background: color-mix(in srgb, var(--c) 18%, var(--card)); border-width: 2px; border-color: var(--ink); }
+.rb .r.combo .ic { border-radius: 50%; }
+.rb .r.off { opacity: .55; border-style: dashed; }
+.rb .more { font: 700 10px var(--body); color: var(--gmuted); text-align: center; }
+/* C: 판 테 안 레일(캔버스에 새김) */
+.tip { position: absolute; left: 70px; top: 196px; width: 220px; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 8px 10px; font-size: 11px; line-height: 1.4; box-shadow: 0 6px 16px rgba(0,0,0,.3); z-index: 3; }
+.tip b { font: 400 14px var(--display); color: #fff; }
+.tip::before { content: ""; position: absolute; left: -6px; top: 14px; border: 6px solid transparent; border-left: none; border-right-color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">카드 원정대 v4 · 시안</span>
+    <h1>시너지를 판 왼쪽 세로 레일로</h1>
+    <p class="lead">지금 판 아래 가로 한 줄에 있는 시너지를 판 왼쪽 세로 레일로 옮기는 3안입니다. 레일 폭만큼 판이 조금 작아지는 대신 가로 시너지 줄이 사라지고, 남는 높이는 상점 카드에 설명 한 줄을 넣는 데 썼습니다. 모두 지금 게임 화면(상점 탭 + 보드게임 판)을 그대로 두고 그렸고, 390×844 한 화면입니다.</p>
+  </header>
+
+  <section>
+    <div class="sechead"><h2>시너지 레일 3안</h2>
+      <p class="lead">예시 편성: 성기사★2 · 광전사★2 · 석궁 기사 · 현자 · 바람 궁수. 켜진 시너지가 위, 하나만 모인 것은 아래로 정렬합니다. 레일 칸을 탭하면 설명 말풍선이 뜹니다.</p></div>
+    <div class="row">
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="pA"></div></div>
+        <div class="txt"><span class="tag"><b>A</b><h3>글자 패 레일</h3></span>
+          <ul class="pts"><li>폭 44px 세로 칸에 <b>글자 하나 + 현재/다음 단계</b>(예: 기 2/3).</li>
+          <li>켜진 것은 색이 차고, 모자란 것은 점선. 특별 조합은 둥근 패, 클래스는 아래 줄 표시.</li>
+          <li>시너지 11칸이 판 높이에 모두 들어가 '+n 더 보기'가 필요 없음.</li>
+          <li>판은 지금의 약 86% 크기.</li></ul></div></div>
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="pB"></div></div>
+        <div class="txt"><span class="tag"><b>B</b><h3>이름 + 단계 눈금 레일</h3></span>
+          <ul class="pts"><li>폭 92px에 <b>이름과 단계 눈금</b>(2·3·4명 칸이 차오름).</li>
+          <li>롤토체스처럼 읽기 쉬움. 켜진 것은 진하게, 하나뿐인 것은 흐리게.</li>
+          <li>공간상 8칸까지, 나머지는 '+3 더 보기'.</li>
+          <li>판이 가장 작아짐(지금의 약 73%).</li></ul></div></div>
+      <div class="prop"><div class="phone-wrap"><div class="phone" id="pC"></div></div>
+        <div class="txt"><span class="tag"><b>C</b><h3>판 테에 새긴 레일</h3></span>
+          <ul class="pts"><li>판 나무 테의 왼쪽을 넓혀 <b>시너지 패를 테에 박아 넣음</b>(좌표 숫자 자리).</li>
+          <li>판과 한 덩어리라 화면이 가장 정돈되고, 판 크기가 가장 적게 줆(지금의 약 90%).</li>
+          <li>전투 중에도 그대로 보임(켜진 시너지가 빛남).</li>
+          <li>칸이 작아 이름은 탭해야 보임(오른쪽 말풍선 예시).</li></ul></div></div>
+    </div>
+  </section>
+
+  <div class="reco">
+    <span class="eyebrow">추천</span>
+    <h3>C(판 테에 새긴 레일)</h3>
+    <p>판 크기를 거의 잃지 않으면서 시너지가 늘 판 옆에 붙어 있어, 배치를 바꿀 때 시너지 변화가 바로 눈에 들어옵니다. 이름까지 늘 보고 싶다면 B, 가장 단순하게는 A입니다. 고르시면 게임에 옮기겠습니다.</p>
+  </div>
+</div>
+
+<script src="../game/data.js"></script>
+<script src="../game/art.js"></script>
+<script src="../v4/data4.js"></script>
+<script>
+(() => {
+  'use strict';
+  const V = window.V4, ART = window.ART, GD = window.GD;
+  const def = (k, id) => V.DEF[k + ':' + id];
+  const CLS = V.CLS, TR = V.TRAITS;
+  const wpArt = (d) => ({ id: 'v4' + d.id, shape: d.shape, cls: CLS[d.cls].art, tier: d.t >= 3 ? 3 : d.t });
+  const lo = (u) => ({ level: 1, skills: (u.sk || []).map((s) => { const d = def('skill', s[0]); return { col: CLS[d.cls].col, icon: d.icon || 'star', up: s[1] > 1 }; }), weapon: u.it ? Object.assign(wpArt(def('item', u.it)), { up: false }) : null });
+  const disc = (id, l, px = 90) => ART.discURL(id, 0, def('unit', id).cls, l || null, px);
+  const chip = (id, px = 60) => { const d = def('skill', id); return ART.chipURL(CLS[d.cls].col, d.icon || 'star', false, px); };
+  const weapon = (id, px = 60) => ART.weaponURL(wpArt(def('item', id)), false, px);
+  const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content; };
+
+  // ---------- 예시 상태 ----------
+  const BOARD = [
+    { id: 'paladin', x: 1, y: 3, star: 2, sk: [['taunt', 1]], it: 'thornmail', hp: 0.78 }, { id: 'berserker', x: 3, y: 3, star: 2, sk: [['cross', 1]], it: 'greatsword', hp: 0.45 },
+    { id: 'arbalest', x: 1, y: 5, star: 1, sk: [['snipe', 1]], hp: 0.9 }, { id: 'bishop', x: 2, y: 5, star: 1, sk: [['fire', 1], ['light', 1]], it: 'lifeorb', hp: 1 }, { id: 'windarcher', x: 3, y: 5, star: 2, sk: [['multishot', 1]], hp: 0.95 },
+  ];
+  const BENCH = [['unit', 'scout'], ['skill', 'whirl'], ['item', 'venombow'], ['unit', 'pyro']];
+  const SHOP = { unit: ['merc', 'pyro', 'scout', 'hammer', 'monk'], skill: ['cross', 'bleedcut', 'frostnova', 'healarrow', 'snipe'], item: ['wand', 'buckler', 'longbow', 'flamebow', 'twinblades'] };
+  const OWNED = { pyro: 1, scout: 2, merc: 1 };
+  // 2막 적(상점 시안)
+  const FOE2 = [{ id: 'skelarch', x: 1, y: 0 }, { id: 'necro', x: 3, y: 0 }, { id: 'skel', x: 0, y: 1 }, { id: 'ghoul', x: 2, y: 1 }, { id: 'wraith', x: 4, y: 1 }, { id: 'skel', x: 2, y: 2 }];
+  // 막별 적(판 시안)
+  const POS = [[1, 0], [3, 0], [0, 1], [2, 1], [4, 1], [2, 2]];
+  const foesOf = (act) => GD.ACTS[act].normal.slice(0, 6).map((id, i) => ({ id, x: POS[i][0], y: POS[i][1], hp: [0.7, 0.9, 0.35, 0.6, 1, 0.5][i] }));
+
+  // ---------- 공통: 딱지·체력 ----------
+  const CS = 64, M = 8;
+  function bar(c, x, y, r, v, col) { const w = r * 2 + 4; c.fillStyle = '#232a3b'; c.fillRect(x - w / 2 - 1.5, y + r + 4.5, w + 3, 8); c.fillStyle = '#fffdf7'; c.fillRect(x - w / 2, y + r + 6, w, 5); c.fillStyle = col; c.fillRect(x - w / 2, y + r + 6, w * v, 5); }
+  function token(c, u, side, x, y, r, o = {}) {
+    if (o.shadow) { c.save(); c.fillStyle = o.shadow; c.beginPath(); c.ellipse(x + 2, y + r * 0.72, r * 0.95, r * 0.36, 0, 0, 7); c.fill(); c.restore(); }
+    const cls = side === 0 ? def('unit', u.id).cls : undefined;
+    ART.drawToken(c, ART.token(u.id, side, r, 2, cls), x, y - (o.lift || 0), r, {});
+    if (side === 0) {
+      ART.drawLoadout(c, x, y - (o.lift || 0), r, lo(u));
+      if (u.star > 1) { c.save(); for (let s = 0; s < u.star; s++) { ART.star(c, x + (s - (u.star - 1) / 2) * 10, y - r - 2 - (o.lift || 0), 5.5); c.fillStyle = '#f5c400'; c.fill(); c.strokeStyle = '#232a3b'; c.lineWidth = 1.2; c.stroke(); } c.restore(); }
+    }
+    if (o.hp) bar(c, x, y - (o.lift || 0), r, u.hp ?? 0.8, side ? '#e8436b' : '#2e9e6b');
+  }
+  // 시드 난수
+  const rng = (seed) => () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+
+  // ---------- 상점 시안 조각 ----------
+  const hud = (title, sub, right = '<span class="flame">3연승</span>') => `<div class="hud g"><span class="menu"><i></i></span><div class="where"><b>${title}</b><span>${sub}</span></div>${right}</div>`;
+  const bench = (slim) => `<div class="bench${slim ? ' slim' : ''}">${Array.from({ length: 8 }, (_, i) => { const b = BENCH[i]; if (!b) return '<i></i>'; const src = b[0] === 'unit' ? disc(b[1], null, 70) : b[0] === 'skill' ? chip(b[1], 44) : weapon(b[1], 44); return `<i><img src="${src}" alt=""></i>`; }).join('')}</div>`;
+  function card(kind, id, opt = {}) {
+    const d = def(kind, id), own = OWNED[id] || 0, ready = own >= 2;
+    const pr = kind === 'unit' ? disc(id, null, 90) : kind === 'skill' ? chip(id, 60) : weapon(id, 60);
+    const trs = kind === 'unit' ? `<div class="tr">${d.traits.map((t) => `<i style="--c:${TR[t].col}">${TR[t].name.replace(/ /g, '')}</i>`).join('')}</div>` : '';
+    const desc = opt.desc ? `<div class="desc">${kind === 'unit' ? d.trait : d.desc}</div>` : '';
+    return `<div class="cd ${kind}${ready ? ' ready' : ''}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="co">${d.t}</span>${own ? `<span class="own">${ready ? '★2!' : own + '장'}</span>` : ''}<div class="pr"><img src="${pr}" alt=""></div><div class="nm">${d.name}</div>${trs}${desc}</div>`;
+  }
+  function synChips() {
+    const a = [['knight', 2, 3, true, 1], ['guardian', 1, 2], ['flame', 1, 2], ['marksman', 2, 3, true, 1], ['wild', 1, 2]].map(([k, n, m, on]) => ({ c: TR[k].col, s: TR[k].short, nm: TR[k].name, n, m, on }));
+    const cl = [['war', 2, 4, true], ['arc', 2, 4, true], ['mag', 1, 2]].map(([k, n, m, on]) => ({ c: CLS[k].col, s: CLS[k].short, nm: CLS[k].name, n, m, on }));
+    const all = [...a, ...cl].sort((x, y) => !!y.on - !!x.on);
+    return all.slice(0, 7).map((x, i) => (x.on && i < 2 ? `<span class="sc on" style="--c:${x.c}"><b>${x.s}</b>${x.nm} <small>${x.n}/${x.m}</small></span>` : `<span class="sc${x.on ? ' on' : ' dim'}" style="--c:${x.c}"><b>${x.s}</b><small>${x.n}/${x.m}</small></span>`)).join('') + '<span class="synall">전체 ›</span>';
+  }
+  const roll = '<svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const econ = () => `<div class="econ"><span><span class="coin">12</span><span class="int">이자 +1</span></span><span class="lv"><b>Lv5</b><span class="xpbar"><i style="width:37%"></i></span><small style="font-size:10px;color:var(--gmuted)">6/16</small></span><span class="up">▲ 4골드</span></div>`;
+  const tabs = () => `<div class="tabs"><div class="seg"><span class="on">유닛<span class="dot">★2</span></span><span>스킬</span><span>아이템</span></div><span class="mini">${roll}1골드</span><span class="mini">잠금</span></div>`;
+
+  const ACT = {
+    1: { a: '#cfe3b4', b: '#bcd69c', foe: ['#e6d6b4', '#dccaa0'], deep: '#4f7a3a', felt: '#2f5d46', feltFoe: '#5a3d2e', gap: '#5b4630', glow: null, ink: '#3b5a2e', name: '어둠의 숲' },
+    2: { a: '#d6d9e2', b: '#c6cad6', foe: ['#ddd0dc', '#cfc0cf'], deep: '#4a4658', felt: '#38425a', feltFoe: '#4a3248', gap: '#2b2935', glow: null, ink: '#3b3848', name: '망자의 폐허' },
+    3: { a: '#ecd2ae', b: '#dfbf96', foe: ['#e8b090', '#dc9c7c'], deep: '#3a2420', felt: '#4e2c22', feltFoe: '#6a2420', gap: '#2b1612', glow: '#ff7a1a', ink: '#6a2a1c', name: '용의 화산' },
+    4: { a: '#e8f1f8', b: '#d4e4f1', foe: ['#d4dceb', '#c4cfe2'], deep: '#5a7a98', felt: '#2f4c66', feltFoe: '#4a3a5a', gap: '#3a6a8e', glow: '#9fdcff', ink: '#2f5478', name: '얼어붙은 봉우리' },
+    5: { a: '#dad2e6', b: '#c9bedb', foe: ['#c9aacd', '#b996be'], deep: '#1b1520', felt: '#2e2240', feltFoe: '#4a1f3b', gap: '#120c18', glow: '#c06aff', ink: '#4a1f6a', name: '심연의 성채' },
+  };
+  const W = CS * 5 + M * 2, H = CS * 6 + M * 2;
+  function makeCanvas(cv, w, pad = 0) {
+    const ww = W + pad * 2, hh = H + pad * 2, k = w / ww;
+    cv.width = Math.round(w * 2); cv.height = Math.round(hh * k * 2); cv.style.width = w + 'px';
+    const c = cv.getContext('2d'); c.scale(2 * k, 2 * k); c.translate(pad, pad); return c;
+  }
+  const cellXY = (x, y) => [M + x * CS + CS / 2, M + y * CS + CS / 2];
+  function rrect(c, x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function pieces(c, act, o) {
+    const foes = foesOf(act);
+    for (const e of foes) { const [x, y] = cellXY(e.x, e.y); token(c, e, 1, x, y, 23, o); }
+    for (const u of BOARD) { const [x, y] = cellXY(u.x, u.y); token(c, u, 0, x, y, 23, o); }
+  }
+
+
+  // ---------- 판 1(지금 게임 판) — 왼쪽 테 폭을 바꿀 수 있게 ----------
+  function board1(cv, w, o) {
+    const PL = o.padL || 18, P = 18, act = o.act || 2, A = ACT[act], R = rng(act * 77 + 3);
+    const ww = W + PL + P, hh = H + P * 2, k = w / ww;
+    cv.width = Math.round(w * 2); cv.height = Math.round(hh * k * 2); cv.style.width = w + 'px'; cv.style.height = Math.round(hh * k) + 'px';
+    const c = cv.getContext('2d'); c.scale(2 * k, 2 * k); c.translate(PL, P);
+    const wood = c.createLinearGradient(-PL, -P, W + P, H + P); wood.addColorStop(0, '#8a5a32'); wood.addColorStop(0.5, '#6e4426'); wood.addColorStop(1, '#5a361d');
+    c.fillStyle = wood; rrect(c, -PL, -P, W + PL + P, H + P * 2, 12); c.fill();
+    c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 1; for (let i = 0; i < 26; i++) { const y = -P + R() * (H + P * 2); c.beginPath(); c.moveTo(-PL, y); c.bezierCurveTo(W * 0.3, y + R() * 6 - 3, W * 0.7, y + R() * 6 - 3, W + P, y + R() * 4 - 2); c.stroke(); }
+    c.strokeStyle = '#3a2210'; c.lineWidth = 3; rrect(c, -PL + 1.5, -P + 1.5, W + PL + P - 3, H + P * 2 - 3, 11); c.stroke();
+    c.fillStyle = A.deep; rrect(c, 2, 2, W - 4, H - 4, 6); c.fill();
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 5; x++) {
+      const foe = y < 3, px = M + x * CS + 3, py = M + y * CS + 3, s = CS - 6;
+      c.fillStyle = foe ? A.foe[(x + y) % 2] : (x + y) % 2 ? A.a : A.b; rrect(c, px, py, s, s, 7); c.fill();
+      const g = c.createLinearGradient(px, py, px + s, py + s); g.addColorStop(0, 'rgba(255,255,255,.45)'); g.addColorStop(0.45, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.16)');
+      c.fillStyle = g; rrect(c, px, py, s, s, 7); c.fill(); c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1.2; rrect(c, px + 0.5, py + 0.5, s - 1, s - 1, 7); c.stroke();
+    }
+    const my = M + CS * 3; c.fillStyle = '#c8333f'; c.fillRect(M - 4, my - 3, CS * 5 + 8, 6); c.fillStyle = 'rgba(255,255,255,.6)'; for (let x = M; x < M + CS * 5; x += 14) { c.beginPath(); c.moveTo(x, my - 1.5); c.lineTo(x + 5, my); c.lineTo(x, my + 1.5); c.fill(); }
+    c.fillStyle = '#f3e3c6'; c.font = "700 10px 'IBM Plex Sans KR', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle';
+    'ABCDE'.split('').forEach((ch, i) => { c.fillText(ch, M + i * CS + CS / 2, H + P / 2); c.fillText(ch, M + i * CS + CS / 2, -P / 2); });
+    if (!o.rail) for (let y = 0; y < 6; y++) c.fillText(String(6 - y), -P / 2, M + y * CS + CS / 2);
+    c.save(); c.translate(W + P / 2, M + CS * 1.5); c.rotate(Math.PI / 2); c.fillStyle = '#ffb0a8'; c.fillText('적 진영', 0, 0); c.restore();
+    c.save(); c.translate(W + P / 2, M + CS * 4.5); c.rotate(Math.PI / 2); c.fillStyle = '#b8d4ff'; c.fillText('아군 진영', 0, 0); c.restore();
+    for (const e of FOE2) { const [x, y] = cellXY(e.x, e.y); token(c, e, 1, x, y, 23, { shadow: 'rgba(20,25,35,.35)' }); }
+    for (const u of BOARD) { const [x, y] = cellXY(u.x, u.y); token(c, u, 0, x, y, 23, { shadow: 'rgba(20,25,35,.35)' }); }
+    if (o.rail) engraveRail(c, PL, P);
+  }
+  // C: 테에 새긴 시너지 패
+  function engraveRail(c, PL, P) {
+    const list = SYN, x0 = -PL + 6, w = PL - 12, step = (H - 8) / list.length, hgt = Math.min(36, step - 4);
+    list.forEach((s, i) => {
+      const y = 4 + i * step + (step - hgt) / 2;
+      c.save();
+      // 홈(파인 자리)
+      c.fillStyle = 'rgba(0,0,0,.35)'; rrect(c, x0, y, w, hgt, s.combo ? hgt / 2 : 6); c.fill();
+      // 패
+      c.fillStyle = s.on ? s.c : '#e8d9b8'; rrect(c, x0 + 1.5, y + 1, w - 3, hgt - 3, s.combo ? hgt / 2 : 5); c.fill();
+      if (s.on) { c.shadowColor = s.c; c.shadowBlur = 8; }
+      c.strokeStyle = s.on ? '#232a3b' : s.c; c.lineWidth = s.on ? 1.6 : 1.4; c.setLineDash(s.on ? [] : [3, 2]); rrect(c, x0 + 1.5, y + 1, w - 3, hgt - 3, s.combo ? hgt / 2 : 5); c.stroke(); c.setLineDash([]);
+      c.shadowBlur = 0;
+      c.fillStyle = s.on ? '#fff' : s.c; c.font = "400 15px 'Black Han Sans', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s.s, x0 + w / 2, y + hgt * 0.36);
+      c.fillStyle = s.on ? '#fff' : '#3a2a1a'; c.font = "700 9px 'IBM Plex Sans KR', sans-serif"; c.fillText(`${s.n}/${s.m}`, x0 + w / 2, y + hgt * 0.76);
+      if (s.cls) { c.fillStyle = s.on ? 'rgba(255,255,255,.7)' : s.c; c.fillRect(x0 + 6, y + hgt - 5, w - 12, 1.6); }
+      c.restore();
+    });
+  }
+
+  // ---------- 예시 편성의 시너지(게임과 같은 규칙: 같은 유닛은 한 번) ----------
+  const SYN = (() => {
+    const ids = [...new Set(BOARD.map((u) => u.id))], out = [];
+    const cls = { war: 0, arc: 0, mag: 0 }; ids.forEach((id) => cls[def('unit', id).cls]++);
+    for (const [k, n] of Object.entries(cls)) { if (!n) continue; const th = V.SYN[k].th, tier = th.filter((t) => n >= t).length; out.push({ k, c: CLS[k].col, s: CLS[k].short, nm: CLS[k].name, n, m: th.find((t) => n < t) || th[th.length - 1], th, on: tier > 0, cls: true }); }
+    for (const [k, T] of Object.entries(TR)) {
+      const n = T.members.filter((m) => ids.includes(m)).length; if (!n) continue;
+      const combo = T.kind === 'combo', th = combo ? [T.members.length] : T.th, tier = th.filter((t) => n >= t).length;
+      out.push({ k, c: T.col, s: T.short, nm: T.name, n, m: combo ? T.members.length : th.find((t) => n < t) || th[th.length - 1], th, on: tier > 0, combo });
+    }
+    return out.sort((a, b) => b.on - a.on || b.n / b.m - a.n / a.m);
+  })();
+
+  const phoneTop = (rail) => `${hud('2막 · 1층 전투', '라운드 7')}`;
+  const rest = () => `
+      <div class="g" style="margin-top:6px;display:grid;gap:2px"><div class="lbl"><span>창고 <b>4/8</b></span><span>출전 <b>5/5</b></span></div>${bench(false)}</div>
+      <div class="g" style="margin-top:7px">${econ()}</div>
+      <div class="g" style="margin-top:7px;display:grid;gap:6px">${tabs()}<div class="cards">${SHOP.unit.map((id) => card('unit', id, { desc: true })).join('')}</div></div>
+      <div class="g" style="margin-top:auto"><div class="btn go" style="height:46px">전투 시작</div></div>`;
+  const railA = () => { let h0 = '', sep = false; for (const s of SYN) { if (!s.on && !sep) { h0 += '<hr>'; sep = true; } h0 += `<div class="r${s.on ? ' on' : ''}${s.combo ? ' combo' : ''}${s.cls ? ' cls' : ''}" style="--c:${s.c}"><b>${s.s}</b><small>${s.n}/${s.m}</small></div>`; } return `<div class="rail ra">${h0}</div>`; };
+  const railB = () => {
+    const show = SYN.slice(0, 8), more = SYN.length - show.length;
+    return `<div class="rail rb">${show.map((s) => `<div class="r${s.on ? ' on' : ' off'}${s.combo ? ' combo' : ''}" style="--c:${s.c}"><span class="ic">${s.s}</span><span class="nm">${s.nm.replace(/ /g, '')}</span><span class="pips">${s.th.map((t) => `<i class="${s.n >= t ? 'f' : ''}"></i>`).join('')}<span>${s.n}/${s.m}</span></span></div>`).join('')}${more ? `<div class="more">+${more} 더 보기</div>` : ''}</div>`;
+  };
+
+  (function () {
+    const el = document.getElementById('pA');
+    el.append(h(`${phoneTop()}<div class="g field">${railA()}<canvas id="bA"></canvas></div>${rest()}`));
+    board1(document.getElementById('bA'), 304, { act: 2 });
+  })();
+  (function () {
+    const el = document.getElementById('pB');
+    el.append(h(`${phoneTop()}<div class="g field">${railB()}<canvas id="bB"></canvas></div>${rest()}`));
+    board1(document.getElementById('bB'), 260, { act: 2 });
+  })();
+  (function () {
+    const el = document.getElementById('pC');
+    const k = SYN.find((s) => s.k === 'knight'), T = TR.knight;
+    el.append(h(`${phoneTop()}<div class="g field" style="position:relative"><canvas id="bC"></canvas>
+      <div class="tip"><b>기 기사 ${k.n}/${k.m}</b><br>${T.th.map((n, i) => `${n}명: ${T.desc[i]}`).join('<br>')}<br><span style="opacity:.75">성기사 · 석궁 기사 출전 중 · 견습 검사·기사단장·용기사</span></div></div>${rest()}`));
+    board1(document.getElementById('bC'), 358, { act: 2, padL: 50, rail: true });
+  })();
+})();
+</script>
+</body>
+</html>
