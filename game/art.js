@@ -17,8 +17,9 @@
   function line(c, pts, w = 3, col = INK) { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke(); }
 
   // 망점 배경(아래로 갈수록 진해짐)
+  let bgOverride = null; // 등급 배경색으로 그릴 때 잠깐 바꿔 끼운다(TIER_BG)
   function bg(c, col, dot = 'rgba(255,255,255,.2)') {
-    c.fillStyle = col; c.fillRect(0, 0, 100, 100);
+    c.fillStyle = bgOverride || col; c.fillRect(0, 0, 100, 100);
     c.fillStyle = dot;
     for (let y = 3; y < 100; y += 6) for (let x = ((y / 6) % 2) * 3 + 2; x < 100; x += 6) { circ(c, x, y, 0.5 + (y / 100) * 1.7); c.fill(); }
   }
@@ -549,14 +550,15 @@
   // ---------- 딱지 토큰 굽기 ----------
   const cache = new Map();
   const portraitCache = new Map();
-  function portrait(id, px = 128) {
-    const key = id + '|' + px;
+  function portrait(id, px = 128, tierBg = null) {
+    const key = id + '|' + px + '|' + (tierBg || '');
     if (portraitCache.has(key)) return portraitCache.get(key);
     const cv = document.createElement('canvas');
     cv.width = cv.height = px;
     const c = cv.getContext('2d');
     c.scale(px / 100, px / 100);
-    (PORTRAITS[id] || PORTRAITS.slime)(c);
+    bgOverride = tierBg;
+    try { (PORTRAITS[id] || PORTRAITS.slime)(c); } finally { bgOverride = null; }
     portraitCache.set(key, cv);
     return cv;
   }
@@ -565,8 +567,11 @@
 
   const RIM = { 0: ['#2f6fd6', '#1f4fa8'], 1: ['#e8436b', '#b02a4c'], boss: ['#232a3b', '#111522'], war: ['#26408f', '#172a63'], arc: ['#d23f2c', '#982a1b'], mag: ['#11968c', '#0a6a63'] }; // war·arc·mag: v4 클래스별 테두리
   /** 딱지 스프라이트. 반지름 r(논리 px)의 2배 크기 캔버스를 scale 배율로 굽는다. */
+  // 아군 딱지 그림 바탕을 등급 색으로(v4 가 유닛 id → 색을 채운다). 비어 있으면 원래 바탕
+  const TIER_BG = {};
   function token(id, side, r, scale = 2, kind) {
-    const key = [id, side, r, scale, kind || ''].join('|');
+    const tb = side === 0 ? TIER_BG[id] || null : null;
+    const key = [id, side, r, scale, kind || '', tb || ''].join('|');
     if (cache.has(key)) return cache.get(key);
     const S = Math.ceil(r * 2 * scale), cv = document.createElement('canvas');
     cv.width = cv.height = S;
@@ -589,7 +594,7 @@
     // 그림 면
     const ir = r * 0.78;
     c.save(); circ(c, 0, 0, ir); c.clip();
-    c.drawImage(portrait(id, Math.ceil(ir * 2 * scale)), -ir, -ir, ir * 2, ir * 2);
+    c.drawImage(portrait(id, Math.ceil(ir * 2 * scale), tb), -ir, -ir, ir * 2, ir * 2);
     // 종이 결
     for (let k = 0; k < r * 6; k++) { c.fillStyle = rnd() < 0.5 ? 'rgba(35,42,59,.07)' : 'rgba(255,255,255,.12)'; c.fillRect((rnd() * 2 - 1) * ir, (rnd() * 2 - 1) * ir, 0.8, 0.8); }
     // 살짝 비친 광택
@@ -599,7 +604,8 @@
     c.restore();
     circ(c, 0, 0, ir); c.strokeStyle = WHITE; c.lineWidth = Math.max(1.5, r * 0.06); c.stroke();
     circ(c, 0, 0, ir + r * 0.03); ink(c, 1.2); c.stroke();
-    circ(c, 0, 0, r - 1); ink(c, Math.max(2, r * 0.09)); c.stroke();
+    const ow = Math.max(2, r * 0.09);
+    circ(c, 0, 0, r - ow / 2 - 0.5); ink(c, ow); c.stroke(); // 바깥 선이 캔버스 밖으로 나가 잘리지 않게
     cv.rimDark = rimD;
     cache.set(key, cv);
     return cv;
@@ -692,5 +698,5 @@
     return url;
   }
 
-  global.ART = { PORTRAITS, portrait, token, drawToken, makeTear, stepTear, drawTear, tokenURL, star, icon, shade, drawChip, drawWeapon, drawPegs, drawLoadout, discURL, chipURL, weaponURL, tacticURL, TACTIC_ART };
+  global.ART = { TIER_BG, PORTRAITS, portrait, token, drawToken, makeTear, stepTear, drawTear, tokenURL, star, icon, shade, drawChip, drawWeapon, drawPegs, drawLoadout, discURL, chipURL, weaponURL, tacticURL, TACTIC_ART };
 })(window);

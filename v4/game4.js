@@ -4,6 +4,9 @@
   const GD = window.GD, V = window.V4, ART = window.ART, SFX = window.SFX;
   const { MONSTERS, ACTS, BOSS_INFO } = GD;
   const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, RELICS, NODE, DIFF } = V;
+  // 딱지 그림 바탕 = 등급 색(1 회색 · 2 녹색 · 3 파랑 · 4 보라 · 5 금색). 카드 등급 색보다 조금 진하게
+  const TIER_BG = [null, '#cfcabd', '#86c991', '#7eaaea', '#ad8be6', '#efc33f'];
+  for (const d of UNITS) ART.TIER_BG[d.id] = TIER_BG[d.t];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   // 설명 글의 수치(10%, 220, 1.5초, +1 …)를 형광펜으로
@@ -34,7 +37,8 @@
   const TIERNAME = ['', '흰색', '녹색', '파랑', '보라', '노랑'];
   const starTxt = (n) => (n > 1 ? '★'.repeat(n) : '');
   const copies = (star) => Math.pow(3, star - 1);
-  const price = (c) => def(c).t * copies(c.star) - (c.star > 1 ? 1 : 0);
+  // 판매가: 유닛은 산 값(★2 이상 −1), 스킬·아이템은 산 값 −1
+  const price = (c) => (c.kind === 'unit' ? def(c).t * copies(c.star) - (c.star > 1 ? 1 : 0) : Math.max(0, def(c).t * copies(c.star) - 1));
   const keyOf = (kind, id) => kind + ':' + id;
 
   // =====================================================================
@@ -147,11 +151,33 @@
     else if (l.c.kind === 'skill') l.u.skills = l.u.skills.filter((c) => c !== l.c);
     else l.u.item = null;
   }
-  function fixBench() { const n = benchSize(); R.bench = R.bench.filter((c, i) => i < n || c); while (R.bench.length > n) { const i = R.bench.indexOf(null); if (i < 0) break; R.bench.splice(i, 1); } while (R.bench.length < n) R.bench.push(null); }
+  // 창고(R.bench) 앞 benchSize 칸은 창고 칸, 그 뒤는 창고가 넘쳐 판 위 빈칸에 놓인 '창고 딱지'(c.fx, c.fy)
+  function fixBench() {
+    const n = benchSize(), main = R.bench.slice(0, n), over = R.bench.slice(n).filter(Boolean);
+    while (main.length < n) main.push(null);
+    for (let i = 0; i < n && over.length; i++) if (!main[i]) { const c = over.shift(); delete c.fx; delete c.fy; main[i] = c; } // 창고에 빈칸이 나면 들인다
+    R.bench = main.concat(over);
+    layoutOverflow();
+  }
+  // 판 위 창고 딱지 자리: 출전 딱지와 겹치면 뒷줄 빈칸으로 옮긴다
+  function layoutOverflow() {
+    const n = benchSize(), taken = new Set(R.board.map((u) => u.x + ',' + u.y));
+    for (let i = n; i < R.bench.length; i++) {
+      const c = R.bench[i]; if (!c) continue;
+      if (c.fx == null || taken.has(c.fx + ',' + c.fy)) {
+        delete c.fx; delete c.fy;
+        outer: for (let y = ROWS - 1; y >= PLAYER_ROW; y--) for (const x of [4, 0, 3, 1, 2]) if (!taken.has(x + ',' + y)) { c.fx = x; c.fy = y; break outer; }
+      }
+      if (c.fx != null) taken.add(c.fx + ',' + c.fy);
+    }
+  }
+  const freeSlot = () => { const i = R.bench.indexOf(null); return i >= 0 && i < benchSize() ? i : -1; };
+  const overflowAt = (x, y) => { for (let i = benchSize(); i < R.bench.length; i++) { const c = R.bench[i]; if (c && c.fx === x && c.fy === y) return i; } return -1; };
   function toBench(c) {
     const i = R.bench.indexOf(null);
-    if (i < 0 || i >= benchSize()) { R.gold += price(c); giveBack(c); toast(`창고가 가득 차서 ${def(c).name} 판매(+${price(c)}골드)`); return false; }
-    R.bench[i] = c; return true;
+    if (i >= 0 && i < benchSize()) R.bench[i] = c;
+    else { R.bench.push(c); toast(`창고가 가득 차서 ${def(c).name}을(를) 판 위 창고 딱지로 놓았어요`); }
+    fixBench(); return true;
   }
   function tryMerge(kind, id, star, quiet) {
     if (star >= 3) return;
@@ -172,17 +198,18 @@
   }
   function gain(c, quiet) {
     // 상점 밖에서 얻은 카드(보상·이벤트): 합성 가능하면 창고가 차 있어도 받는다
-    const free = R.bench.indexOf(null);
-    if (free < 0 && owned(c.kind, c.id) < 2) { R.gold += price(c); giveBack(c); toast(`창고가 가득 차서 ${def(c).name}을(를) 골드로 받았어요`); return; }
-    if (free >= 0) R.bench[free] = c; else R.bench.push(c);
+    // 창고가 가득 차면 판 위 빈칸에 창고 딱지로 놓는다
+    const free = R.bench.indexOf(null), full = !(free >= 0 && free < benchSize());
+    if (full) R.bench.push(c); else R.bench[free] = c;
     tryMerge(c.kind, c.id, 1, quiet);
     fixBench();
+    if (full && R.bench.includes(c) && !quiet) toast(`창고가 가득 차서 ${def(c).name}을(를) 판 위 창고 딱지로 놓았어요`);
   }
   function buy(i, quiet, kind = ui.tab) {
     const c = R.shop[kind][i]; if (!c) return false;
     const p = def(c).t;
     if (R.gold < p) { if (!quiet) toast('골드가 모자라요'); return false; }
-    const free = R.bench.indexOf(null);
+    const free = freeSlot();
     if (free < 0 && owned(c.kind, c.id) < 2) { if (!quiet) toast('창고가 가득 찼어요. 팔거나 배치하세요'); return false; }
     R.gold -= p; R.shop[kind][i] = null; ui.sel = null;
     take(c);
@@ -247,10 +274,8 @@
   function unequip(u, slot) {
     const c = slot === 'item' ? u.item : u.skills[slot];
     if (!c) return;
-    const i = R.bench.indexOf(null);
-    if (i < 0) return toast('창고에 빈칸이 없어요');
     if (slot === 'item') u.item = null; else u.skills.splice(slot, 1);
-    R.bench[i] = c; SFX.play('card');
+    toBench(c); SFX.play('card');
   }
 
   // =====================================================================
@@ -411,7 +436,7 @@
       const loot = bossLoot(), sp = loot.some((c) => def(c).special);
       return relicPick('보스 전리품', () => pickReward('보스 전리품', sp ? '보스가 특별한 무기를 떨어뜨렸다!' : '전리품 하나를 고르세요', loot, finishNode));
     }
-    pickReward('전리품', '쓰러진 적에게서 하나를 챙기세요', lootChoices(), finishNode, 1);
+    pickReward('전리품', '쓰러진 적에게서 하나를 챙기세요', lootChoices(), finishNode);
   }
   // 일반 전투 전리품: 스킬·아이템 셋 중 하나(상점 확률, 막 등급 −1까지)
   function lootChoices() {
@@ -659,12 +684,14 @@
     renderDrawer();
   }
   function renderPrep() {
-    const s = ui.sel;
-    $('benchN').textContent = `${R.bench.filter(Boolean).length}/${benchSize()}`;
+    fixBench();
+    if (ui.sel && ui.sel.from === 'bench' && R.bench[ui.sel.i] !== ui.sel.c) ui.sel = null;
+    const s = ui.sel, nOver = R.bench.length - benchSize();
+    $('benchN').textContent = `${R.bench.slice(0, benchSize()).filter(Boolean).length}/${benchSize()}${nOver > 0 ? ` · 판 위 ${nOver}` : ''}`;
     if (!s || s.from === 'shop') $('benchHint').innerHTML = `출전 <b>${R.board.length}/${deployMax()}</b>`;
     else $('benchHint').textContent = s.c.kind === 'unit' ? '끌어서 배치·이동, 상점으로 끌면 판매' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지에 끌거나 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
-    patchKids($('bench'), R.bench.map((c, i) => {
+    patchKids($('bench'), R.bench.slice(0, benchSize()).map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" data-n="${i + 1}" aria-label="빈 칸"></button>`;
       const can = s && s.from === 'bench' && s.c.kind !== 'unit' && c.kind === 'unit' && canEquip(s.c, c);
       return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img class="k-${c.kind}" src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
@@ -994,6 +1021,9 @@
     const s = ui.sel, u = R.board.find((b) => b.x === x && b.y === y);
     if (!fromDrag && u && s && s.c.kind === 'unit' && s.c !== u) { ui.sel = { from: 'board', c: u }; SFX.play('click'); return renderPlay(); }
     if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); ui.sel = null; ui.foe = e && ui.foe !== e ? e : null; if (e) SFX.play('card'); return renderPlay(); }
+    // 판 위 창고 딱지: 창고 칸처럼 고른다(딱지를 옮겨 놓으면 창고 딱지는 다른 빈칸으로 비킨다)
+    const oi = u ? -1 : overflowAt(x, y);
+    if (oi >= 0 && (!s || s.from === 'shop' || s.c.kind !== 'unit' || s.c === R.bench[oi])) return tapBench(oi);
     if (s && s.from === 'bench' && s.c.kind !== 'unit') { if (u) { equip(s.c, s.i, u); ui.sel = null; } else ui.sel = null; return renderPlay(); }
     if (s && s.from === 'bench' && s.c.kind === 'unit') {
       if (u) { R.board = R.board.filter((b) => b !== u); R.bench[s.i] = u; }
@@ -1037,7 +1067,7 @@
     if (a === 'flip') { const tc = document.querySelector('#usheet .tcard'); if (!ui.flip && tc) ui.flipH = tc.offsetHeight; ui.flip = !ui.flip; ui.flipAnim = true; ui.openInfo = null; SFX.play('card'); return renderPlay(); }
     if (a === 'subclose') { ui.openInfo = null; return renderPlay(); }
     if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i, false, ui.sel.kind); }
-    else if (a === 'tobench') { const i = R.bench.indexOf(null); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
+    else if (a === 'tobench') { const i = freeSlot(); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
     else if (a === 'sell') { const s = ui.sel, g = sellCard(s.c, s.from, s.i); ui.sel = null; SFX.play('coin'); toast(`${def(s.c).name} 판매 +${g}골드`); renderPlay(); }
     else { ui.sel = null; ui.foe = null; renderPlay(); }
   };
@@ -1157,8 +1187,8 @@
     if (B || ui.screen !== 'play') return;
     const c = cellFromPoint(e.clientX, e.clientY);
     if (!c) return;
-    const u = R.board.find((b) => b.x === c.c && b.y === c.r);
-    dragBegin(e, canvas, u ? { from: 'board', c: u } : null, () => tapCell(c.c, c.r));
+    const u = R.board.find((b) => b.x === c.c && b.y === c.r), oi = u ? -1 : overflowAt(c.c, c.r);
+    dragBegin(e, canvas, u ? { from: 'board', c: u } : oi >= 0 ? { from: 'bench', i: oi, c: R.bench[oi] } : null, () => tapCell(c.c, c.r));
   });
   // ---------- 드래그: 창고·보드의 딱지와 창고의 칩을 끌어다 놓기 ----------
   const drag = { start: null, on: false, src: null, tap: null, ghost: null, endT: 0 };
@@ -1356,14 +1386,30 @@
     });
   }
   const SHOT = { mag: ['#b48cff', '#efe2ff'], mage: ['#b48cff', '#efe2ff'], fire: ['#e8643b', '#ffd36b'] };
+  // 마법 공격: 꼬리를 끄는 빛나는 마법 구슬(둘레를 도는 불티 둘)
+  function drawOrb(p, style, r) {
+    const tr = p.trail || (p.trail = []);
+    tr.push([p.x, p.y]); if (tr.length > 8) tr.shift();
+    for (let i = 0; i < tr.length - 1; i++) {
+      const k = (i + 1) / tr.length;
+      ctx.globalAlpha = 0.45 * k; ctx.fillStyle = style[0];
+      ctx.beginPath(); ctx.arc(tr[i][0], tr[i][1], r * (0.35 + 0.5 * k), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    const g = ctx.createRadialGradient(p.x, p.y, r * 0.4, p.x, p.y, r * 2.2);
+    g.addColorStop(0, style[0] + 'aa'); g.addColorStop(1, style[0] + '00');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = style[0]; ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = style[1]; ctx.beginPath(); ctx.arc(p.x - r * 0.3, p.y - r * 0.3, r * 0.42, 0, Math.PI * 2); ctx.fill();
+    const t = performance.now() / 120;
+    for (const o of [0, Math.PI]) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x + Math.cos(t + o) * r * 1.5, p.y + Math.sin(t + o) * r * 1.5, 1.4, 0, Math.PI * 2); ctx.fill(); }
+  }
   function drawProjectiles(cb) {
     for (const p of cb.projectiles) {
       const ang = Math.atan2(p.tgt.py - p.y, p.tgt.px - p.x), style = p.src && (SHOT[p.src.cls] || (p.kind === 'spell' && p.src.cls !== 'arc' && p.src.cls !== 'bow' ? SHOT.mag : null));
-      if (style) {
-        ctx.fillStyle = style[0]; ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.kind === 'spell' ? 6 : 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = style[1]; ctx.beginPath(); ctx.arc(p.x - 1, p.y - 1, 2, 0, Math.PI * 2); ctx.fill();
-      } else {
+      if (style) drawOrb(p, style, p.kind === 'spell' ? 9 : 7);
+      else {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
         ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(4, 0); ctx.stroke();
         ctx.fillStyle = '#c3cbd6'; ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(2, -3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill(); ctx.lineWidth = 1.2; ctx.stroke();
@@ -1498,6 +1544,22 @@
       ctx.restore();
     }
   }
+  // 판 위 창고 딱지: 점선 종이 받침 + 카드 그림 + '창고' 꼬리표
+  const imgEls = new Map();
+  const imgEl = (url) => { let im = imgEls.get(url); if (!im) { im = new Image(); im.src = url; imgEls.set(url, im); } return im; };
+  function drawStash(x, y, c, sel, now) {
+    const h = CS * 0.42, lift = sel ? 3 + Math.sin(now / 160) * 1.5 : 0;
+    ctx.save();
+    rrPath(ctx, x - h, y - h - lift, h * 2, h * 2, 8);
+    ctx.fillStyle = 'rgba(255,250,236,.92)'; ctx.fill();
+    ctx.setLineDash([4, 3]); ctx.lineWidth = 2; ctx.strokeStyle = sel ? '#c48a00' : INK; ctx.stroke(); ctx.setLineDash([]);
+    const im = imgEl(imgOf(c, 96)), sz = c.kind === 'unit' ? h * 2 : h * 1.7;
+    if (im.complete && im.naturalWidth) ctx.drawImage(im, x - sz / 2, y - sz / 2 - lift - 2, sz, sz);
+    ctx.fillStyle = '#8a6a3c'; rrPath(ctx, x - 15, y + h - 9 - lift, 30, 13, 6); ctx.fill();
+    ctx.fillStyle = '#fff8e6'; ctx.font = "700 9px 'Noto Sans KR', sans-serif"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('창고', x, y + h - 2.5 - lift);
+    ctx.restore();
+  }
   function draw() {
     if (ui.screen !== 'play' || !R) return;
     const k = kScale * DPR, vy = viewY();
@@ -1530,6 +1592,11 @@
         ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)], synMem = ui.synOpen && !B ? new Set(TRAITS[ui.synOpen].kind === 'job' ? R.board.filter((b) => b.item && TRAITS[ui.synOpen].members.includes(b.item.id)).map((b) => b.id) : synMembers(ui.synOpen)) : null; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
           if (selU && drag.on) return { y: c.y, f: () => {} }; // 끄는 동안 원래 자리는 비워 둔다(잔상 없음)
           return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : synMem && synMem.has(u.id) ? TRAITS[ui.synOpen].col : null, dash: can || (!selU && synMem && synMem.has(u.id)) }) }; }),
+        ...R.bench.slice(benchSize()).map((c, k) => {
+          if (!c || c.fx == null) return null;
+          const cell = grid.cells[grid.idx(c.fx, c.fy)], sel = s && s.c === c;
+          return sel && drag.on ? null : { y: cell.y, f: () => drawStash(cell.x, cell.y, c, sel, now) };
+        }).filter(Boolean),
       ].sort((a, b) => a.y - b.y);
       for (const it of items) it.f();
       if (!R.enemies.length && R.mode === 'rest' && !vy) { ctx.fillStyle = 'rgba(35,42,59,.55)'; ctx.font = "15px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center'; ctx.fillText(R.node ? NODE[R.node.k].name + ' · 전투 없음' : '', W / 2, M + CS * 1.5); }
@@ -1562,13 +1629,12 @@
     const d = def(c);
     return `<button class="pickcard k-${c.kind} tier${d.t}${d.special ? ' special' : ''}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}</small><span class="pd">${hl(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
   }
-  function pickReward(title, sub, cards, done, skipGold = 2) {
+  function pickReward(title, sub, cards, done) {
     if (!cards.length) return done();
-    openSheet(`<span class="eyebrow">${title}</span><h2>${sub}</h2><div class="picks">${cards.map(cardTile).join('')}</div><button class="btn" data-skip>건너뛰기 (+${skipGold}골드)</button>`);
+    openSheet(`<span class="eyebrow">${title}</span><h2>${sub}</h2><div class="picks">${cards.map(cardTile).join('')}</div>`);
     $('sheetIn').onclick = (e) => {
-      const b = e.target.closest('[data-pick],[data-skip]'); if (!b) return;
-      if (b.dataset.skip != null) R.gold += skipGold;
-      else { const c = cards[+b.dataset.pick]; take(c); gain(c); SFX.play('card'); }
+      const b = e.target.closest('[data-pick]'); if (!b) return;
+      const c = cards[+b.dataset.pick]; take(c); gain(c); SFX.play('card');
       closeSheet(); done();
     };
   }
@@ -1778,7 +1844,7 @@
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
         <p><b>상점 단계</b> 칸에 들어가면 내 진영과 상점 세 줄이 보입니다. 적 배치는 ‘적 필드 보기’로 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
-        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지. 딱지나 칩을 상점 카드 칸으로 끌어다 놓으면 판매합니다.</p>
+        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지. 딱지나 칩을 상점 카드 칸으로 끌어다 놓으면 판매합니다. 유닛은 산 값 그대로, 스킬·아이템은 산 값보다 1골드 적게 받습니다.</p>
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 흰색 · 2 녹색 · 3 파랑 · 4 보라 · 5 노랑. 딱지 테두리 색은 클래스(전사 남색 · 궁수 빨강 · 마법사 청록).</p>
         <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 시너지 줄의 ‘시너지’ 버튼으로 전체 목록을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
@@ -1786,7 +1852,7 @@
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
         <p><b>마나</b> 스킬마다 마나 막대가 따로 있습니다. 기본 공격 1번에 +12, 피해를 받으면 받은 만큼(한 번에 최대 +10) 차고, 가득 찬 스킬부터 씁니다. 딱지 카드의 시계 표시는 기본 공격만 셌을 때의 시전 주기라, 맞으면 더 빨리 씁니다. 스킬 ★이 오르면 마나가 8씩 줄어듭니다.</p>
         <p><b>수입</b> 라운드마다 5 + 이자(10골드당 1, 최대 5). 이기면 +1.</p>
-        <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템).</p>
+        <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템). 창고가 가득 차 있으면 판 위 빈칸에 ‘창고’ 딱지로 놓이고, 창고에 빈칸이 생기면 저절로 들어갑니다.</p>
         <p><b>패배</b> 한 번 지면 원정이 끝납니다.</p></div><button class="btn" data-m="close">닫기</button>`);
       if (m === 'sound') { SFX.setMuted(!SFX.muted); return openMenu(); }
       if (m === 'quit') { closeSheet(); if (R && ui.screen === 'map') save(); return title(); }
