@@ -518,7 +518,7 @@
     const el = $('srail'), items = synItems(R.board);
     const h = el.clientHeight || 300, rowH = 29, fit = Math.max(1, Math.floor((h - 18 + 3) / (rowH + 3)));
     const shown = items.length > fit ? items.slice(0, fit - 1) : items, more = items.length - shown.length;
-    el.innerHTML = shown.map((x) => `<button class="ri${x.tier ? ' on' : ''}${x.combo ? ' combo' : ''}" ${x.attr} style="--c:${x.col}" aria-label="${x.name} ${x.n}/${x.m}"><span class="ic">${x.short}</span><span class="nm${x.name.length >= 4 ? ' ln' : ''}">${x.name}</span><span class="pp">${x.th.map((t) => `<i class="${x.n >= t ? 'f' : ''}"></i>`).join('')}<em>${x.n}/${x.m}</em></span></button>`).join('')
+    el.innerHTML = shown.map((x) => `<button class="ri${x.tier ? ' on' : ''}${x.combo ? ' combo' : ''}${x.attr === `data-tr="${ui.synOpen}"` ? ' open' : ''}" ${x.attr} style="--c:${x.col}" aria-label="${x.name} ${x.n}/${x.m}"><span class="ic">${x.short}</span><span class="nm${x.name.length >= 4 ? ' ln' : ''}">${x.name}</span><span class="pp">${x.th.map((t) => `<i class="${x.n >= t ? 'f' : ''}"></i>`).join('')}<em>${x.n}/${x.m}</em></span></button>`).join('')
       + (items.length ? '' : '<span class="rnone">딱지를 놓으면 시너지가 여기에</span>')
       + `<button class="rall" data-allsyn>${more ? `+${more} · ` : ''}전체 ›</button>`;
   }
@@ -621,9 +621,10 @@
     $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('tug').hidden = !combat;
     $('scr-play').classList.toggle('combat', combat);
 
-    if (combat) { renderBattlePanel(); fitBoard(); return; }
+    if (combat) { ui.synOpen = null; renderDrawer(); renderBattlePanel(); fitBoard(); return; }
     renderPrep();
     fitBoard();
+    renderDrawer();
   }
   function renderPrep() {
     const s = ui.sel;
@@ -1021,10 +1022,45 @@
   $('statBtn').onclick = openStats;
 
   $('srail').addEventListener('click', (e) => {
-    if (e.target.closest('[data-allsyn]')) return openSynSheet();
-    const t = e.target.closest('[data-tr]');
-    if (t) { const T = TRAITS[t.dataset.tr]; return toast(`${T.name}(${T.kind === 'peer' ? '같은 등급의 서로 다른 딱지' : T.members.map((m) => DEF['unit:' + m].name).join('·')}): ${T.kind === 'combo' ? T.desc[0] : T.th.map((n, i) => n + '명 ' + T.desc[i]).join(' → ')}`); }
+    if (e.target.closest('[data-allsyn]')) { ui.synOpen = null; renderDrawer(); return openSynSheet(); }
+    const t = e.target.closest('[data-tr]'); if (!t) return;
+    ui.synOpen = ui.synOpen === t.dataset.tr ? null : t.dataset.tr; SFX.play('click');
+    renderRail(); renderDrawer(); draw();
   });
+  $('sdrawer').addEventListener('click', (e) => {
+    if (e.target.closest('[data-more]')) { ui.synOpen = null; renderDrawer(); return openSynSheet(); }
+    if (e.target.closest('[data-close]')) { ui.synOpen = null; renderRail(); renderDrawer(); draw(); }
+  });
+  // 서랍 바깥을 누르면 닫힘(레일·서랍 안은 제외)
+  document.addEventListener('pointerdown', (e) => { if (ui.synOpen && !e.target.closest('#sdrawer') && !e.target.closest('#srail')) { ui.synOpen = null; renderRail(); renderDrawer(); draw(); } }, true);
+  // 시너지 서랍: 탭한 레일 칸 오른쪽에 지금 효과 · 다음 단계 · 멤버(출전/창고/없음)
+  function synMembers(k) {
+    const T = TRAITS[k];
+    if (T.kind === 'peer') { const sc = battleApi.synergyCounts(R.board); return [...new Set(R.board.map((u) => u.id))].filter((id) => DEF['unit:' + id].t === sc.peerT); }
+    return T.members;
+  }
+  function renderDrawer() {
+    const el = $('sdrawer'), k = ui.synOpen;
+    if (!k || B || !R || ui.screen !== 'play') { el.hidden = true; return; }
+    const T = TRAITS[k], sc = battleApi.synergyCounts(R.board), n = sc.tcounts[k] || 0, tier = sc.ttiers[k] || 0;
+    const combo = T.kind === 'combo', th = combo ? [T.members.length] : T.th, next = th.find((x) => n < x);
+    const onIds = new Set(R.board.map((u) => u.id)), benchIds = new Set(R.bench.filter((c) => c && c.kind === 'unit').map((c) => c.id));
+    const pegs = `<span class="dpeg">${th.map((x) => `<i class="${n >= x ? 'f' : ''}${x === next ? ' nx' : ''}">${x}</i>`).join('')}</span>`;
+    const cur = tier ? `<div class="dw-cur"><small>지금 · ${n}명</small>${hl(T.desc[tier - 1])}</div>` : `<div class="dw-cur off"><small>아직 꺼짐 · ${n}명</small>${th[0]}명부터 켜집니다</div>`;
+    const nx = next ? `<div class="dw-nxt"><small>${next}명이면 · ${next - n}명 더</small>${hl(T.desc[combo ? 0 : th.indexOf(next)])}</div>` : '<div class="dw-nxt max"><small>최고 단계</small>모두 켜졌습니다</div>';
+    const ms = synMembers(k).map((id) => { const d = DEF['unit:' + id], st = onIds.has(id) ? 'on' : benchIds.has(id) ? 'bench' : 'off';
+      return `<span class="mm s-${st}" title="${d.name} · ${{ on: '출전', bench: '창고', off: '없음' }[st]}"><img src="${ART.tokenURL(id, 0, d.cls)}" alt=""><b>${d.t}</b></span>`; }).join('');
+    const peerNote = T.kind === 'peer' ? `<div class="dw-leg">같은 등급의 서로 다른 딱지 수 · 지금 ${sc.peerT || '-'}등급</div>` : '<div class="dw-leg"><i class="on"></i>출전 <i class="bench"></i>창고 <i class="off"></i>없음 · 판의 점선 = 적용 중</div>';
+    el.style.setProperty('--cc', T.col);
+    el.innerHTML = `<div class="dw-h"><span class="sico" style="--c:${T.col}">${T.short}</span><b>${T.name}</b>${pegs}<button class="dx" data-close aria-label="닫기">✕</button></div>${cur}${nx}${ms ? `<div class="dw-m">${ms}</div>` : ''}${peerNote}<button class="dw-more" data-more>자세히 ›</button>`;
+    el.hidden = false;
+    // 위치: 레일 칸 오른쪽, 판 안에 들어오게
+    const btn = $('srail').querySelector(`[data-tr="${k}"]`), wrap = $('boardwrap');
+    const rb = btn ? btn.getBoundingClientRect() : $('srail').getBoundingClientRect(), wb = wrap.getBoundingClientRect();
+    const top = Math.max(4, Math.min(rb.top - wb.top - 8, wb.height - el.offsetHeight - 4));
+    el.style.left = Math.min(rb.right - wb.left + 8, wb.width - el.offsetWidth - 4) + 'px'; el.style.top = top + 'px';
+    el.style.setProperty('--ay', Math.max(10, Math.min(el.offsetHeight - 14, rb.top - wb.top + rb.height / 2 - top - 7)) + 'px');
+  }
 
   // =====================================================================
   // 보드 캔버스
@@ -1393,9 +1429,9 @@
       if (drag.on && drag.hover) { const ok = drag.hover.r >= PLAYER_ROW; fillCell(drag.hover.i, ok ? '#2f6fd6' : '#e8436b', 0.28); }
       const items = [
         ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
-        ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)]; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
+        ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)], synMem = ui.synOpen && !B ? new Set(synMembers(ui.synOpen)) : null; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
           if (selU && drag.on) return { y: c.y, f: () => {} }; // 끄는 동안 원래 자리는 비워 둔다(잔상 없음)
-          return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : null, dash: can }) }; }),
+          return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : synMem && synMem.has(u.id) ? TRAITS[ui.synOpen].col : null, dash: can || (!selU && synMem && synMem.has(u.id)) }) }; }),
       ].sort((a, b) => a.y - b.y);
       for (const it of items) it.f();
       if (!R.enemies.length && R.mode === 'rest' && !vy) { ctx.fillStyle = 'rgba(35,42,59,.55)'; ctx.font = "15px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center'; ctx.fillText(R.node ? NODE[R.node.k].name + ' · 전투 없음' : '', W / 2, M + CS * 1.5); }
