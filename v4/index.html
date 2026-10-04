@@ -286,7 +286,6 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 #prepUI .actions .go { min-height: 48px; border-radius: 10px; box-shadow: 0 3px 0 var(--ink); }
 
 /* 전투: 위 줄다리기 막대(아군·적 남은 체력 합) + 판 + 아래 딱지 고리 */
-.flame { flex: none; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #ffe2c2; color: #a8501a; border: 1.5px solid #e0a070; white-space: nowrap; }
 .speed { flex: none; display: flex; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--card); }
 .speed button { width: 36px; height: 30px; border: none; padding: 0; background: none; font: 700 12px var(--body); }
 .speed button + button { border-left: 1.5px solid var(--line); }
@@ -396,6 +395,11 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .pickcard.k-unit { border-radius: 14px; border: 4px solid var(--cc); box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 1px var(--ink); }
 .pickcard.k-item, .pickcard.k-skill { border: 4px solid var(--cc); box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 1px var(--ink); } .pickcard.k-item { border-radius: 3px; } .pickcard.k-skill { border-radius: 4px; }
 .pickcard .pd { font-size: 10px; line-height: 1.3; color: var(--ink); }
+/* 보스 전용 아이템: 금박 띠 + 은은한 빛 */
+.pickcard.special { animation: spGlow 1.6s ease-in-out infinite alternate; }
+.pickcard.special::before { content: '보스 전용'; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #c48a00; color: #fff8dc; font-size: 10px; font-weight: 800; padding: 1px 8px; border: 2px solid var(--ink); border-radius: 999px; white-space: nowrap; }
+@keyframes spGlow { from { box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 1px var(--ink), 0 0 6px 2px rgba(246,214,78,.4); } to { box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 1px var(--ink), 0 0 16px 5px rgba(246,214,78,.85); } }
+@media (prefers-reduced-motion: reduce) { .pickcard.special { animation: none; } }
 .relics { display: grid; gap: 8px; }
 .relic { text-align: left; border: 2px solid var(--ink); border-radius: 8px; background: var(--card); box-shadow: 2px 3px 0 var(--ink); padding: 10px 12px; display: grid; gap: 2px; }
 .relic b { font-size: 15px; }
@@ -576,11 +580,17 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
 .tc-sock { flex: none; display: grid; gap: 3px; }
 .tc-sock .sk { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 6px; align-items: center; width: 100%; text-align: left; background: var(--card); border: 1.5px solid var(--ink); border-left: 5px solid var(--kc); border-radius: 7px; padding: 2px 6px 2px 3px; font-size: 11px; line-height: 1.3; }
 .tc-sock .sk img { width: 30px; height: 30px; }
+.tc-mana { display: flex; align-items: center; gap: 5px; font-size: 10.5px; line-height: 1.25; color: #1f4f8a; background: rgba(214,232,255,.85); border: 1.5px solid #2f6fd6; border-radius: 7px; padding: 2px 7px; }
+.tc-mana svg { width: 11px; height: 11px; fill: #2f6fd6; flex: none; }
+.tc-mana em, .cast em { font-style: normal; font-weight: 800; }
+.cast { display: block; font-size: 10px; color: #1f4f8a; font-weight: 600; white-space: nowrap; }
+.cast .ico { width: 10px; height: 10px; vertical-align: -1px; margin-right: 2px; }
 .tc-sock .sk.wp img { transform: none; }
 .tc-sock .sk { cursor: pointer; grid-template-columns: 30px minmax(0, 1fr) auto auto; }
 .tc-sock .unq { flex: none; height: 28px; padding: 0 8px; border: 1.5px solid var(--ink); border-radius: 14px; background: var(--paper2); font: 700 10.5px var(--body); color: var(--ink); }
 .tc-sock .unq:active { background: #f3d6d6; }
-.tc-sock .sk > span { min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tc-sock .sk > span:not(.skw), .tc-sock .skw > span { min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tc-sock .skw { min-width: 0; display: block; }
 .tc-sock .sk b { font-size: 11.5px; display: block; }
 .tc-sock .sk small { font-size: 9.5px; color: var(--muted); }
 .tc-sock .sk em, .sc-d em { font-style: normal; font-weight: 700; background: linear-gradient(transparent 50%, rgba(245,196,0,.62) 50%); padding: 0 1px; }
@@ -634,7 +644,6 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
     <div class="where"><b id="hWhere">1막</b><span id="hSub"></span></div>
     <div class="coin" id="gold" aria-label="골드">0</div>
     <div class="lv" id="hlv"><b id="lvB">Lv3</b><span class="xp"><i id="xpBar"></i></span><small id="xpT">0/6</small></div>
-    <span class="flame" id="streak" hidden></span>
     <div class="speed" id="spdSeg" role="group" aria-label="전투 배속" hidden><button data-spd="1">×1</button><button data-spd="2">×2</button><button data-spd="3">×3</button></div>
   </div>
   <div class="screens">

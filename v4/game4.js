@@ -25,7 +25,9 @@
   const rnd = (n) => Math.floor(Math.random() * n);
   const pick = (a) => a[rnd(a.length)];
   const def = (c) => DEF[c.kind + ':' + c.id];
-  const POOL = { unit: UNITS, skill: SKILLS, item: ITEMS };
+  const POOL = { unit: UNITS, skill: SKILLS, item: ITEMS.filter((d) => !d.special) };
+  const SPECIALS = ITEMS.filter((d) => d.special);
+  const poolN = (d) => (d.special ? 1 : POOL_N[d.t]);
   const TABNAME = { unit: '유닛', skill: '스킬', item: '아이템' };
   const KINDNAME = { unit: '유닛', skill: '스킬', item: '아이템' };
   const SAVE_KEY = 'card-expedition-v4';
@@ -48,12 +50,12 @@
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
     R = {
-      v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, streak: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
+      v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
       board: [], bench: Array(V.BENCH).fill(null), shop: { unit: [], skill: [], item: [] }, locked: { unit: false, skill: false, item: false },
       pool: {}, map: null, pos: null, path: [], node: null, freeRolls: 0, oddsBonus: 0, enemies: [], mode: 'map',
       stats: { wins: 0, battles: 0, merges: 0, goldEarned: 0, kills: 0, time: 0, elites: 0, bosses: 0 },
     };
-    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) R.pool[keyOf(d.kind, d.id)] = POOL_N[d.t];
+    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) R.pool[keyOf(d.kind, d.id)] = poolN(d);
     R.map = genMap(1);
   }
   const START_GOLD = 6;
@@ -109,11 +111,13 @@
   // =====================================================================
   // 상점 · 창고 · 합성
   // =====================================================================
+  // 막마다 나오는 최고 등급: 1막 3등급, 2막 4등급, 3막부터 5등급
+  const actCap = () => R.act + 2;
   function oddsLv() { return Math.min(9, R.lv + (R.oddsBonus || 0) + (has('dice') ? 1 : 0)); }
   function rollTier(kind) {
     const o = ODDS[oddsLv()];
     const t = AC.weighted(o) + 1;
-    return Math.min(t, MAXT[kind]);
+    return Math.min(t, MAXT[kind], actCap());
   }
   function rollCard(kind, tier) {
     for (let t = tier; t >= 1; t--) {
@@ -255,9 +259,8 @@
   function income() {
     const intMax = 5 + (has('vault') ? 2 : 0);
     const interest = Math.min(intMax, Math.floor(R.gold / 10));
-    const st = R.streak >= 8 ? 3 : R.streak >= 5 ? 2 : R.streak >= 3 ? 1 : 0;
     const base = 5 + (has('crown') ? 1 : 0) + (DIFF[R.diff || 'normal'].income || 0);
-    return { base, interest, streak: st, total: base + interest + st };
+    return { base, interest, total: base + interest };
   }
   function enterNode(n, quiet) {
     R.round++;
@@ -273,7 +276,7 @@
     if (quiet) return inc;
     ui.sel = null; ui.tab = 'unit';
     showPlay();
-    if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest}${inc.streak ? ' · 연승 ' + inc.streak : ''})`);
+    if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
     if (n.k === 'camp') openCamp(); else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
     else if (n.k === 'shop') toast('암시장: 상점 등급 확률 +1, 다시 뽑기 3번 무료');
@@ -380,14 +383,13 @@
     const kind = R.node.k;
     if (won) {
       const g = 1 + (has('goldtooth') ? 1 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2][battleApi.synergyCounts(R.board).ttiers.j_merc || 0];
-      R.gold += g; R.stats.goldEarned += g; R.stats.wins++; R.streak++;
+      R.gold += g; R.stats.goldEarned += g; R.stats.wins++;
       if (kind === 'elite') R.stats.elites++;
       if (kind === 'boss') R.stats.bosses++;
       B.reward = g;
       bannerStamp(kind === 'boss' ? '보스 처치!' : '승리!', 'win');
       SFX.play('win');
     } else {
-      R.streak = 0;
       B.phoenix = has('phoenix');
       bannerStamp('패배', 'lose');
       SFX.play('lose');
@@ -404,17 +406,38 @@
       return gameOver();
     }
     if (kind === 'elite') return pickReward('정예 전리품', '한 등급 높은 카드 하나를 고르세요', eliteChoices(), finishNode);
-    if (kind === 'boss') return relicPick('보스 전리품', () => pickReward('보스 전리품', '강력한 유닛 하나를 고르세요', bossUnits(), finishNode));
-    finishNode();
+    if (kind === 'boss') {
+      if (R.act >= LAST_ACT) return finishNode();
+      const loot = bossLoot(), sp = loot.some((c) => def(c).special);
+      return relicPick('보스 전리품', () => pickReward('보스 전리품', sp ? '보스가 특별한 무기를 떨어뜨렸다!' : '전리품 하나를 고르세요', loot, finishNode));
+    }
+    pickReward('전리품', '쓰러진 적에게서 하나를 챙기세요', lootChoices(), finishNode, 1);
+  }
+  // 일반 전투 전리품: 스킬·아이템 셋 중 하나(상점 확률, 막 등급 −1까지)
+  function lootChoices() {
+    const out = [];
+    for (const k of AC.shuffle(['skill', 'item', pick(['skill', 'item'])])) {
+      for (let n = 0; n < 4; n++) {
+        const c = rollCard(k, Math.min(rollTier(k), R.act + 1));
+        if (c && !out.some((x) => x.kind === c.kind && x.id === c.id)) { out.push(c); break; }
+      }
+    }
+    return out;
+  }
+  // 보스 전리품: 높은 등급 스킬·아이템, 40% 확률로 한 장이 보스 전용 아이템
+  const SPECIAL_P = 0.4;
+  function bossLoot() {
+    const top = R.act + 2, out = [rollCard('skill', Math.min(MAXT.skill, top)), rollCard('item', Math.min(MAXT.item, top)), rollCard(pick(['skill', 'item']), Math.min(3, top))].filter(Boolean);
+    const sp = SPECIALS.filter((d) => R.pool[keyOf('item', d.id)] > 0);
+    if (sp.length && Math.random() < SPECIAL_P) {
+      const mine = new Set(allUnits().map((u) => def(u).cls)), pref = sp.filter((d) => mine.has(d.cls));
+      out[out.length - 1] = mk('item', pick(pref.length ? pref : sp).id);
+    }
+    return out;
   }
   function eliteChoices() {
     const top = Math.min(5, R.act + 1 + (R.lv >= 6 ? 1 : 0));
     return ['unit', 'skill', 'item'].map((k) => { const c = rollCard(k, Math.min(MAXT[k], top)); return c; }).filter(Boolean);
-  }
-  function bossUnits() {
-    const t = R.act === 1 ? 4 : 5;
-    const cand = AC.shuffle(UNITS.filter((d) => d.t >= t - (R.act === 1 ? 0 : 1) && R.pool[keyOf('unit', d.id)] > 0)).slice(0, 3);
-    return cand.map((d) => mk('unit', d.id));
   }
 
   // =====================================================================
@@ -456,7 +479,6 @@
     const play = ui.screen === 'play', fighting = play && !!B;
     $('gold').textContent = R.gold;
     $('gold').hidden = play; $('hlv').hidden = play;
-    $('streak').hidden = !play || fighting || R.streak < 1; $('streak').textContent = `${R.streak}연승`;
     $('spdSeg').hidden = !fighting || B.phase === 'result';
     if (fighting) for (const b of $('spdSeg').children) b.classList.toggle('on', +b.dataset.spd === B.speed);
     const intMax = 5 + (has('vault') ? 2 : 0);
@@ -468,7 +490,7 @@
     $('xpBar').style.width = R.lv < MAXLV ? (100 * R.xp / XPNEED[R.lv]) + '%' : '100%';
     $('eLv').textContent = 'Lv' + R.lv; $('eXpT').textContent = $('xpT').textContent; $('eXp').style.width = $('xpBar').style.width;
     const n = R.node, A = ACTS[R.act];
-    if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료 · 연승 ${R.streak}`; }
+    if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료`; }
     else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : `라운드 ${R.round}`; }
   }
 
@@ -482,7 +504,7 @@
   function patternGrid(d, star = 1) {
     const g = Array.from({ length: 25 }, () => '');
     const set = (x, y, v) => { if (x >= 0 && x < 5 && y >= 0 && y < 5) g[y * 5 + x] = v; };
-    const hc = ['heal', 'shield', 'haste', 'buff', 'revive', 'mana', 'parry', 'fortify', 'timewarp'].includes(d.effect) ? 'ally' : d.effect === 'taunt' ? 'warn' : d.effect === 'debuff' ? 'debuff' : 'hit';
+    const hc = ['heal', 'shield', 'haste', 'buff', 'mana', 'parry', 'fortify', 'timewarp'].includes(d.effect) ? 'ally' : d.effect === 'taunt' ? 'warn' : d.effect === 'debuff' ? 'debuff' : 'hit';
     const cells = BT4.expandCells(d, star) || d.cells;
     switch (d.mode) {
       case 'facing': set(2, 4, 'me'); for (const [f, s] of cells) set(2 + s, 4 - f, hc); break;
@@ -684,7 +706,7 @@
       const eq = shop ? '' : [...c.skills.map((x) => def(x).name + starTxt(x.star)), c.item ? def(c.item).name + starTxt(c.item.star) : null].filter(Boolean).join(' · ');
       body = `<p>${hl(d.trait)}<br><span class="meta">사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span>${unitLadder(d, c.star)}</p>${sl}`;
     } else if (c.kind === 'skill') {
-      body = `<p>${hl(d.desc)}<br><span class="meta">마나 ${d.mana || 60}${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
+      body = `<p>${hl(d.desc)}<br><span class="meta">마나 ${skMana(d, c.star)} · 기본 공격 약 ${Math.ceil(skMana(d, c.star) / 12)}번에 한 번${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
     } else {
       body = `<p>${hl(d.desc)}<br><span class="meta">끼우면 ${d.feel}</span>${itemLadder(d, c.star, BASE_E)}</p>`;
     }
@@ -725,6 +747,12 @@
     headshot: (e, k) => `치명 피해 <em>+${Math.round(40 * Math.min(1.6, k))}%</em>`,
     manaRegen: (e, k) => `초당 마나 <em>+${(3 * Math.min(1.6, k)).toFixed(1)}</em>`,
     spellLeech: () => '스킬 피해의 <em>25%</em> 회복',
+    cleave: () => '공격하면 대상 주변 적에게도 피해 <em>25%</em>',
+    lastStand: () => '체력 35% 아래로 처음 떨어지면 체력 <em>20%</em> 보호막 + 3초간 받는 피해 <em>−25%</em>',
+    multiShot: (e) => `공격할 때마다 가까운 다른 적에게 화살 ${atkAmt(e, 0.4)}`,
+    deadeye: () => '치명 피해 <em>+50%</em>, 체력 50% 이하 적에게 피해 <em>+25%</em>',
+    sageStone: () => '초당 마나 <em>+5</em>',
+    abyss: () => '스킬에 맞은 적 화상(초당 <em>35</em>), 스킬 피해의 <em>25%</em> 회복',
     stormHit: (e, k) => `기본 공격이 주변 적 둘에게 번개 ${atkAmt(e, 0.35 * Math.min(1.6, k))}`,
   };
   function itemText(it, star, e) {
@@ -759,6 +787,7 @@
     return ex.join(' · ');
   }
   // 스킬 주 수치(성급에 따라 커짐)
+  const skMana = (sd, star) => Math.max(30, (sd.mana || 80) - ((star || 1) - 1) * 8); // battle4 skillMana 와 같은 식
   function skillMain(sd, star, e) {
     const k = BT4.SKSTAR[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult;
     let main = '';
@@ -773,7 +802,6 @@
       case 'haste': case 'timewarp': main = `공속 <em>+${Math.round(((sd.amt || 1.25) + 0.08 * (star - 1) - 1) * 100)}%</em> ${sd.dur || 6}초${sd.effect === 'timewarp' ? ` · 적 둔화 ${3 + star - 1}초` : ''}`; break;
       case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
       case 'mana': main = `주변 아군 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
-      case 'revive': main = `쓰러진 아군을 체력 <em>${pct(Math.min(0.9, (sd.power || 0.5) + 0.12 * (star - 1)))}%</em>로 부활`; break;
       case 'heavy': main = `피해 ${atkAmt(e, sd.power * k)}`; break;
       case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · 회복 <em>${Math.round(P * H)}</em>`; break;
       default: main = sd.desc;
@@ -803,6 +831,18 @@
   };
   const DROP = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1S3 7 3 10.2a5 5 0 0 0 10 0C13 7 8 1 8 1z"/></svg>';
   const drop = (n) => `<span class="drop" aria-label="마나 ${n}">${DROP}${n}</span>`;
+  // 시전 주기 어림: 기본 공격(과 초당 마나)만 센다. 맞으면 마나가 더 차서 실제로는 조금 더 빠르다
+  const CLOCK = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const manaRegenOf = (e) => (e.ifx === 'manaRegen' ? 3 * Math.min(1.6, e.ifxK) : e.ifx === 'sageStone' ? 5 : 0);
+  function castInfo(e, k) {
+    const b = e.bars && e.bars[k]; if (!b) return null;
+    const per = (e.manaPerHit || 12) * (e.manaGain || 1), rate = per * e.as + manaRegenOf(e);
+    return { atk: Math.ceil(b.max / per), every: b.max / rate, first: Math.max(0, b.max - b.mana) / rate, start: b.mana };
+  }
+  const secTxt = (x) => (x < 10 ? x.toFixed(1) : String(Math.round(x)));
+  const firstOf = (ci) => ci.start > 0 && ci.first < ci.every - 0.3;
+  const castTxt = (ci) => (ci ? `<span class="cast">${CLOCK}약 <em>${secTxt(ci.every)}초</em>마다 · 기본 공격 ${ci.atk}번${firstOf(ci) ? ` · 첫 시전 <em>${secTxt(ci.first)}초</em>` : ''}</span>` : '');
+  const castShort = (ci) => (ci ? `<span class="cast">${CLOCK}<em>${secTxt(ci.every)}초</em>마다${firstOf(ci) ? ` · 첫 <em>${secTxt(ci.first)}초</em>` : ''}</span>` : '');
   const XSVG = '<svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
   // 아이콘 + 값 칸(오른 값은 초록 ▲)
   const tstat = (ic, col, label, v, up) => `<span class="${up ? 'up' : ''}" title="${label}" aria-label="${label} ${v}"><i style="color:${col}">${IC[ic]}</i>${v}</span>`;
@@ -837,8 +877,10 @@
       const x = c.skills[k];
       if (!x) { socks += `<div class="sk empty">빈 스킬 칸</div>`; continue; }
       const sd = def(x);
-      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}<button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
+      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span class="skw"><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${castShort(castInfo(e, k))}</span>${drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}<button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
     }
+    const rg = manaRegenOf(e), st0 = e.bars && e.bars[0] ? Math.round(e.bars[0].mana) : 0;
+    const manaRow = c.skills.length ? `<div class="tc-mana">${DROP}<span>마나: 공격 1번 <em>+${Math.round((e.manaPerHit || 12) * (e.manaGain || 1))}</em> · 맞으면 최대 +10${rg ? ` · 초당 <em>+${secTxt(rg)}</em>` : ''}${st0 ? ` · 시작 <em>${st0}</em>` : ''}</span></div>` : '';
     if (c.item) { const it = def(c.item); socks += `<div class="sk wp" data-info="item" role="button" tabindex="0" style="--kc:${CLS[it.cls].col}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star) ? ' ' + starTxt(c.item.star) : ''}</b>${itemText(it, c.item.star, e)}</span><button class="unq" data-un="item" aria-label="${it.name} 해제">해제</button></div>`; }
     else socks += `<div class="sk empty">빈 무기 칸</div>`;
     const anim = ui.flipAnim; ui.flipAnim = false;
@@ -851,7 +893,7 @@
     } else {
       body = cardFront({ img: imgOf(c, 200), trs: d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name}</i>`).join(''),
         hp: e.maxHp, atk: Math.round(e.atk), hpUp: e.maxHp > Math.round(d.hp * m), atkUp: Math.round(e.atk) > Math.round(d.atk * m),
-        typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: hl(d.trait), stats, socks: `<div class="tc-sock">${socks}</div>` });
+        typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: hl(d.trait), stats, socks: `<div class="tc-sock">${manaRow}${socks}</div>` });
     }
     const card = tradingCard({ anim, cc: CLS[d.cls].col, tc: `var(--t${d.t})`, coin: d.t, name: d.name, tag: c.star > 1 ? `<i class="st">${starTxt(c.star)}</i>` : '', body });
     const btns = [onBoard ? '<button class="wbtn" data-act="tobench">창고로</button>' : '', `<button class="wbtn" data-act="flip"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${ui.flip ? '앞면' : '뒤집기'}</button>`, `<button class="wbtn red" data-act="sell">판매 +${price(c)}</button>`].filter(Boolean);
@@ -866,7 +908,7 @@
         sub = `<button class="scbg" data-act="subclose" aria-label="칩 카드 닫기"></button>
           <div class="scard ${isItem ? 'k-item' : 'k-skill'}" style="--cc:${CLS[sd.cls].col};--tc:var(--t${sd.t})" role="dialog" aria-label="${sd.name}">
             <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}</div>
-            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}</p>
+            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem ? '<br>' + castTxt(castInfo(e, k)) : ''}</p>
             <div class="sc-r">${isItem ? '' : patternGrid(sd, x.star)}<div class="sc-l">${lad}</div></div>
             <div class="sc-b"><button class="wbtn" data-un="${isItem ? 'item' : k}">${isItem ? '아이템' : '칩'} 빼기</button><button class="wbtn" data-act="subclose">돌아가기</button></div>
           </div>`;
@@ -889,7 +931,7 @@
       tstat('flame', '#e8643b', '초당 피해', Math.round(f.atk * m.as)),
     ].join('');
     const intent = `<div class="intent">${IC.eye}<span>${m.immobile ? '제자리에서' : m.range > 1 ? `${m.range}칸 안의` : '다가가'} 가까운 적부터 노림${skills.length ? '' : ' · 스킬 없음'}</span></div>`
-      + skills.map((sd) => `<div class="intent sk2"><span class="drop">${DROP}${m.mana || 70}</span><span><b>${sd.name}</b> · ${hl(sd.desc)}</span></div>`).join('')
+      + skills.map((sd) => `<div class="intent sk2"><span class="drop">${DROP}${m.mana || 70}</span><span><b>${sd.name}</b> · ${hl(sd.desc)}<br>${castTxt({ atk: Math.ceil((m.mana || 70) / 10), every: (m.mana || 70) / (10 * m.as), first: 0, start: 0 })}</span></div>`).join('')
       + (m.boss && (BOSS_INFO[m.id] || BOSS_INFO[m.boss]) ? `<div class="intent">${IC.crit}<span>${hl(BOSS_INFO[m.id] || BOSS_INFO[m.boss])}</span></div>` : '');
     const body = cardFront({ img: ART.discURL(m.id, 1, m.boss ? 'boss' : m.elite ? 'elite' : '', null, 200), trs: `<i style="--c:#7a4f6a">${ACTS[R.act] ? ACTS[R.act].name : ''} · ${role}</i>`,
       hp: Math.round(f.maxHp), atk: Math.round(f.atk), typeL: `${role} 적 · ${m.range > 1 ? '원거리' : '근접'}`, typeR: '적 진영', text: hl(m.desc || ''), stats, socks: `<div class="tc-sock">${intent}</div>` });
@@ -997,7 +1039,7 @@
   };
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
   $('usheet').addEventListener('pointerdown', (e) => { ui.bgDown = e.target.classList.contains('ucbg') || e.target.classList.contains('scbg') ? e.target.className : null; });
-  $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 ${inc.base} · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
+  $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 ${inc.base} · 이자 ${inc.interest} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
   $('lvBtn').onclick = () => levelUp();
   $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
@@ -1511,14 +1553,14 @@
   function closeSheet() { $('sheet').hidden = true; }
   function cardTile(c, i) {
     const d = def(c);
-    return `<button class="pickcard k-${c.kind} tier${d.t}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}</small><span class="pd">${hl(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
+    return `<button class="pickcard k-${c.kind} tier${d.t}${d.special ? ' special' : ''}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}</small><span class="pd">${hl(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
   }
-  function pickReward(title, sub, cards, done) {
+  function pickReward(title, sub, cards, done, skipGold = 2) {
     if (!cards.length) return done();
-    openSheet(`<span class="eyebrow">${title}</span><h2>${sub}</h2><div class="picks">${cards.map(cardTile).join('')}</div><button class="btn" data-skip>건너뛰기 (+2골드)</button>`);
+    openSheet(`<span class="eyebrow">${title}</span><h2>${sub}</h2><div class="picks">${cards.map(cardTile).join('')}</div><button class="btn" data-skip>건너뛰기 (+${skipGold}골드)</button>`);
     $('sheetIn').onclick = (e) => {
       const b = e.target.closest('[data-pick],[data-skip]'); if (!b) return;
-      if (b.dataset.skip != null) R.gold += 2;
+      if (b.dataset.skip != null) R.gold += skipGold;
       else { const c = cards[+b.dataset.pick]; take(c); gain(c); SFX.play('card'); }
       closeSheet(); done();
     };
@@ -1735,7 +1777,9 @@
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 2개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 아이템에 따라 역할이 바뀝니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
-        <p><b>수입</b> 라운드마다 5 + 이자(10골드당 1, 최대 5) + 연승 보너스. 이기면 +1.</p>
+        <p><b>마나</b> 스킬마다 마나 막대가 따로 있습니다. 기본 공격 1번에 +12, 피해를 받으면 받은 만큼(한 번에 최대 +10) 차고, 가득 찬 스킬부터 씁니다. 딱지 카드의 시계 표시는 기본 공격만 셌을 때의 시전 주기라, 맞으면 더 빨리 씁니다. 스킬 ★이 오르면 마나가 8씩 줄어듭니다.</p>
+        <p><b>수입</b> 라운드마다 5 + 이자(10골드당 1, 최대 5). 이기면 +1.</p>
+        <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템).</p>
         <p><b>패배</b> 한 번 지면 원정이 끝납니다.</p></div><button class="btn" data-m="close">닫기</button>`);
       if (m === 'sound') { SFX.setMuted(!SFX.muted); return openMenu(); }
       if (m === 'quit') { closeSheet(); if (R && ui.screen === 'map') save(); return title(); }
@@ -1764,7 +1808,12 @@
   $('contBtn').onclick = () => {
     const s = loadSave(); if (!s) return; R = s;
     // 카드가 늘어난 판에서 이전 저장을 이어 할 때: 새 카드 몫을 풀에 채운다
-    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) if (R.pool[keyOf(d.kind, d.id)] == null) R.pool[keyOf(d.kind, d.id)] = POOL_N[d.t];
+    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) if (R.pool[keyOf(d.kind, d.id)] == null) R.pool[keyOf(d.kind, d.id)] = poolN(d);
+    // 없어진 카드(부활의 기도 등)는 저장에서 걷어 낸다
+    const known = (c) => c && DEF[c.kind + ':' + c.id];
+    for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) u.skills = u.skills.filter(known);
+    R.bench = R.bench.map((c) => (c && !known(c) ? null : c));
+    for (const k of ['unit', 'skill', 'item']) if (R.shop && R.shop[k]) R.shop[k] = R.shop[k].map((c) => (known(c) ? c : null));
     fixBench(); showMap();
   };
   $('codexBtn').onclick = openCodex;
@@ -1782,6 +1831,6 @@
   // 테스트·밸런스용 진입점
   window.__g = {
     get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
-    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, bossUnits,
+    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, lootChoices, bossLoot,
   };
 })();

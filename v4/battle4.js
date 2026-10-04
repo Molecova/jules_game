@@ -186,7 +186,9 @@
       if (s.fx === 'poisonHit') e.procs.add('poisonHit');
       if (s.fx === 'spellSlow') e.procs.add('spellSlow');
       if (s.fx === 'spellBurn') e.procs.add('spellBurn');
-      if (s.fx === 'bloodrage') e.procs.add('cleaveHit');
+      if (s.fx === 'bloodrage' || s.fx === 'cleave') e.procs.add('cleaveHit');
+      if (s.fx === 'abyss') e.procs.add('spellBurn');
+      if (s.fx === 'deadeye') e.critDmg += 0.5;
       if (s.fx === 'burnHit' || p === 'burnHit') e.procs.add('burnHit');
       if (s.fx === 'thorns') e.thorns += 0.2 * Math.min(1.6, s.fxK);
       if (s.fx === 'headshot') e.critDmg += 0.4 * Math.min(1.6, s.fxK);
@@ -226,7 +228,7 @@
       if (has('bloodstone')) e.lifesteal += 0.05;
       if (has('lens')) e.crit += 0.06;
       if (has('tome')) e.manaPerHit *= 1.15;
-      if (has('victoryhorn') && R().streak >= 3) e.atk *= 1.07;
+      if (has('victoryhorn') && R().node && ['elite', 'boss'].includes(R().node.k)) e.atk *= 1.08;
       e.armor = Math.min(0.7, e.armor);
       e.maxHp = Math.round(e.maxHp); e.hp = e.maxHp;
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
@@ -431,17 +433,6 @@
           for (const a of allies(cells)) if (a !== u && a.ability) addMana(a, (d.power || 30) * k);
           break;
         }
-        case 'revive': {
-          const dead = cb.units.find((v) => v.dead && v.side === u.side && !v.revived && !v.summon && !v.object);
-          if (!dead) { cb.heal(u, 150 * Hm, u); break; }
-          const cell = freeNear(cb, dead.cell);
-          if (cell === undefined) break;
-          dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, (d.power || 0.5) + 0.12 * ((s.star || 1) - 1))); dead.mana = 0; if (dead.bars) for (const b of dead.bars) b.mana = 0; dead.moving = null; dead.st = {};
-          dead.cell = cell; cb.occ[cell] = dead; dead.px = grid.cells[cell].x; dead.py = grid.cells[cell].y; dead.popT = 0.35;
-          cb.ring(dead.px, dead.py, '#fff2b0', 34, 0.8);
-          cb.float(dead.px, dead.py - 28, '테이프로 붙였다!', '#c48a00', true);
-          break;
-        }
         case 'heavy':
           slashOne(cb, t, true);
           cb.damage(u, t, u.atk * d.power * k * scale, 'spell');
@@ -620,7 +611,7 @@
             if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 3 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.6); } } }
           }
           const ef = s.def.effect;
-          fx.play(['heal', 'shield', 'buff', 'haste', 'timewarp', 'revive', 'mana', 'fortify', 'parry'].includes(ef) ? 'heal' : s.def.cls === 'mag' || ef === 'tele' ? 'magic' : 'skill', 0.08);
+          fx.play(['heal', 'shield', 'buff', 'haste', 'timewarp', 'mana', 'fortify', 'parry'].includes(ef) ? 'heal' : s.def.cls === 'mag' || ef === 'tele' ? 'magic' : 'skill', 0.08);
           fx.burst(u.px, u.py, u.side ? '#e8436b' : clsCol(s.def.cls), 6);
           return true;
         },
@@ -640,6 +631,7 @@
           if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
+          if (src.ifx === 'deadeye' && t && t.hp < t.maxHp * 0.5) m *= 1.25;
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + (src.passive === 'focus' ? 0.08 : 0.05) * (src.focusN || 0);
           return m;
@@ -673,6 +665,10 @@
               cb.beam(t.px, t.py, v.px, v.py, '#b48cff', 0.25); cb.damage(u, v, u.atk * 0.35 * Math.min(1.6, u.ifxK), 'splash');
             }
           }
+          if (u.ifx === 'multiShot') { // 폭풍의 활: 가까운 다른 적에게 한 발 더
+            const v = cb.alive(1).filter((x) => x !== t && !x.object).sort((a, c) => grid.dist(t.cell, a.cell) - grid.dist(t.cell, c.cell))[0];
+            if (v) { cb.beam(u.px, u.py, v.px, v.py, '#bfe8ff', 0.2); cb.damage(u, v, u.atk * 0.4, 'splash'); }
+          }
           if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.25 * u.healMult * u.ifxK, u); }
           if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 1.8 * u.healMult * u.ifxK, u); } }
           if (u.passive === 'pierce4' && u.atkN % 4 === 0) {
@@ -690,6 +686,10 @@
             fx.play(crit ? 'crit' : 'hit', 0.04);
             fx.burst(t.px, t.py, src && !src.side ? clsCol(src.cls) : '#e8436b', crit ? 7 : 3);
             if (dmg >= 300) fx.shake(3);
+          }
+          if (t.ifx === 'lastStand' && !t.lsUsed && !t.dead && t.hp > 0 && t.hp < t.maxHp * 0.35) { // 불멸의 방패
+            t.lsUsed = true; giveShield(t, t.maxHp * 0.2, t); t.st.fort = 3; t.st.fortRed = 0.25;
+            cb.ring(t.px, t.py, '#f6d64e', 34, 0.8); cb.float(t.px, t.py - 34, '불멸!', '#c48a00', true);
           }
           if (t.ifx === 'towerGuard' && t.side === 0 && dmg > 0) for (const n of grid.neighbors[t.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) giveShield(a, dmg * 0.12 * t.ifxK, t); }
           if (!src || src.dead === undefined) return;
@@ -712,7 +712,7 @@
             const pr = src.procs || new Set();
             if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 35 * src.ifxK, dur: 4 }, src);
             if (pr.has('spellSlow')) addStatus(cb, t, 'slow', 2 * Math.min(1.6, src.ifxK), src);
-            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * (src.passive === 'hex' ? 0.25 : 0.25) * (src.healMult || 1), src);
+            if ((src.ifx === 'spellLeech' || src.ifx === 'abyss' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * (src.passive === 'hex' ? 0.25 : 0.25) * (src.healMult || 1), src);
           }
         },
         onHeal: () => fx.play('heal', 0.15),
@@ -733,6 +733,7 @@
               if (u.auraT <= 0) { u.auraT = 4; for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.05 * u.healMult, u); cb.ring(u.px, u.py, '#fff2b0', 34, 0.5); }
             }
             if (u.ifx === 'manaRegen' && u.ability) addMana(u, 3 * Math.min(1.6, u.ifxK) * dt);
+            if (u.ifx === 'sageStone' && u.ability) addMana(u, 5 * dt);
             if (u.passive === 'dragonBreath' && !u.breathed && u.hp / u.maxHp <= 0.5) {
               u.breathed = true;
               const t = u.target && !u.target.dead ? u.target : cb.nearestEnemy(u), dir = facing(u, t);

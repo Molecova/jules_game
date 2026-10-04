@@ -79,7 +79,7 @@
     S_('huntmark', '사냥 표식', 'arc', 1),
     S_('poisonarrow', '독화살', 'arc', 1), S_('spread', '산탄 사격', 'arc', 1), S_('snipe', '저격', 'arc', 2), S_('judgment', '심판의 화살', 'arc', 3), S_('snare', '속박 화살', 'arc', 2), S_('horn', '지휘 나팔', 'arc', 3),
     S_('fire', '화염 폭발', 'mag', 1), S_('chain', '연쇄 번개', 'mag', 2), S_('meteor', '메테오', 'mag', 3),
-    S_('light', '치유의 빛', 'mag', 1), S_('purify', '정화', 'mag', 2), S_('revive', '부활의 기도', 'mag', 3),
+    S_('light', '치유의 빛', 'mag', 1), S_('purify', '정화', 'mag', 2),
     S_('manaflow', '마나 순환', 'mag', 1),
     S_('ice', '얼음 창', 'mag', 1), S_('drainlife', '생명 흡수', 'mag', 2), S_('barrier', '마나 방벽', 'mag', 2), S_('blizzard', '눈보라', 'mag', 3), S_('aegis', '신의 가호', 'mag', 3), S_('frostnova', '서리 폭발', 'mag', 2), S_('timewarp', '시간 왜곡', 'mag', 3),
     S_('aid', '응급 처치', 'any', 1), S_('warcry', '전투 함성', 'any', 1), S_('adrenaline', '아드레날린', 'any', 2), S_('heavy', '혼신의 일격', 'any', 1), S_('secondwind', '재정비', 'any', 2),
@@ -94,7 +94,6 @@
     bleedcut: { power: 80, bleed: { dps: 40, dur: 5 }, desc: '앞쪽 3칸을 베고 5초 출혈(초당 40)' },
     fire: { power: 100 }, meteor: { power: 380 }, healarrow: { power: 180, desc: '가장 다친 아군에게 치유 화살(180 회복)' },
     fortify: { power: 120, dur: 3, red: 0.3, desc: '3초간 받는 피해 −30%, 체력 120 회복' },
-    revive: { power: 0.3, mana: 130, desc: '찢어진 아군 하나를 체력 30%로 붙여 되살린다' },
     purify: { power: 150, desc: '체력이 가장 낮은 아군 150 회복 + 해로운 효과 제거' },
     manaflow: { power: 45, desc: '주변 1칸 다른 아군 마나 +45' },
     adrenaline: { amt: 1.6, desc: '자신 5초간 공격 속도 +60%' },
@@ -134,6 +133,16 @@
     I_('stormstaff', '폭풍의 지팡이', 'mag', 4, 'staff', { spell: 0.18, manaPerHit: 3 }, 'stormHit', '스킬 위력 +18%. 기본 공격이 가까운 적 둘에게 번개(공격력 35%)', '연쇄 공격'),
     I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.4, mana: 20 }, 'echo', '스킬 위력 +40%, 마나 20으로 시작. 3번 시전마다 한 번 더(60%)', '폭딜'),
   ];
+  // 보스 전용 아이템(5등급): 상점에 나오지 않고 보스 전리품으로만 확률적으로 떨어진다. 한 판에 한 장씩
+  const SP_ = (...a) => Object.assign(I_(...a), { special: true });
+  ITEMS.push(
+    SP_('kingsword', '왕의 대검', 'war', 5, 'sword', { atk: 0.3, hp: 0.2 }, 'cleave', '공격력 +30%, 체력 +20%. 공격하면 대상 주변 적에게도 피해 25%', '보스 전리품'),
+    SP_('aegis', '불멸의 방패', 'war', 5, 'shield', { hp: 0.22, armor: 0.06 }, 'lastStand', '체력 +22%, 받는 피해 −6%. 체력 35% 아래로 처음 떨어지면 체력 20% 보호막 + 3초간 받는 피해 −25%', '보스 전리품'),
+    SP_('stormbow', '폭풍의 활', 'arc', 5, 'bow', { as: 0.25, atk: 0.15 }, 'multiShot', '공격 속도 +25%, 공격력 +15%. 공격할 때마다 가까운 다른 적에게 화살 한 발 더(40%)', '보스 전리품'),
+    SP_('dragoneye', '용의 눈', 'arc', 5, 'ring', { range: 1, crit: 0.3, atk: 0.15 }, 'deadeye', '사거리 +1, 치명 +30%, 공격력 +15%. 치명 피해 +50%, 체력 50% 이하 적에게 피해 +25%', '보스 전리품'),
+    SP_('philostone', '현자의 돌', 'mag', 5, 'orb', { spell: 0.45, mana: 30 }, 'sageStone', '스킬 위력 +45%, 마나 30으로 시작. 초당 마나 +5', '보스 전리품'),
+    SP_('abysstome', '심연의 서', 'mag', 5, 'book', { spell: 0.55, hp: 0.25 }, 'abyss', '스킬 위력 +55%, 체력 +25%. 스킬에 맞은 적 화상, 스킬 피해의 25% 회복', '보스 전리품'),
+  );
 
   // 시너지
   // 유닛(성격) 10종: 'count' = 서로 다른 딱지 수, 'combo' = 지정한 딱지가 전부, 'peer' = 같은 등급 딱지 수
@@ -221,7 +230,7 @@
     lens: { name: '확대경', desc: '모든 아군 치명타 +6%' },
     lantern: { name: '수호 등불', desc: '전투마다 처음 쓰러지는 아군 하나가 체력 20%로 일어남' },
     tome: { name: '고대 마법서', desc: '모든 아군 마나 획득 +15%' },
-    victoryhorn: { name: '승리의 나팔', desc: '3연승 이상이면 모든 아군 공격력 +7%' },
+    victoryhorn: { name: '승리의 나팔', desc: '정예·보스 전투에서 모든 아군 공격력 +8%' },
     shard: { name: '별 조각', desc: '합성할 때마다 경험치 +1' },
     crest: { name: '용사의 문장', desc: '정예·보스에게 주는 피해 +8%' },
   };
@@ -238,10 +247,10 @@
   };
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.86, phoenix: true },
-    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.94, phoenix: false },
-    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 1.03, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.22, phoenix: false, income: -1 },
+    easy: { name: '쉬움', desc: '보통보다 적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.79, phoenix: true },
+    normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 0.89, phoenix: false },
+    hard: { name: '어려움', desc: '보통보다 적이 강하고 라운드 수입 −1골드', foe: 0.97, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '어려움보다 적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.23, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
