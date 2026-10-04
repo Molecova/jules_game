@@ -6,8 +6,8 @@
   'use strict';
   const { MONSTERS } = global.GD;
   const V = global.V4;
-  const STAR = [0, 1, 1.8, 3.2];     // 유닛 체력·공격
-  const POW = [0, 1, 1.45, 2.1];     // 유닛 별에 따른 스킬 위력
+  const STAR = [0, 1, 2, 4];     // 유닛 체력·공격
+  const POW = [0, 1, 1.7, 2.8];     // 유닛 별에 따른 스킬 위력
   const SKSTAR = [0, 1, 1.7, 2.6];   // 스킬 칩 별
   const ITSTAR = [0, 1, 1.6, 2.5];   // 아이템 별
   const def = (kind, id) => V.DEF[kind + ':' + id];
@@ -116,9 +116,17 @@
     }
     const skillMana = (s) => Math.max(30, (s.def.mana || 80) - (s.star - 1) * 8);
     const costOf = (u, s) => Math.max(20, Math.round(skillMana(s) * (u.manaCost || 1)));
+    // 아군: 스킬 칩마다 마나 막대가 따로 있고 각자 차면 그 스킬을 쓴다
     function setupSkills(e, mana) {
-      if (e.skills.length) { e.ability = { type: 'skill' }; e.skillIdx = 0; e.maxMana = costOf(e, e.skills[0]); e.mana = Math.min(e.maxMana - 1, mana); }
-      else { e.ability = null; e.maxMana = 0; e.mana = 0; }
+      if (e.skills.length) {
+        e.ability = { type: 'skill' }; e.skillIdx = 0;
+        e.bars = e.skills.map((s) => { const max = costOf(e, s); return { max, mana: Math.min(max - 1, mana) }; });
+        e.maxMana = e.bars[0].max; e.mana = e.bars[0].mana;
+      } else { e.ability = null; e.maxMana = 0; e.mana = 0; }
+    }
+    function addMana(u, amt) {
+      if (u.bars) { for (const b of u.bars) b.mana = Math.min(b.max, b.mana + amt); return; }
+      if (u.ability) u.mana = Math.min(u.maxMana, u.mana + amt);
     }
     function wpArt(it) { return { id: 'v4' + it.id, shape: it.shape, cls: V.CLS[it.cls].art, tier: it.t >= 3 ? 3 : it.t }; }
     function loadoutOf(card) {
@@ -146,8 +154,8 @@
       if (s.fx === 'spellBurn') e.procs.add('spellBurn');
       if (s.fx === 'bloodrage') e.procs.add('cleaveHit');
       if (s.fx === 'burnHit' || p === 'burnHit') e.procs.add('burnHit');
-      if (s.fx === 'thorns') e.thorns += 0.3 * Math.min(1.6, s.fxK);
-      if (s.fx === 'headshot') e.critDmg += 0.6 * Math.min(1.6, s.fxK);
+      if (s.fx === 'thorns') e.thorns += 0.2 * Math.min(1.6, s.fxK);
+      if (s.fx === 'headshot') e.critDmg += 0.4 * Math.min(1.6, s.fxK);
       if (p === 'frenzy') e.lifesteal += 0.15;
       // 시너지
       if (t.war && cls === 'war') e.maxHp *= t.war >= 2 ? 1.3 : 1.15;
@@ -170,17 +178,17 @@
       if (T.mentor) { if (d.id === 'apprentice') e.spell *= 2; if (d.id === 'archmage') e.manaCost = (e.manaCost || 1) * 0.7; }
       if (T.veteran && my('veteran')) { e.atk *= [1, 1.15, 1.3, 1.5][T.veteran]; if (T.veteran >= 3) e.vetHeal = true; }
       // 유물
-      if (cls === 'war' && has('whetstone')) e.atk *= 1.15;
-      if (cls === 'arc' && has('feather')) e.as *= 1.15;
-      if (cls === 'mag' && has('prism')) e.spell *= 1.2;
-      if (has('banner')) e.maxHp *= 1.1;
-      if (has('pauldron')) e.armor += 0.08;
-      if (has('thornmail')) e.thorns += 0.1;
-      if (has('horn')) mana += 20;
-      if (has('bloodstone')) e.lifesteal += 0.08;
-      if (has('lens')) e.crit += 0.1;
-      if (has('tome')) e.manaPerHit *= 1.25;
-      if (has('victoryhorn') && R().streak >= 3) e.atk *= 1.12;
+      if (cls === 'war' && has('whetstone')) e.atk *= 1.08;
+      if (cls === 'arc' && has('feather')) e.as *= 1.08;
+      if (cls === 'mag' && has('prism')) e.spell *= 1.1;
+      if (has('banner')) e.maxHp *= 1.06;
+      if (has('pauldron')) e.armor += 0.05;
+      if (has('thornmail')) e.thorns += 0.06;
+      if (has('horn')) mana += 15;
+      if (has('bloodstone')) e.lifesteal += 0.05;
+      if (has('lens')) e.crit += 0.06;
+      if (has('tome')) e.manaPerHit *= 1.15;
+      if (has('victoryhorn') && R().streak >= 3) e.atk *= 1.07;
       e.armor = Math.min(0.7, e.armor);
       e.maxHp = Math.round(e.maxHp); e.hp = e.maxHp;
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
@@ -192,9 +200,9 @@
     function foeMul(d) {
       const r = R(), n = r.round, t = global.__tune || {}, df = V.DIFF[r.diff || 'normal'].foe;
       const role = d.boss ? 'boss' : d.elite ? 'elite' : 'normal';
-      const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.72][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.75 : 1);
-      const hp = ((t.hp0 || 1.2) + (t.hpK || 0.2) * n) * ({ normal: t.normHp || 1, elite: t.eliteHp || 0.82, boss: t.bossHp || 0.95 }[role]) * bossK * df;
-      const atk = ((t.atk0 || 1) + (t.atkK || 0.095) * n) * ({ normal: t.normAtk || 1, elite: t.eliteAtk || 0.9, boss: t.bossAtk || 0.95 }[role]) * Math.sqrt(bossK) * df;
+      const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.58, t.boss4 || 1, t.boss5 || 1.3][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1, t.a4 || 1, t.a5 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.75 : 1);
+      const hp = ((t.hp0 || 1.2) + (t.hpK || 0.2) * n + (t.hpQ || 0.009) * n * n) * ({ normal: t.normHp || 0.82, elite: t.eliteHp || 0.78, boss: t.bossHp || 0.95 }[role]) * bossK * df;
+      const atk = ((t.atk0 || 1) + (t.atkK || 0.1) * n + (t.atkQ || 0.0035) * n * n) * ({ normal: t.normAtk || 0.85, elite: t.eliteAtk || 0.9, boss: t.bossAtk || 0.95 }[role]) * Math.sqrt(bossK) * df;
       return { hp, atk, pow: atk };
     }
     function makeFoe(x) {
@@ -211,7 +219,7 @@
     }
     function makeSummon(id, cell, side, owner) {
       const d = MONSTERS[id];
-      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.5 : 1) * (owner.wildSummon || 1) : 1;
+      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.3 : 1) * (owner.wildSummon || 1) : 1;
       const e = baseEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, side, cell, {
         def: d, artId: d.id, cls: 'melee', summon: true, skills: [], procs: new Set(), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, pow: k, spell: 1,
       });
@@ -221,16 +229,16 @@
     }
     function monsterCls(d) {
       if (['whelp', 'dragon', 'imp', 'salam', 'magmagolem', 'surt'].includes(d.id)) return 'fire';
-      if ((d.skills || []).some((id) => ['fire', 'chain', 'ice', 'light'].includes(id))) return 'mage';
+      if ((d.skills || []).some((id) => ['fire', 'chain', 'ice', 'light', 'blizzard', 'drainlife'].includes(id))) return 'mage';
       return d.range > 1 ? 'bow' : 'melee';
     }
 
     // ---------- 상태이상 ----------
     function dotMult(src, key) {
       if (!src || src.side !== 0) return 1;
-      if (key === 'burn') return (has('ember') ? 1.6 : 1) * (src.burnBoost || 1);
-      if (key === 'poison' && has('venomgland')) return 1.6;
-      if (key === 'bleed' && has('hook')) return 1.6;
+      if (key === 'burn') return (has('ember') ? 1.4 : 1) * (src.burnBoost || 1);
+      if (key === 'poison' && has('venomgland')) return 1.4;
+      if (key === 'bleed' && has('hook')) return 1.4;
       return 1;
     }
     function addStatus(cb, t, key, val, src) {
@@ -380,7 +388,7 @@
         case 'mana': {
           const cells = cellsOf();
           tiles(cb, cells, '#6ab0e8');
-          for (const a of allies(cells)) if (a !== u && a.ability) a.mana = Math.min(a.maxMana, a.mana + (d.power || 30) * k);
+          for (const a of allies(cells)) if (a !== u && a.ability) addMana(a, (d.power || 30) * k);
           break;
         }
         case 'revive': {
@@ -388,7 +396,7 @@
           if (!dead) { cb.heal(u, 150 * Hm, u); break; }
           const cell = freeNear(cb, dead.cell);
           if (cell === undefined) break;
-          dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, 0.5 + 0.15 * ((s.star || 1) - 1))); dead.mana = 0; dead.moving = null; dead.st = {};
+          dead.dead = false; dead.revived = true; dead.hp = Math.round(dead.maxHp * Math.min(0.9, 0.5 + 0.15 * ((s.star || 1) - 1))); dead.mana = 0; if (dead.bars) for (const b of dead.bars) b.mana = 0; dead.moving = null; dead.st = {};
           dead.cell = cell; cb.occ[cell] = dead; dead.px = grid.cells[cell].x; dead.py = grid.cells[cell].y; dead.popT = 0.35;
           cb.ring(dead.px, dead.py, '#fff2b0', 34, 0.8);
           cb.float(dead.px, dead.py - 28, '테이프로 붙였다!', '#c48a00', true);
@@ -459,6 +467,27 @@
           fx.shake(4);
         }
         if (ratio < 0.5 && !f.bats) { f.bats = true; say('박쥐들아!'); summonFoe(cb, 'bat', 3, enemyRows, 0.8); b.as *= 1.25; }
+      } else if (b.boss === 'icequeen') {
+        if (s.a <= 0) { s.a = 5; say('얼음 감옥'); telegraph(cb, b, AC.shuffle(foes.slice()).slice(0, 2).map((v) => v.cell), 1.4, 120, '#6ae0ff', { stun: 1.5 }); }
+        if (s.b <= 0) { s.b = 10; if (cb.alive(1).length < 5) { say('얼어붙어라'); summonFoe(cb, 'icesprite', 1, enemyRows, 0.7); } }
+        if (ratio <= 0.5 && !f.rage) { f.rage = true; say('눈보라!'); cb.ring(b.px, b.py, '#bfe8ff', 80, 1); env.phase('2페이즈 · 눈보라'); s.c = 1; }
+        if (f.rage && s.c <= 0) { s.c = 6; const r = AC.randi(PLAYER_ROW, ROWS - 1), cells = []; for (let c = 0; c < COLS; c++) cells.push(grid.idx(c, r)); telegraph(cb, b, cells, 1.6, 140, '#bfe8ff', { slow: 3 }); }
+      } else if (b.boss === 'yetiking') {
+        if (s.b <= 0) { s.b = 5; const tgt = near; say('내려찍기'); telegraph(cb, b, [tgt.cell, ...grid.neighbors[tgt.cell]], 1.3, 160, '#9ab0c4', { stun: 1 }); }
+        if (s.a <= 0) { s.a = 9; if (cb.alive(1).length < 5) { say('우가가!'); summonFoe(cb, 'yeti', 1, enemyRows, 0.6); } }
+        if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.35; b.atk *= 1.2; say('분노!'); cb.ring(b.px, b.py, '#ff4d6d', 80, 1); fx.shake(8); env.phase('2페이즈 · 분노'); }
+      } else if (b.boss === 'abysslord') {
+        if (s.a <= 0) { s.a = 6; const col = grid.cells[AC.pick(foes).cell].c, cells = []; for (let r = PLAYER_ROW; r < ROWS; r++) cells.push(grid.idx(col, r)); say('어둠의 창'); telegraph(cb, b, cells, 1.4, 200, '#b04fd0', { vuln: { dur: 4, amt: 0.25 } }); }
+        if (s.b <= 0) { s.b = 10; if (cb.alive(1).length < 6) { say('그림자여'); summonFoe(cb, 'shade', 1, enemyRows, 0.6); } }
+        if (ratio <= 0.5 && !f.rage) { f.rage = true; b.atk *= 1.25; say('심연이 열린다'); cb.ring(b.px, b.py, '#d68bff', 90, 1); fx.shake(10); env.phase('2페이즈 · 심연'); s.c = 1; }
+        if (f.rage && s.c <= 0) {
+          s.c = 6; say('심연 폭발');
+          for (let k = 0; k < 3; k++) { const c0 = AC.randi(0, COLS - 2), r0 = AC.randi(PLAYER_ROW, ROWS - 2); telegraph(cb, b, [grid.idx(c0, r0), grid.idx(c0 + 1, r0), grid.idx(c0, r0 + 1), grid.idx(c0 + 1, r0 + 1)], 1.5, 170, '#b04fd0'); }
+        }
+      } else if (b.boss === 'fallenking') {
+        if (s.b <= 0) { s.b = 5; const dir = facing(b, near), cells = []; for (let k = 1; k <= 2; k++) for (let j = -1; j <= 1; j++) cells.push(rel(b.cell, k, j, dir)); say('처형의 일격'); telegraph(cb, b, cells, 1.3, 190, '#b04fd0'); }
+        if (s.a <= 0) { s.a = 8; giveShield(b, b.maxHp * 0.12, null); say('어둠의 방패'); cb.ring(b.px, b.py, '#9fd0ff', 40, 0.8); }
+        if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.2; say('기사들이여!'); summonFoe(cb, 'fallen', 2, enemyRows, 0.55); env.phase('2페이즈 · 기사단'); fx.shake(8); }
       } else if (b.boss === 'surt') {
         if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.4; b.thorns = 0.2; say('불의 갑옷!'); cb.ring(b.px, b.py, '#ff8a3b', 80, 1); fx.shake(8); env.phase('2페이즈 · 분노'); s.c = 2; }
         if (s.a <= 0) {
@@ -508,7 +537,7 @@
           const far = cb.alive(1).sort((a, c) => grid.dist(u.cell, c.cell) - grid.dist(u.cell, a.cell))[0];
           if (far) leapTo(cb, u, far);
         }
-        if (u.ifx === 'markAura') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) { a.as *= 1 + 0.15 * u.ifxK; } }
+        if (u.ifx === 'markAura') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) { a.as *= 1 + 0.1 * u.ifxK; } }
         if (p === 'starMark') for (const v of AC.shuffle(cb.alive(1).filter((x) => !x.object)).slice(0, 2)) { addStatus(cb, v, 'vuln', { dur: 8, amt: 0.3 }, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '별의 표식', '#e2d0ff'); }
         if (u.ifx === 'towerGuard') u.tauntT = 0;
         if (p === 'holyAura') u.auraT = 2;
@@ -518,7 +547,7 @@
         }
         if (p === 'hex') for (const v of cb.alive(1).filter((x) => !x.object).sort((a, c) => c.atk - a.atk).slice(0, 2)) { addStatus(cb, v, 'weak', 8, u); cb.beam(u.px, u.py, v.px, v.py, '#b04fd0', 0.5); cb.float(v.px, v.py - 30, '저주', '#e2d0ff'); }
       }
-      if (has('snowglobe')) for (const v of cb.alive(1)) addStatus(cb, v, 'slow', 3);
+      if (has('snowglobe')) for (const v of cb.alive(1)) addStatus(cb, v, 'slow', 2);
     }
 
     // ---------- 훅 ----------
@@ -532,21 +561,21 @@
           if (u.ifx !== 'healer') return false;
           const a = lowestAlly(cb, u.side, true);
           if (!a || a.hp / a.maxHp > 0.92) return false;
-          u.mana = Math.min(u.maxMana, u.mana + (u.manaPerHit || 10));
+          addMana(u, u.manaPerHit || 10);
           cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.25);
-          cb.heal(a, u.atk * 1.4 * u.healMult * u.ifxK, u);
+          cb.heal(a, u.atk * 1.0 * u.healMult * u.ifxK, u);
           return true;
         },
         onCast: (u, t, cb) => {
-          const s = u.skills[u.skillIdx];
-          u.skillIdx = (u.skillIdx + 1) % u.skills.length;
-          u.maxMana = u.side ? u.maxMana : costOf(u, u.skills[u.skillIdx]);
+          let s;
+          if (u.bars) s = u.skills[u.castIdx || 0];
+          else { s = u.skills[u.skillIdx]; u.skillIdx = (u.skillIdx + 1) % u.skills.length; }
           execSkill(cb, u, t, s);
           if (u.side === 0) {
-            if (u.passive === 'scholar') u.mana = Math.min(u.maxMana, 15);
+            if (u.passive === 'scholar' && u.bars) { const b = u.bars[u.castIdx || 0]; b.mana = Math.min(b.max, 15); }
             if (u.passive === 'sage') for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.08 * u.healMult, u);
-            if (u.ifx === 'hourglass') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && a.ability) { a.mana = Math.min(a.maxMana, a.mana + 25 * u.ifxK); cb.ring(a.px, a.py, '#6ab0e8', 16); } }
-            if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 2 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.8); } } }
+            if (u.ifx === 'hourglass') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && a.ability) { addMana(a, 15 * u.ifxK); cb.ring(a.px, a.py, '#6ab0e8', 16); } }
+            if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 3 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.6); } } }
           }
           const ef = s.def.effect;
           fx.play(['heal', 'shield', 'buff', 'haste', 'timewarp', 'revive', 'mana', 'fortify', 'parry'].includes(ef) ? 'heal' : s.def.cls === 'mag' || ef === 'tele' ? 'magic' : 'skill', 0.08);
@@ -558,8 +587,8 @@
           if (u.st.slow > 0) m *= 0.6;
           if (u.st.haste) for (const h of u.st.haste) m *= h.amt;
           if (u.passive === 'frenzy') m *= 1 + 0.6 * Math.max(0, 1 - u.hp / u.maxHp);
-          if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.4 * Math.min(1.6, u.ifxK);
-          if (u.side === 0 && has('drum') && cb.t < 4) m *= 1.4;
+          if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.25 * Math.min(1.6, u.ifxK);
+          if (u.side === 0 && has('drum') && cb.t < 4) m *= 1.25;
           return m;
         },
         dmgDealtMod: (src, t, kind, cb) => {
@@ -567,8 +596,8 @@
           if (src.st && src.st.weak > 0) m *= 0.7;
           if (src.dmgMul) m *= src.dmgMul;
           if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
-          if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.4 * Math.min(1.6, src.ifxK);
-          if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.15;
+          if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
+          if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + 0.08 * (src.focusN || 0);
           return m;
         },
@@ -577,7 +606,7 @@
           if (src && src.pierce && kind === 'atk' && t.armor > 0) m /= 1 - t.armor;
           if (t.st.vuln && t.st.vuln.t > 0) m *= 1 + t.st.vuln.amt;
           if (t.st.fort > 0) m *= 0.6;
-          if (t.side === 0 && cb.t < 6 && has('sandglass')) m *= 0.7;
+          if (t.side === 0 && cb.t < 5 && has('sandglass')) m *= 0.8;
           if (t.side === 0) for (const n of grid.neighbors[t.cell]) { const w = cb.occ[n]; if (w && w.side === 0 && w.passive === 'guardAura') { m *= 0.9; break; } }
           return m;
         },
@@ -590,7 +619,7 @@
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
           if (u.passive === 'stunHit' && u.atkN % 3 === 0 && !t.boss) { addStatus(cb, t, 'stun', 1, u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
-          if (u.ifx === 'stunEvery' && u.atkN % 4 === 0 && !t.boss) { addStatus(cb, t, 'stun', Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
+          if (u.ifx === 'stunEvery' && u.atkN % 5 === 0 && !t.boss) { addStatus(cb, t, 'stun', 0.8 * Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
           if (u.passive === 'tripleShot' && u.atkN % 3 === 0) {
             for (const v of cb.alive(1).filter((x) => x !== t && !x.object).sort((a, c) => grid.dist(t.cell, a.cell) - grid.dist(t.cell, c.cell)).slice(0, 2)) {
               cb.beam(u.px, u.py, v.px, v.py, '#bfe8ff', 0.25); cb.damage(u, v, u.atk * 0.6, 'splash');
@@ -598,11 +627,11 @@
           }
           if (u.ifx === 'stormHit') {
             for (const v of cb.alive(1).filter((x) => x !== t && !x.object && grid.dist(t.cell, x.cell) <= 2).slice(0, 2)) {
-              cb.beam(t.px, t.py, v.px, v.py, '#b48cff', 0.25); cb.damage(u, v, u.atk * 0.5 * Math.min(1.6, u.ifxK), 'splash');
+              cb.beam(t.px, t.py, v.px, v.py, '#b48cff', 0.25); cb.damage(u, v, u.atk * 0.35 * Math.min(1.6, u.ifxK), 'splash');
             }
           }
-          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.6 * u.healMult * u.ifxK, u); }
-          if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 2.5 * u.healMult * u.ifxK, u); } }
+          if (u.ifx === 'healMace') { const a = lowestAlly(cb, 0, true); if (a) cb.heal(a, u.atk * 0.4 * u.healMult * u.ifxK, u); }
+          if (u.ifx === 'quiverHeal' && u.atkN % 3 === 0) { const a = lowestAlly(cb, 0, true); if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, u.atk * 1.8 * u.healMult * u.ifxK, u); } }
           if (u.passive === 'pierce4' && u.atkN % 4 === 0) {
             const dir = facing(u, t), cells = [];
             for (let f = 1; f < 10; f++) { const i = rel(u.cell, f, 0, dir); if (i < 0) break; cells.push(i); }
@@ -619,14 +648,14 @@
             fx.burst(t.px, t.py, src && !src.side ? clsCol(src.cls) : '#e8436b', crit ? 7 : 3);
             if (dmg >= 300) fx.shake(3);
           }
-          if (t.ifx === 'towerGuard' && t.side === 0 && dmg > 0) for (const n of grid.neighbors[t.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) giveShield(a, dmg * 0.2 * t.ifxK, t); }
+          if (t.ifx === 'towerGuard' && t.side === 0 && dmg > 0) for (const n of grid.neighbors[t.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) giveShield(a, dmg * 0.12 * t.ifxK, t); }
           if (!src || src.dead === undefined) return;
           if (kind === 'atk') {
             const pr = src.procs || new Set();
             if (pr.has('burnHit')) addStatus(cb, t, 'burn', { dps: 25, dur: 3 }, src);
-            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 30 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
-            if (pr.has('cleaveHit')) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== src.side && v !== t) cb.damage(src, v, dmg * 0.35, 'splash'); }
-            if (src.ifx === 'markAura') addStatus(cb, t, 'vuln', { dur: 3, amt: 0.15 * Math.min(2, src.ifxK) }, src);
+            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 25 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
+            if (pr.has('cleaveHit')) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== src.side && v !== t) cb.damage(src, v, dmg * 0.25, 'splash'); }
+            if (src.ifx === 'markAura') addStatus(cb, t, 'vuln', { dur: 3, amt: 0.1 * Math.min(2, src.ifxK) }, src);
             if (src.passive === 'heavyBolt' && src.side === 0) {
               const a = grid.cells[src.cell], b2 = grid.cells[t.cell], dx = Math.sign(b2.c - a.c), dy = Math.sign(b2.r - a.r);
               const bi = grid.idx(b2.c + dx, b2.r + dy), v = bi >= 0 ? cb.occ[bi] : null;
@@ -638,9 +667,9 @@
           }
           if (kind === 'spell') {
             const pr = src.procs || new Set();
-            if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 30 * src.ifxK, dur: 3 }, src);
+            if (pr.has('spellBurn')) addStatus(cb, t, 'burn', { dps: 22 * src.ifxK, dur: 3 }, src);
             if (pr.has('spellSlow')) addStatus(cb, t, 'slow', 2 * Math.min(1.6, src.ifxK), src);
-            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * 0.25 * (src.healMult || 1), src);
+            if ((src.ifx === 'spellLeech' || src.passive === 'hex') && !src.dead && dmg > 0) cb.heal(src, dmg * (src.passive === 'hex' ? 0.25 : 0.15) * (src.healMult || 1), src);
           }
         },
         onHeal: () => fx.play('heal', 0.15),
@@ -660,7 +689,7 @@
               u.auraT -= dt;
               if (u.auraT <= 0) { u.auraT = 4; for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.05 * u.healMult, u); cb.ring(u.px, u.py, '#fff2b0', 34, 0.5); }
             }
-            if (u.ifx === 'manaRegen' && u.ability && u.mana < u.maxMana) u.mana = Math.min(u.maxMana, u.mana + 5 * Math.min(1.6, u.ifxK) * dt);
+            if (u.ifx === 'manaRegen' && u.ability) addMana(u, 3 * Math.min(1.6, u.ifxK) * dt);
             if (u.passive === 'dragonBreath' && !u.breathed && u.hp / u.maxHp <= 0.5) {
               u.breathed = true;
               const t = u.target && !u.target.dead ? u.target : cb.nearestEnemy(u), dir = facing(u, t);
@@ -696,7 +725,13 @@
               for (const i of tl.cells) {
                 fx.burst(grid.cells[i].x, grid.cells[i].y, tl.color, 2);
                 const v = cb.occ[i];
-                if (v && v.side === tl.side && !v.dead) { cb.damage(tl.src && !tl.src.dead ? tl.src : null, v, tl.dmg, 'spell'); if (tl.burn) addStatus(cb, v, 'burn', tl.burn, tl.src); }
+                if (v && v.side === tl.side && !v.dead) {
+                  cb.damage(tl.src && !tl.src.dead ? tl.src : null, v, tl.dmg, 'spell');
+                  if (tl.burn) addStatus(cb, v, 'burn', tl.burn, tl.src);
+                  if (tl.stun) addStatus(cb, v, 'stun', tl.stun, tl.src);
+                  if (tl.slow) addStatus(cb, v, 'slow', tl.slow, tl.src);
+                  if (tl.vuln) addStatus(cb, v, 'vuln', tl.vuln, tl.src);
+                }
               }
               if (tl.onDone) tl.onDone();
             }
@@ -716,7 +751,7 @@
             const cell = freeNear(cb, t.cell);
             if (cell !== undefined) {
               cb.lanternUsed = true;
-              t.dead = false; t.revived = true; t.hp = Math.round(t.maxHp * 0.3); t.moving = null; t.st = {}; t.stun = 0;
+              t.dead = false; t.revived = true; t.hp = Math.round(t.maxHp * 0.2); t.moving = null; t.st = {}; t.stun = 0;
               t.cell = cell; cb.occ[cell] = t; t.px = grid.cells[cell].x; t.py = grid.cells[cell].y; t.popT = 0.35;
               cb.ring(t.px, t.py, '#fff2b0', 34, 0.8); cb.float(t.px, t.py - 28, '수호 등불!', '#c48a00', true);
             }
@@ -728,5 +763,5 @@
     return { facing, rel, skillCells, synergyCounts, makeAlly, makeFoe, makeSummon, hooks, loadoutOf, wpArt, unitStats, foePreview: foeMul };
   }
 
-  global.BT4 = { create, unitStats, expandCells, STAR, SKSTAR, ITSTAR };
+  global.BT4 = { create, unitStats, expandCells, STAR, POW, SKSTAR, ITSTAR };
 })(window);

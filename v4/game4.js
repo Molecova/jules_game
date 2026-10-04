@@ -3,7 +3,7 @@
   'use strict';
   const GD = window.GD, V = window.V4, ART = window.ART, SFX = window.SFX;
   const { MONSTERS, ACTS, BOSS_INFO } = GD;
-  const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, RELICS, NODE, STARTS, DIFF } = V;
+  const { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, RELICS, NODE, STARTS, DIFF } = V;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const rnd = (n) => Math.floor(Math.random() * n);
@@ -147,8 +147,8 @@
     keep.c.star++;
     fixBench();
     R.stats.merges++;
-    if (has('glue')) R.gold += 2;
-    if (has('shard')) addXp(2);
+    if (has('glue')) R.gold += 1;
+    if (has('shard')) addXp(1);
     if (!quiet) fxMerge(keep);
     for (const c of back) toBench(c);
     for (const c of back) tryMerge(c.kind, c.id, c.star, quiet);
@@ -196,12 +196,12 @@
   function addXp(n) {
     R.xp += n;
     let up = false;
-    while (R.lv < 8 && R.xp >= XPNEED[R.lv]) { R.xp -= XPNEED[R.lv]; R.lv++; up = true; }
-    if (R.lv >= 8) R.xp = 0;
+    while (R.lv < MAXLV && R.xp >= XPNEED[R.lv]) { R.xp -= XPNEED[R.lv]; R.lv++; up = true; }
+    if (R.lv >= MAXLV) R.xp = 0;
     return up;
   }
   function levelUp(quiet) {
-    if (R.lv >= 8) { if (!quiet) toast('최대 레벨'); return false; }
+    if (R.lv >= MAXLV) { if (!quiet) toast('최대 레벨'); return false; }
     if (R.gold < lvCost()) { if (!quiet) toast('골드가 모자라요'); return false; }
     R.gold -= lvCost();
     if (addXp(4) && !quiet) { toast(`원정대 Lv${R.lv} · 출전 ${deployMax()}명`); SFX.play('win'); }
@@ -262,7 +262,7 @@
     const n = R.node;
     R.pos = n.id; R.path.push(n.id); R.lastNode = n; R.node = null; R.enemies = []; R.mode = 'map';
     if (n.k === 'boss') {
-      if (R.act >= 3) return victory();
+      if (R.act >= LAST_ACT) return victory();
       R.act++; R.map = genMap(R.act); R.pos = null; R.path = [];
       ui.actIntro = true;
     }
@@ -287,12 +287,13 @@
     if (kind === 'boss') {
       const boss = MONSTERS[R.map.boss];
       put(boss.id, [1], 2);
-      const adds = { gobking: ['goblin', 'goblin'], slimeking: ['slime', 'slime'], lich: ['skel', 'skelarch'], vampire: ['bat', 'bat', 'cultist'], dragon: ['imp', 'imp', 'salam'], surt: ['imp', 'salam', 'firecult'] }[boss.boss];
+      const adds = { gobking: ['goblin', 'goblin'], slimeking: ['slime', 'slime'], lich: ['skel', 'skelarch'], vampire: ['bat', 'bat', 'cultist'], dragon: ['imp', 'imp', 'salam'], surt: ['imp', 'salam', 'firecult'], icequeen: ['icesprite', 'snowarcher', 'frostwolf'], yetiking: ['yeti', 'frostwolf'], abysslord: ['shade', 'abyssmage', 'demon'], fallenking: ['fallen', 'darkpriest'] }[boss.boss];
       for (const id of adds) put(id, rowsFor(MONSTERS[id]));
     } else if (kind === 'elite') {
       for (const id of AC.pick(A.elites)) put(id, rowsFor(MONSTERS[id]));
-      const extra = Math.floor((R.round - 3) / 4);
-      for (let k = 0; k < extra; k++) { const id = AC.pick(A.normal.filter((x) => MONSTERS[x].v <= 1.5)); put(id, rowsFor(MONSTERS[id])); }
+      const extra = Math.min(3, Math.floor((R.round - 3) / 4));
+      const minV = Math.min(...A.normal.map((x) => MONSTERS[x].v)), small = A.normal.filter((x) => MONSTERS[x].v <= Math.max(1.5, minV));
+      for (let k = 0; k < extra; k++) { const id = AC.pick(small); put(id, rowsFor(MONSTERS[id])); }
     } else {
       let budget = (t.b0 || 2.2) + (t.bK || 0.4) * R.round;
       while (budget > 0.4 && out.length < 9) {
@@ -355,7 +356,7 @@
     B.phase = 'result'; B.won = won;
     const kind = R.node.k;
     if (won) {
-      const g = 1 + (has('goldtooth') ? 2 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2, 3][battleApi.synergyCounts(R.board).ttiers.company || 0];
+      const g = 1 + (has('goldtooth') ? 1 : 0) + (cb.goldBonus || 0) + (kind === 'elite' ? 2 : kind === 'boss' ? 4 : 0) + [0, 1, 2, 3][battleApi.synergyCounts(R.board).ttiers.company || 0];
       R.gold += g; R.stats.goldEarned += g; R.stats.wins++; R.streak++;
       if (kind === 'elite') R.stats.elites++;
       if (kind === 'boss') R.stats.bosses++;
@@ -440,8 +441,8 @@
     if (ui.lastGold != null && ui.lastGold !== R.gold) { const g = $('sgold').parentNode; g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); }
     ui.lastGold = R.gold;
     $('lvB').textContent = 'Lv' + R.lv;
-    $('xpT').textContent = R.lv < 8 ? `${R.xp}/${XPNEED[R.lv]}` : 'MAX';
-    $('xpBar').style.width = R.lv < 8 ? (100 * R.xp / XPNEED[R.lv]) + '%' : '100%';
+    $('xpT').textContent = R.lv < MAXLV ? `${R.xp}/${XPNEED[R.lv]}` : 'MAX';
+    $('xpBar').style.width = R.lv < MAXLV ? (100 * R.xp / XPNEED[R.lv]) + '%' : '100%';
     $('eLv').textContent = 'Lv' + R.lv; $('eXpT').textContent = $('xpT').textContent; $('eXp').style.width = $('xpBar').style.width;
     const n = R.node, A = ACTS[R.act];
     if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료 · 연승 ${R.streak}`; }
@@ -638,7 +639,7 @@
         <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
         <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>`}</button>`;
     }).join('');
-    $('lvBtn').textContent = R.lv >= 8 ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= 8;
+    $('lvBtn').textContent = R.lv >= MAXLV ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= MAXLV;
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
   }
   function renderDetail(s, el) {
@@ -648,7 +649,7 @@
       const st = BT4.unitStats(c), slots = skillSlots(c);
       const sl = shop ? '' : `<div class="slots">${Array.from({ length: slots }, (_, k) => c.skills[k] ? `<button class="es f" data-un="${k}" aria-label="${def(c.skills[k]).name} 빼기"><img src="${imgOf(c.skills[k], 56)}" alt=""></button>` : `<span class="es"><small>스킬</small></span>`).join('')}${c.item ? `<button class="es f" data-un="item" aria-label="${def(c.item).name} 빼기"><img src="${imgOf(c.item, 56)}" alt=""></button>` : `<span class="es"><small>아이템</small></span>`}</div>`;
       const eq = shop ? '' : [...c.skills.map((x) => def(x).name + starTxt(x.star)), c.item ? def(c.item).name + starTxt(c.item.star) : null].filter(Boolean).join(' · ');
-      body = `<p>${d.trait}<br><span class="meta">체력 ${st.hp} · 공격 ${st.atk} · 사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span>${shop ? '' : '<br><span class="hint">칩을 탭하면 창고로 빠집니다</span>'}</p>${sl}`;
+      body = `<p>${d.trait}<br><span class="meta">체력 ${st.hp} · 공격 ${st.atk} · 사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span><br><span class="meta">같은 유닛 3장 → ★2(체력·공격 ×2, 스킬 위력 ×1.7) · ★2 3장 → ★3(×4, ×2.8)</span>${shop ? '' : '<br><span class="hint">칩을 탭하면 창고로 빠집니다</span>'}</p>${sl}`;
     } else if (c.kind === 'skill') {
       body = `<p>${d.desc}<br><span class="meta">마나 ${d.mana || 60} · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span>${shop ? '' : `<br><span class="hint">${CLS[d.cls].name === '공용' ? '아무' : CLS[d.cls].name} 딱지를 탭해 장착</span>`}</p>${patternGrid(d, c.star)}`;
     } else {
@@ -666,18 +667,27 @@
   const pct = (v) => Math.round(v * 100);
   const FXTEXT = {
     infiltrate: () => '전투 시작 시 적 뒤로 도약',
-    healMace: (e, k) => `공격마다 가장 다친 아군 <em>${Math.round(e.atk * 0.6 * e.healMult * k)}</em> 회복`,
-    bloodrage: () => '주변 적에게 35% 튐, 체력 50% 이하 공속 +40%',
+    healMace: (e, k) => `공격마다 가장 다친 아군 <em>${Math.round(e.atk * 0.4 * e.healMult * k)}</em> 회복`,
+    bloodrage: () => '주변 적에게 25% 튐, 체력 50% 이하 공속 +25%',
     towerGuard: () => '4초마다 주변 적 도발, 맞으면 주변 아군 보호막',
-    poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(30 * k)}</em>, 최대 3중첩)`,
-    quiverHeal: (e, k) => `3타마다 치유 화살 <em>${Math.round(e.atk * 2.5 * e.healMult * k)}</em>`,
+    poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(25 * k)}</em>, 최대 3중첩)`,
+    quiverHeal: (e, k) => `3타마다 치유 화살 <em>${Math.round(e.atk * 1.8 * e.healMult * k)}</em>`,
     hawkFocus: () => '사냥매 소환, 같은 적을 계속 쏘면 피해 증가',
-    markAura: (e, k) => `맞힌 적 받는 피해 <em>+${Math.round(15 * Math.min(2, k))}%</em>, 주변 아군 공속 <em>+${Math.round(15 * k)}%</em>`,
+    markAura: (e, k) => `맞힌 적 받는 피해 <em>+${Math.round(10 * Math.min(2, k))}%</em>, 주변 아군 공속 <em>+${Math.round(10 * k)}%</em>`,
     spellSlow: () => '스킬에 맞은 적 둔화',
-    spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(30 * k)}</em>)`,
-    healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 <em>${Math.round(e.atk * 1.4 * e.healMult * k)}</em> 치유`,
-    hourglass: (e, k) => `스킬 사용 시 주변 아군 마나 <em>+${Math.round(25 * k)}</em>`,
-    echo: () => '2번 시전마다 한 번 더(위력 70%)',
+    spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(22 * k)}</em>)`,
+    healer: (e, k) => `다친 아군이 있으면 기본 공격 대신 <em>${Math.round(e.atk * 1.0 * e.healMult * k)}</em> 치유`,
+    hourglass: (e, k) => `스킬 사용 시 주변 아군 마나 <em>+${Math.round(15 * k)}</em>`,
+    echo: () => '3번 시전마다 한 번 더(위력 60%)',
+    stunEvery: (e, k) => `5타마다 기절 <em>${(0.8 * Math.min(1.6, k)).toFixed(1)}초</em>`,
+    thorns: (e, k) => `근접 피해 <em>${Math.round(20 * Math.min(1.6, k))}%</em> 반사`,
+    giantSlayer: (e, k) => `정예·보스 피해 <em>+${Math.round(25 * Math.min(1.6, k))}%</em>`,
+    burnHit: () => '공격 시 3초 화상',
+    evasive: () => '회피하면 다음 공격 치명타',
+    headshot: (e, k) => `치명 피해 <em>+${Math.round(40 * Math.min(1.6, k))}%</em>`,
+    manaRegen: (e, k) => `초당 마나 <em>+${(3 * Math.min(1.6, k)).toFixed(1)}</em>`,
+    spellLeech: () => '스킬 피해의 15% 회복',
+    stormHit: (e, k) => `기본 공격이 주변 적 둘에게 번개 <em>${Math.round(e.atk * 0.35 * Math.min(1.6, k))}</em>`,
   };
   function itemText(it, star, e) {
     const k = BT4.ITSTAR[star], st = it.st, parts = [];
@@ -742,34 +752,36 @@
       stat('초당 피해', dps, Math.round(d.atk * m * d.as)),
     ].join('');
     const slots = skillSlots(c), cls = CLS[d.cls].name;
-    let rows = '';
+    let rows = `<div class="usec sk"><span>스킬 <b>${c.skills.length}/${slots}</b></span><small>칩마다 마나가 따로 차고, 차면 그 스킬을 씁니다</small></div>`;
     for (let k = 0; k < slots; k++) {
       const x = c.skills[k];
-      if (!x) { rows += `<div class="urow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
+      if (!x) { rows += `<div class="urow skrow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
       const sd = def(x);
       const open = ui.openInfo === 's' + k;
-      rows += `<div class="urow${open ? ' open' : ''}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="meta">마나 ${Math.max(20, Math.round(Math.max(30, (sd.mana || 80) - (x.star - 1) * 8) * (e.manaCost || 1)))}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${esc(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span></span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
+      rows += `<div class="urow skrow${open ? ' open' : ''}" style="--cc:${CLS[sd.cls].col}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="mana">마나 ${e.bars && e.bars[k] ? e.bars[k].max : '-'}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${esc(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ★2 위력 ×1.7 · ★3 ×2.6, 범위 확장</span></span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
     }
-    if (c.item) { const it = def(c.item), open = ui.openInfo === 'item'; rows += `<div class="urow${open ? ' open' : ''}" data-info="item" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}${open ? `<span class="uinfo">${esc(it.desc)}<br><span class="meta">${CLS[it.cls].name} 아이템 · ${it.t}등급 · ★2 수치 ×1.6 · ★3 ×2.5</span></span>` : ''}</span><button class="x" data-un="item" aria-label="${it.name} 빼기">빼기</button></div>`; }
-    else rows += `<div class="urow empty"><span>빈 아이템 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
+    rows += `<div class="usec wp"><span>무기·아이템 <b>${c.item ? 1 : 0}/1</b></span><small>능력치와 고유 효과</small></div>`;
+    if (c.item) { const it = def(c.item), open = ui.openInfo === 'item'; rows += `<div class="urow wprow${open ? ' open' : ''}" style="--cc:${CLS[it.cls].col}" data-info="item" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}${open ? `<span class="uinfo">${esc(it.desc)}<br><span class="meta">${CLS[it.cls].name} 아이템 · ${it.t}등급 · ★2 수치 ×1.6 · ★3 ×2.5</span></span>` : ''}</span><button class="x" data-un="item" aria-label="${it.name} 빼기">빼기</button></div>`; }
+    else rows += `<div class="urow wprow empty"><span>빈 무기 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
     $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급 · ${d.traits.map((t) => TRAITS[t].name).join(' · ')}${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${d.trait}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸을 탭하면 설명</p></div></div>
       <div class="ustats">${stats}</div>
       ${rows}
       <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button></div>`;
   }
-  const POWBASE = (c) => [0, 1, 1.45, 2.1][c.star] * (1 + (def(c).spellBonus || 0));
+  const POWBASE = (c) => BT4.POW[c.star] * (1 + (def(c).spellBonus || 0));
 
   function battleNote() {
     const boss = B && B.combat && B.combat.units.find((u) => u.boss && u.side === 1);
     if (boss) return `${boss.def.name}${B.phaseText ? ' · ' + B.phaseText : ''}`;
     return R.node && R.node.k === 'elite' ? '정예 · 지면 원정 끝' : '지면 원정 끝';
   }
-  // 체력 고리(빨강 35% 미만) + 마나 점(가득 차면 금색)
-  function ringSVG(hp, mp) {
+  // 체력 고리(빨강 35% 미만) + 스킬마다 마나 점(차오르는 부채꼴, 가득 차면 금색)
+  function ringSVG(hp, mps) {
     const C = 2 * Math.PI * 22;
     return `<svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="#ebe2cc" stroke-width="5"/>` +
       (hp > 0 ? `<circle cx="26" cy="26" r="22" fill="none" stroke="${hp < 0.35 ? '#e8436b' : '#2e9e6b'}" stroke-width="5" stroke-dasharray="${(C * hp).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 26 26)" stroke-linecap="round"/>` : '') +
-      (mp == null ? '' : `<circle cx="45" cy="45" r="5" fill="${mp >= 0.98 ? '#f5c400' : '#2f6fd6'}" stroke="#232a3b" stroke-width="1.5"/>`) + '</svg>';
+      (mps || []).map((mp, i, a) => { const cx = 26 + (i - (a.length - 1) / 2) * 12, c2 = 2 * Math.PI * 2.6;
+        return `<circle cx="${cx}" cy="48" r="5.4" fill="#fffdf7" stroke="#232a3b" stroke-width="1.5"/>` + (mp >= 0.98 ? `<circle cx="${cx}" cy="48" r="4.6" fill="#f5c400"/>` : `<circle cx="${cx}" cy="48" r="2.6" fill="none" stroke="#2f6fd6" stroke-width="5.2" stroke-dasharray="${(c2 * mp).toFixed(2)} ${c2.toFixed(2)}" transform="rotate(-90 ${cx} 48)"/>`); }).join('') + '</svg>';
   }
   function renderBattlePanel() {
     const cb = B.combat;
@@ -783,7 +795,7 @@
     $('hSub').textContent = battleNote();
     const ro = $('roster');
     ro.style.setProperty('--n', al.length);
-    ro.innerHTML = al.map((u) => `<div class="ring${u.dead ? ' dead' : ''}" aria-label="${u.def.name} 체력 ${Math.max(0, Math.round(u.hp))}/${Math.round(u.maxHp)}"><span class="rw">${ringSVG(u.dead ? 0 : Math.max(0, u.hp / u.maxHp), u.maxMana ? Math.min(1, u.mana / u.maxMana) : null)}<img src="${imgOf(u.card, 60)}" alt="">${u.card.star > 1 ? `<span class="st">${starTxt(u.card.star)}</span>` : ''}</span><small>${u.def.name.replace(/^견습 /, '')}</small></div>`).join('');
+    ro.innerHTML = al.map((u) => `<div class="ring${u.dead ? ' dead' : ''}" aria-label="${u.def.name} 체력 ${Math.max(0, Math.round(u.hp))}/${Math.round(u.maxHp)}"><span class="rw">${ringSVG(u.dead ? 0 : Math.max(0, u.hp / u.maxHp), (u.bars || []).map((b) => Math.min(1, b.mana / b.max)))}<img src="${imgOf(u.card, 60)}" alt="">${u.card.star > 1 ? `<span class="st">${starTxt(u.card.star)}</span>` : ''}</span><small>${u.def.name.replace(/^견습 /, '')}</small></div>`).join('');
     const res = B.phase === 'result';
     $('skipBtn').hidden = res;
     $('resBtn').hidden = !res;
@@ -997,11 +1009,13 @@
 
   const INK = '#232a3b';
   const boardCache = {};
-  // 막마다 다른 판: 1막 풀밭(나무 테), 2막 돌바닥(금 간 석판), 3막 화산(용암 틈)
+  // 막마다 다른 판: 1막 풀밭(나무 테), 2막 돌바닥(금 간 석판), 3막 화산(용암 틈), 4막 얼음(서리), 5막 심연(보랏빛 룬)
   const ACT_LOOK = {
     1: { ground: '#5f8a4a', frame: '#7a5530', frameHi: '#a77a4a', mine: ['#dcebc8', '#cfe2b8'], foe: ['#e8dcc0', '#dfcfae'], line: '#232a3b', deco: 'grass' },
     2: { ground: '#4a4658', frame: '#3b3848', frameHi: '#6b6780', mine: ['#d5d9e4', '#c8cddb'], foe: ['#ddd0dc', '#cfc0cf'], line: '#232a3b', deco: 'stone' },
     3: { ground: '#2b2220', frame: '#1c1514', frameHi: '#5a2a1c', mine: ['#ecd3b0', '#e2c49c'], foe: ['#e0a88a', '#d6967a'], line: '#ffd36b', deco: 'lava' },
+    4: { ground: '#6a8aa8', frame: '#dfe9f2', frameHi: '#ffffff', mine: ['#e6f0f8', '#d6e6f2'], foe: ['#d0dcec', '#c0d0e4'], line: '#232a3b', deco: 'ice' },
+    5: { ground: '#1b1520', frame: '#2b2235', frameHi: '#6a3b8a', mine: ['#d8d0e4', '#ccc2dc'], foe: ['#c4a8c8', '#b898bc'], line: '#d68bff', deco: 'abyss' },
   };
   function boardBg(act) {
     if (boardCache[act]) return boardCache[act];
@@ -1037,6 +1051,15 @@
         c.fillStyle = 'rgba(35,42,59,.18)'; c.fillRect(x, y + s - 3, s, 3); c.fillRect(x + s - 3, y, 3, s);
         if (rr() < 0.6) { c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1; c.beginPath(); let px = x + rr() * s, py = y + rr() * s; c.moveTo(px, py); for (let k = 0; k < 4; k++) { px += (rr() - 0.5) * 18; py += (rr() - 0.5) * 18; c.lineTo(px, py); } c.stroke(); }
         if (rr() < 0.15) { c.fillStyle = 'rgba(80,110,70,.35)'; c.beginPath(); c.arc(x + rr() * s, y + s - 4, 5, 0, 7); c.fill(); }
+      } else if (L.deco === 'ice') {
+        // 서리 결정과 빛 반사
+        c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + s * 0.45, y); c.lineTo(x, y + s * 0.45); c.closePath(); c.fill();
+        for (let k = 0; k < 2; k++) if (rr() < 0.6) { const fx = x + 8 + rr() * (s - 16), fy = y + 8 + rr() * (s - 16), r0 = 3 + rr() * 3; c.strokeStyle = 'rgba(90,140,190,.45)'; c.lineWidth = 1; c.beginPath(); for (let a = 0; a < 3; a++) { const an = a * Math.PI / 3; c.moveTo(fx - Math.cos(an) * r0, fy - Math.sin(an) * r0); c.lineTo(fx + Math.cos(an) * r0, fy + Math.sin(an) * r0); } c.stroke(); }
+        if (rr() < 0.4) { c.strokeStyle = 'rgba(90,140,190,.3)'; c.lineWidth = 1; c.beginPath(); let px = x + rr() * s, py = y + rr() * s; c.moveTo(px, py); for (let k = 0; k < 3; k++) { px += (rr() - 0.5) * 20; py += (rr() - 0.5) * 20; c.lineTo(px, py); } c.stroke(); }
+      } else if (L.deco === 'abyss') {
+        // 보랏빛 룬과 어둠 얼룩
+        const g = c.createRadialGradient(x + s / 2, y + s / 2, 4, x + s / 2, y + s / 2, s * 0.75); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(40,20,60,.3)'); c.fillStyle = g; c.fillRect(x, y, s, s);
+        if (rr() < 0.3) { c.save(); c.shadowColor = '#d68bff'; c.shadowBlur = 6; c.strokeStyle = 'rgba(176,79,208,.6)'; c.lineWidth = 1.4; const cx = x + s / 2, cy = y + s / 2, r0 = 9; c.beginPath(); c.arc(cx, cy, r0, 0, 7); c.moveTo(cx, cy - r0); c.lineTo(cx, cy + r0); c.moveTo(cx - r0 * 0.8, cy - 3); c.lineTo(cx + r0 * 0.8, cy + 3); c.stroke(); c.restore(); }
       } else {
         // 그을린 자국과 불씨
         const g = c.createRadialGradient(x + s / 2, y + s / 2, 4, x + s / 2, y + s / 2, s * 0.75); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(80,30,10,.28)'); c.fillStyle = g; c.fillRect(x, y, s, s);
@@ -1108,7 +1131,13 @@
     ctx.fillStyle = '#fffdf7'; ctx.fillRect(x, y, w, 6);
     ctx.fillStyle = e.side ? '#e8436b' : '#2e9e6b'; ctx.fillRect(x, y, hpW, 6);
     if (e.shield > 0) { ctx.fillStyle = '#bfe0ff'; ctx.fillRect(x + hpW, y, (w * e.shield) / total, 6); }
-    if (e.ability && e.maxMana > 0) { ctx.fillStyle = INK; ctx.fillRect(x - 1, y + 7.5, w + 2, 4); ctx.fillStyle = '#2f6fd6'; ctx.fillRect(x, y + 8.3, (w * Math.min(e.mana, e.maxMana)) / e.maxMana, 2.4); }
+    // 마나: 스킬 칩마다 한 줄(차면 금색)
+    const bars = e.bars || (e.ability && e.maxMana > 0 ? [{ mana: e.mana, max: e.maxMana }] : []);
+    bars.forEach((b, i) => {
+      const yy = y + 7.5 + i * 3.6;
+      ctx.fillStyle = INK; ctx.fillRect(x - 1, yy, w + 2, 4);
+      ctx.fillStyle = b.mana >= b.max ? '#f5c400' : '#2f6fd6'; ctx.fillRect(x, yy + 0.8, (w * Math.min(b.mana, b.max)) / b.max, 2.4);
+    });
   }
   const SHOT = { mag: ['#b48cff', '#efe2ff'], mage: ['#b48cff', '#efe2ff'], fire: ['#e8643b', '#ffd36b'] };
   function drawProjectiles(cb) {
@@ -1405,10 +1434,10 @@
   }
   // ---------- 상점 확률 ----------
   function openOdds() {
-    const cur = oddsLv(), rows = [3, 4, 5, 6, 7, 8].map((lv) => `<tr class="${lv === Math.min(8, cur) ? 'on' : ''}"><th>Lv${lv}</th>${ODDS[lv].map((p) => `<td>${p ? p + '%' : '·'}</td>`).join('')}</tr>`).join('');
+    const cur = oddsLv(), rows = [3, 4, 5, 6, 7, 8, 9].map((lv) => `<tr class="${lv === Math.min(9, cur) ? 'on' : ''}"><th>Lv${lv}</th>${ODDS[lv].map((p) => `<td>${p ? p + '%' : '·'}</td>`).join('')}</tr>`).join('');
     openSheet(`<span class="eyebrow">상점 확률 · 원정대 Lv${R.lv}${cur !== R.lv ? ` (확률은 Lv${cur} 기준)` : ''}</span><h2>등급별로 나올 확률</h2>
       <table class="odds"><thead><tr><th></th>${[1, 2, 3, 4, 5].map((t) => `<th><i style="--tc:var(--t${t})"></i>${t}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
-      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < 8 ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 3등급, 아이템은 4등급까지 나옵니다.</p>
+      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < MAXLV ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 3등급, 아이템은 4등급까지 나옵니다.</p>
       <button class="btn" data-close>닫기</button>`);
     $('sheetIn').onclick = (e) => { if (e.target.closest('[data-close]')) closeSheet(); };
   }
@@ -1457,10 +1486,10 @@
     const boss = R.map && MONSTERS[R.map.boss];
     $('overStamp').textContent = win ? '원정 완수!' : '원정 실패';
     $('overStamp').className = 'bigstamp' + (win ? ' win' : '');
-    $('overText').textContent = win ? `${boss ? boss.name : '화산의 주인'}이(가) 쓰러지고 화산이 잠잠해졌습니다. 원정대의 이름이 노래로 남을 것입니다.`
+    $('overText').textContent = win ? `${boss ? boss.name : '화산의 주인'}이(가) 쓰러지고 심연의 문이 닫혔습니다. 원정대의 이름이 노래로 남을 것입니다.`
       : `${R.act}막 ${ACTS[R.act].name}${n.k ? ', ' + NODE[n.k].name : ''}에서 쓰러졌습니다.${R.diff === 'normal' ? ' 불사조 깃털 유물이 있으면 한 번은 버틸 수 있습니다.' : ''}`;
     const m = Math.floor(R.stats.time / 60);
-    $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === 5 ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / 18`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
+    $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === 5 ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / ${LAST_ACT * 6}`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
     $('overTeam').innerHTML = R.board.map((u) => `<img src="${imgOf(u, 80)}" alt="${def(u).name}">`).join('') + R.relics.map((k) => `<span class="rpill">${RELICS[k].name}</span>`).join('');
     ui.tearUnit = R.board[0] ? R.board[0].id : 'squire';
     ui.winBoss = boss ? boss.id : 'dragon';
@@ -1520,7 +1549,7 @@
       else list = POOL[tab].slice().sort((a, b) => (CORDER.indexOf(a.cls) - CORDER.indexOf(b.cls)) || a.t - b.t).map((d) => {
         const c = mk(tab, d.id);
         const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? d.desc : `${d.desc}<br><i>${d.feel}</i>`;
-        return `<div class="cx k-${tab} tier${d.t}" style="--tc:var(--t${d.t})"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
+        return `<div class="cx k-${tab} tier${d.t}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
       }).join('');
       $('codexList').innerHTML = list;
       document.querySelectorAll('[data-cx]').forEach((b) => b.classList.toggle('on', b.dataset.cx === tab));

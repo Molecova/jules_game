@@ -65,7 +65,13 @@
     judgment: { power: 240, mana: 90, desc: '끝까지 꿰뚫고 맞은 적 5초 취약(받는 피해 +30%)' },
     drainlife: { power: 260, desc: '대상에게 피해, 준 피해의 60% 회복' },
   };
-  const S_ = (id, name, cls, t) => Object.assign({}, gs(id), SKX[id] || {}, { kind: 'skill', id, name, cls, t });
+  // 스킬 기본 위력은 낮추고(×0.85) 별(★)로 크게 오르게 한다. 설명 속 숫자도 함께 바꾼다
+  const S_ = (id, name, cls, t) => {
+    const o = Object.assign({}, gs(id), SKX[id] || {}, { kind: 'skill', id, name, cls, t });
+    if (o.power > 10) { const np = Math.round(o.power * 0.85 / 5) * 5; if (o.desc) o.desc = o.desc.replace(String(o.power), String(np)); o.power = np; }
+    if (o.heal > 10) { const nh = Math.round(o.heal * 0.85 / 5) * 5; if (o.desc) o.desc = o.desc.replace(String(o.heal), String(nh)); o.heal = nh; }
+    return o;
+  };
   const SKILLS = [
     S_('cross', '십자 베기', 'war', 1), S_('whirl', '회전 베기', 'war', 2), S_('bladestorm', '검의 폭풍', 'war', 3),
     S_('bash', '방패 강타', 'war', 1), S_('wall', '방벽 세우기', 'war', 2), S_('bulwark', '불굴의 함성', 'war', 3),
@@ -85,33 +91,33 @@
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
   const I_ = (id, name, cls, t, shape, st, fx, desc, feel) => ({ kind: 'item', id, name, cls, t, shape, st, fx, desc, feel });
   const ITEMS = [
-    I_('longsword', '장검', 'war', 1, 'sword', { atk: 0.15 }, null, '공격력 +15%', '정석 검사'),
-    I_('buckler', '둥근 방패', 'war', 1, 'shield', { hp: 0.2, armor: 0.08 }, null, '체력 +20%, 받는 피해 −8%', '탱커'),
-    I_('twinblades', '쌍단검', 'war', 2, 'twin', { as: 0.25, crit: 0.15 }, 'infiltrate', '공격 속도 +25%, 치명 +15%. 전투 시작 시 적 뒤로 도약', '도적'),
-    I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.1 }, 'healMace', '체력 +10%. 공격할 때마다 가장 다친 아군을 공격력의 60%만큼 회복', '성기사'),
-    I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.3, lifesteal: 0.1 }, 'bloodrage', '공격력 +30%, 흡혈 10%, 주변 적에게 35% 튐. 체력 50% 이하에서 공격 속도 +40%', '광전사'),
-    I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.1, hp: 0.1 }, 'stunEvery', '공격력·체력 +10%. 4번째 공격마다 대상 1초 기절', '제압'),
-    I_('thornmail', '가시 갑옷', 'war', 3, 'armor', { hp: 0.2, armor: 0.1 }, 'thorns', '체력 +20%, 받는 피해 −10%. 근접 피해 30% 반사', '반격 탱커'),
-    I_('dragonslayer', '용살자의 검', 'war', 4, 'sword', { atk: 0.3, crit: 0.15 }, 'giantSlayer', '공격력 +30%, 치명 +15%. 정예·보스에게 주는 피해 +40%', '보스 사냥꾼'),
-    I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.25, armor: 0.2 }, 'towerGuard', '체력 +25%, 받는 피해 −20%. 4초마다 주변 적을 도발하고, 맞으면 주변 아군에게 보호막', '탱커'),
-    I_('shortbow', '단궁', 'arc', 1, 'bow', { as: 0.15 }, null, '공격 속도 +15%', '정석 궁수'),
-    I_('longbow', '장궁', 'arc', 1, 'bow', { range: 1, atk: 0.1 }, null, '사거리 +1, 공격력 +10%', '저격수'),
+    I_('longsword', '장검', 'war', 1, 'sword', { atk: 0.1 }, null, '공격력 +10%', '정석 검사'),
+    I_('buckler', '둥근 방패', 'war', 1, 'shield', { hp: 0.14, armor: 0.05 }, null, '체력 +14%, 받는 피해 −5%', '탱커'),
+    I_('twinblades', '쌍단검', 'war', 2, 'twin', { as: 0.15, crit: 0.1 }, 'infiltrate', '공격 속도 +15%, 치명 +10%. 전투 시작 시 적 뒤로 도약', '도적'),
+    I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.08 }, 'healMace', '체력 +8%. 공격할 때마다 가장 다친 아군을 공격력의 40%만큼 회복', '성기사'),
+    I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.06 }, 'bloodrage', '공격력 +20%, 흡혈 6%, 주변 적에게 25% 튐. 체력 50% 이하에서 공격 속도 +25%', '광전사'),
+    I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.07, hp: 0.07 }, 'stunEvery', '공격력·체력 +7%. 5번째 공격마다 대상 0.8초 기절', '제압'),
+    I_('thornmail', '가시 갑옷', 'war', 3, 'armor', { hp: 0.14, armor: 0.07 }, 'thorns', '체력 +14%, 받는 피해 −7%. 근접 피해 20% 반사', '반격 탱커'),
+    I_('dragonslayer', '용살자의 검', 'war', 4, 'sword', { atk: 0.2, crit: 0.1 }, 'giantSlayer', '공격력 +20%, 치명 +10%. 정예·보스에게 주는 피해 +25%', '보스 사냥꾼'),
+    I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.18, armor: 0.12 }, 'towerGuard', '체력 +18%, 받는 피해 −12%. 4초마다 주변 적을 도발하고, 맞으면 주변 아군에게 보호막', '탱커'),
+    I_('shortbow', '단궁', 'arc', 1, 'bow', { as: 0.1 }, null, '공격 속도 +10%', '정석 궁수'),
+    I_('longbow', '장궁', 'arc', 1, 'bow', { range: 1, atk: 0.05 }, null, '사거리 +1, 공격력 +5%', '저격수'),
     I_('venombow', '독궁', 'arc', 2, 'bow', { atk: 0.05 }, 'poisonHit', '공격력 +5%. 공격 시 중독', '독 사냥꾼'),
-    I_('quiver', '축복의 화살통', 'arc', 2, 'charm', { heal: 0.2 }, 'quiverHeal', '3번째 공격마다 가장 다친 아군에게 치유 화살(공격력 ×2.5)', '힐러 궁수'),
-    I_('whistle', '사냥매 호루라기', 'arc', 3, 'tooth', { atk: 0.15 }, 'hawkFocus', '공격력 +15%. 전투 시작 시 사냥매 소환, 같은 적 연속 공격 피해 증가', '사냥꾼'),
-    I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.1 }, 'burnHit', '공격력 +10%. 공격 시 3초 화상', '화상 궁수'),
-    I_('windcloak', '바람 망토', 'arc', 3, 'cloak', { as: 0.2, dodge: 0.2 }, 'evasive', '공격 속도 +20%, 회피 +20%. 회피하면 다음 공격 치명타', '회피 궁수'),
-    I_('eagleeye', '매의 눈 반지', 'arc', 4, 'ring', { range: 1, crit: 0.25 }, 'headshot', '사거리 +1, 치명 +25%, 치명 피해 +60%', '저격수'),
-    I_('hornbow', '지휘관의 뿔활', 'arc', 4, 'crossbow', { atk: 0.15, as: 0.1 }, 'markAura', '맞힌 적에 표식(받는 피해 +15%). 주변 1칸 아군 공격 속도 +15%', '지원가'),
-    I_('wand', '견습 지팡이', 'mag', 1, 'wand', { manaPerHit: 6, spell: 0.05 }, null, '공격할 때마다 마나 +6, 스킬 위력 +5%', '정석 마법사'),
-    I_('frostorb', '서리 오브', 'mag', 1, 'orb', { spell: 0.2 }, 'spellSlow', '스킬 위력 +20%. 스킬에 맞은 적 둔화', '제어'),
-    I_('firestaff', '화염 지팡이', 'mag', 2, 'staff', { spell: 0.2 }, 'spellBurn', '스킬 위력 +20%. 스킬에 맞은 적 화상', '공격'),
-    I_('prayerbook', '성서', 'mag', 2, 'book', { heal: 0.3 }, 'healer', '치유 +30%. 다친 아군이 있으면 기본 공격 대신 그 아군을 치유', '힐러'),
-    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 20 }, 'hourglass', '마나 20으로 시작. 스킬을 쓰면 주변 1칸 아군 마나 +25', '지원'),
-    I_('manaring', '마나 반지', 'mag', 2, 'ring', { mana: 15 }, 'manaRegen', '마나 15로 시작. 초당 마나 +5', '빠른 시전'),
-    I_('lifeorb', '생명의 수정', 'mag', 3, 'orb', { spell: 0.15, heal: 0.2 }, 'spellLeech', '스킬 위력 +15%, 치유 +20%. 스킬 피해의 25% 회복', '흡혈 마법사'),
-    I_('stormstaff', '폭풍의 지팡이', 'mag', 4, 'staff', { spell: 0.25, manaPerHit: 4 }, 'stormHit', '스킬 위력 +25%. 기본 공격이 가까운 적 둘에게 번개(공격력 50%)', '연쇄 공격'),
-    I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.45, mana: 30 }, 'echo', '스킬 위력 +45%, 마나 30으로 시작. 2번 시전마다 한 번 더(80%)', '폭딜'),
+    I_('quiver', '축복의 화살통', 'arc', 2, 'charm', { heal: 0.14 }, 'quiverHeal', '3번째 공격마다 가장 다친 아군에게 치유 화살(공격력 ×1.8)', '힐러 궁수'),
+    I_('whistle', '사냥매 호루라기', 'arc', 3, 'tooth', { atk: 0.1 }, 'hawkFocus', '공격력 +10%. 전투 시작 시 사냥매 소환, 같은 적 연속 공격 피해 증가', '사냥꾼'),
+    I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.07 }, 'burnHit', '공격력 +7%. 공격 시 3초 화상', '화상 궁수'),
+    I_('windcloak', '바람 망토', 'arc', 3, 'cloak', { as: 0.14, dodge: 0.14 }, 'evasive', '공격 속도 +14%, 회피 +14%. 회피하면 다음 공격 치명타', '회피 궁수'),
+    I_('eagleeye', '매의 눈 반지', 'arc', 4, 'ring', { range: 1, crit: 0.18 }, 'headshot', '사거리 +1, 치명 +18%, 치명 피해 +40%', '저격수'),
+    I_('hornbow', '지휘관의 뿔활', 'arc', 4, 'crossbow', { atk: 0.1, as: 0.07 }, 'markAura', '맞힌 적에 표식(받는 피해 +10%). 주변 1칸 아군 공격 속도 +10%', '지원가'),
+    I_('wand', '견습 지팡이', 'mag', 1, 'wand', { manaPerHit: 4, spell: 0.03 }, null, '공격할 때마다 마나 +4, 스킬 위력 +3%', '정석 마법사'),
+    I_('frostorb', '서리 오브', 'mag', 1, 'orb', { spell: 0.12 }, 'spellSlow', '스킬 위력 +12%. 스킬에 맞은 적 둔화', '제어'),
+    I_('firestaff', '화염 지팡이', 'mag', 2, 'staff', { spell: 0.14 }, 'spellBurn', '스킬 위력 +14%. 스킬에 맞은 적 화상', '공격'),
+    I_('prayerbook', '성서', 'mag', 2, 'book', { heal: 0.2 }, 'healer', '치유 +20%. 다친 아군이 있으면 기본 공격 대신 그 아군을 치유', '힐러'),
+    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 15 }, 'hourglass', '마나 15로 시작. 스킬을 쓰면 주변 1칸 아군 마나 +15', '지원'),
+    I_('manaring', '마나 반지', 'mag', 2, 'ring', { mana: 10 }, 'manaRegen', '마나 10으로 시작. 초당 마나 +3', '빠른 시전'),
+    I_('lifeorb', '생명의 수정', 'mag', 3, 'orb', { spell: 0.1, heal: 0.14 }, 'spellLeech', '스킬 위력 +10%, 치유 +14%. 스킬 피해의 15% 회복', '흡혈 마법사'),
+    I_('stormstaff', '폭풍의 지팡이', 'mag', 4, 'staff', { spell: 0.18, manaPerHit: 3 }, 'stormHit', '스킬 위력 +18%. 기본 공격이 가까운 적 둘에게 번개(공격력 35%)', '연쇄 공격'),
+    I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.3, mana: 20 }, 'echo', '스킬 위력 +30%, 마나 20으로 시작. 3번 시전마다 한 번 더(60%)', '폭딜'),
   ];
 
   // 특성 시너지 10종: 유닛마다 2개. kind 'count' = 정해진 수만큼 모이면, 'combo' = 지정한 유닛이 전부 모이면
@@ -145,43 +151,44 @@
   for (const d of [...UNITS, ...SKILLS, ...ITEMS]) DEF[d.kind + ':' + d.id] = d;
 
   const ODDS = { 3: [70, 30, 0, 0, 0], 4: [50, 38, 12, 0, 0], 5: [35, 38, 24, 3, 0], 6: [25, 33, 30, 10, 2], 7: [18, 27, 33, 18, 4], 8: [12, 20, 33, 26, 9], 9: [8, 15, 32, 30, 15] };
-  const XPNEED = { 3: 6, 4: 10, 5: 16, 6: 24, 7: 32 };
+  const XPNEED = { 3: 6, 4: 10, 5: 16, 6: 24, 7: 32, 8: 44 };
+  const MAXLV = 9, LAST_ACT = 5;
   const POOL_N = [0, 15, 12, 10, 9, 6];
   const MAXT = { unit: 5, skill: 3, item: 4 };
   const BENCH = 8;
 
   const RELICS = {
-    banner: { name: '전투 깃발', desc: '모든 아군 체력 +10%' },
-    pauldron: { name: '철갑 견갑', desc: '모든 아군 받는 피해 −8%' },
-    horn: { name: '전쟁 뿔피리', desc: '모든 아군 마나 +20으로 시작' },
-    drum: { name: '전쟁 북', desc: '전투 시작 4초간 아군 공격 속도 +40%' },
-    snowglobe: { name: '눈의 구슬', desc: '전투 시작 시 모든 적 3초 둔화' },
-    ember: { name: '꺼지지 않는 불씨', desc: '아군이 입히는 화상 피해 +60%' },
-    venomgland: { name: '독샘', desc: '아군이 입히는 중독 피해 +60%' },
-    hook: { name: '피 묻은 갈고리', desc: '아군이 입히는 출혈 피해 +60%' },
-    thornmail: { name: '가시 갑옷', desc: '모든 아군 근접 피해 10% 반사' },
-    whistle: { name: '사냥 호루라기', desc: '소환물 체력·공격력 +50%' },
+    banner: { name: '전투 깃발', desc: '모든 아군 체력 +6%' },
+    pauldron: { name: '철갑 견갑', desc: '모든 아군 받는 피해 −5%' },
+    horn: { name: '전쟁 뿔피리', desc: '모든 아군 마나 +15로 시작' },
+    drum: { name: '전쟁 북', desc: '전투 시작 4초간 아군 공격 속도 +25%' },
+    snowglobe: { name: '눈의 구슬', desc: '전투 시작 시 모든 적 2초 둔화' },
+    ember: { name: '꺼지지 않는 불씨', desc: '아군이 입히는 화상 피해 +40%' },
+    venomgland: { name: '독샘', desc: '아군이 입히는 중독 피해 +40%' },
+    hook: { name: '피 묻은 갈고리', desc: '아군이 입히는 출혈 피해 +40%' },
+    thornmail: { name: '가시 갑옷', desc: '모든 아군 근접 피해 6% 반사' },
+    whistle: { name: '사냥 호루라기', desc: '소환물 체력·공격력 +30%' },
     phoenix: { name: '불사조 깃털', desc: '한 번, 전투에서 져도 원정이 끝나지 않음' },
-    goldtooth: { name: '금니', desc: '전투 승리 시 골드 +2' },
+    goldtooth: { name: '금니', desc: '전투 승리 시 골드 +1' },
     bigbag: { name: '큰 배낭', desc: '창고 +2칸' },
     scale: { name: '상인의 저울', desc: '라운드마다 첫 다시 뽑기 무료' },
     vault: { name: '황금 금고', desc: '이자 최대치 +2' },
-    glue: { name: '합성 아교', desc: '합성할 때마다 골드 +2' },
+    glue: { name: '합성 아교', desc: '합성할 때마다 골드 +1' },
     flag: { name: '지휘관의 깃발', desc: '출전 인원 +1' },
     dice: { name: '행운의 주사위', desc: '상점 등급 확률이 레벨 1 높은 것처럼' },
-    whetstone: { name: '숫돌', desc: '전사 공격력 +15%' },
-    feather: { name: '매의 깃털', desc: '궁수 공격 속도 +15%' },
-    prism: { name: '마력 수정', desc: '마법사 스킬 위력 +20%' },
+    whetstone: { name: '숫돌', desc: '전사 공격력 +8%' },
+    feather: { name: '매의 깃털', desc: '궁수 공격 속도 +8%' },
+    prism: { name: '마력 수정', desc: '마법사 스킬 위력 +10%' },
     crown: { name: '상인의 왕관', desc: '라운드 수입 +1골드' },
     anvil: { name: '모루', desc: '레벨업 비용 4 → 3골드' },
-    bloodstone: { name: '피의 돌', desc: '모든 아군 흡혈 +8%' },
-    sandglass: { name: '은 모래시계', desc: '전투 시작 6초간 아군 받는 피해 −30%' },
-    lens: { name: '확대경', desc: '모든 아군 치명타 +10%' },
-    lantern: { name: '수호 등불', desc: '전투마다 처음 쓰러지는 아군 하나가 체력 30%로 일어남' },
-    tome: { name: '고대 마법서', desc: '모든 아군 마나 획득 +25%' },
-    victoryhorn: { name: '승리의 나팔', desc: '3연승 이상이면 모든 아군 공격력 +12%' },
-    shard: { name: '별 조각', desc: '합성할 때마다 경험치 +2' },
-    crest: { name: '용사의 문장', desc: '정예·보스에게 주는 피해 +15%' },
+    bloodstone: { name: '피의 돌', desc: '모든 아군 흡혈 +5%' },
+    sandglass: { name: '은 모래시계', desc: '전투 시작 5초간 아군 받는 피해 −20%' },
+    lens: { name: '확대경', desc: '모든 아군 치명타 +6%' },
+    lantern: { name: '수호 등불', desc: '전투마다 처음 쓰러지는 아군 하나가 체력 20%로 일어남' },
+    tome: { name: '고대 마법서', desc: '모든 아군 마나 획득 +15%' },
+    victoryhorn: { name: '승리의 나팔', desc: '3연승 이상이면 모든 아군 공격력 +7%' },
+    shard: { name: '별 조각', desc: '합성할 때마다 경험치 +1' },
+    crest: { name: '용사의 문장', desc: '정예·보스에게 주는 피해 +8%' },
   };
 
   const NODE = {
@@ -202,9 +209,9 @@
   ];
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.93, phoenix: true },
+    easy: { name: '쉬움', desc: '적이 약하고, 불사조 깃털 하나를 들고 시작', foe: 0.88, phoenix: true },
     normal: { name: '보통', desc: '지면 바로 원정이 끝나는 원래 규칙', foe: 1, phoenix: false },
-    hard: { name: '어려움', desc: '적이 더 강하고 라운드 수입 −1골드', foe: 1.08, phoenix: false, income: -1 },
+    hard: { name: '어려움', desc: '적이 더 강하고 라운드 수입 −1골드', foe: 1.12, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
@@ -217,5 +224,46 @@
     GD.BOSS_INFO.surt = '6초마다 아군 하나가 선 세로줄을 통째로 내려칩니다(화상). 8초마다 임프를 부르고, 체력 50% 이하에서 분노해 공격 속도가 오르고 4초마다 주변 8칸을 태웁니다. 세로로 겹치지 않게 흩어 두세요.';
   }
 
-  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, POOL_N, MAXT, BENCH, RELICS, NODE, STARTS, DIFF };
+  // 4막·5막(원정 확장): 몬스터·막·보스 설명
+  if (!GM.yeti) {
+    const MO = (id, name, act, v, hp, atk, as, range, color, extra) => (GM[id] = Object.assign({ id, kind: 'monster', name, act, v, hp, atk, as, range, color, skills: [] }, extra || {}));
+    MO('yeti', '설인', 4, 2, 1900, 88, 0.65, 1, '#e8eef4', { armor: 0.1, desc: '두꺼운 털가죽으로 버틴다.' });
+    MO('frostwolf', '서리 늑대', 4, 1.5, 1200, 82, 1.0, 1, '#a8c8e0', { desc: '눈밭을 빠르게 내달린다.' });
+    MO('icesprite', '얼음 정령', 4, 2, 1000, 70, 0.6, 3, '#bfe8ff', { skills: ['ice'], mana: 60, desc: '얼음 창으로 줄을 꿰뚫고 둔화시킨다.' });
+    MO('frostskel', '빙결 해골', 4, 1.5, 1400, 86, 0.75, 1, '#bfe8ff', { skills: ['sweep'], mana: 60, desc: '얼어붙은 칼로 가로 3칸을 벤다.' });
+    MO('snowarcher', '설원 사냥꾼', 4, 1.5, 1050, 90, 0.75, 3, '#e8eef4', { desc: '눈보라 속에서 화살을 쏜다.' });
+    MO('icewitch', '얼음 마녀', 4, 2.5, 1200, 66, 0.6, 3, '#3b6b9a', { skills: ['blizzard'], mana: 90, desc: '눈보라로 3×3을 얼리고 약화시킨다.' });
+    MO('mammoth', '털매머드', 4, 3, 3200, 100, 0.5, 1, '#7a5a3a', { armor: 0.2, skills: ['quake'], mana: 80, desc: '땅을 굴러 주변을 흔들고 둔화시킨다.' });
+    MO('frostgolem', '서리 골렘', 4, 2.5, 2600, 80, 0.55, 1, '#9ab8d0', { armor: 0.25, desc: '얼음 덩어리. 매우 단단하다.' });
+    MO('frostgiant', '서리 거인', 4, 8, 8000, 160, 0.5, 1, '#8ab8d8', { skills: ['whirl'], mana: 80, elite: true, desc: '정예. 거대한 얼음 몽둥이로 주변 8칸을 휩쓴다.' });
+    MO('yetichief', '설인 우두머리', 4, 5, 3200, 120, 0.8, 1, '#f4f6fa', { skills: ['cross'], mana: 60, armor: 0.1, elite: true, desc: '정예. 설인 무리를 이끈다.' });
+    MO('iceknight', '얼음 기사', 4, 6, 3600, 130, 0.7, 1, '#dcecf8', { skills: ['earth'], mana: 80, armor: 0.2, elite: true, desc: '정예. 대지를 갈라 줄을 기절시킨다.' });
+    MO('icequeen', '얼음 여왕 시엘라', 4, 99, 7000, 105, 0.6, 3, '#6a9ac8', { boss: 'icequeen', immobile: true, armor: 0.1, desc: '보스. 아군을 얼음 감옥에 가두고 정령을 부른다.' });
+    MO('yetiking', '설인 왕 우가', 4, 99, 8200, 130, 0.7, 1, '#f4f6fa', { boss: 'yetiking', armor: 0.15, desc: '보스. 땅을 내려찍어 기절시키고 설인을 부른다.' });
+    MO('demon', '악마 병사', 5, 2, 2400, 110, 0.75, 1, '#c84a4a', { lifesteal: 0.1, skills: ['cross'], mana: 60, desc: '피를 빨며 십자로 벤다.' });
+    MO('shade', '그림자', 5, 2, 1500, 115, 0.95, 1, '#2b2340', { dodge: 0.3, desc: '흐릿해서 잘 맞지 않는다.' });
+    MO('abyssmage', '심연 술사', 5, 2.5, 1400, 90, 0.6, 3, '#2b1f3b', { skills: ['chain'], mana: 80, desc: '연쇄 번개를 날린다.' });
+    MO('hellhound', '지옥견', 5, 2, 1700, 105, 1.05, 1, '#3b2b2b', { proc: 'burnHit', desc: '물면 불이 붙는다.' });
+    MO('fallen', '타락 기사', 5, 3, 3000, 120, 0.65, 1, '#4a4658', { armor: 0.2, skills: ['earth'], mana: 90, desc: '대지를 갈라 줄을 기절시킨다.' });
+    MO('succubus', '서큐버스', 5, 2.5, 1500, 100, 0.7, 3, '#e0a0c0', { skills: ['drainlife'], mana: 60, desc: '생명을 빨아 회복한다.' });
+    MO('darkpriest', '타락 사제', 5, 2.5, 1500, 70, 0.6, 3, '#5a1f3b', { skills: ['light'], mana: 70, desc: '동료를 치유한다. 먼저 노려라.' });
+    MO('abomination', '흉물', 5, 3.5, 4200, 110, 0.5, 1, '#7a4a6a', { proc: 'poisonHit', desc: '느리고 질기며, 닿으면 중독된다.' });
+    MO('archdemon', '대악마', 5, 9, 9500, 190, 0.7, 1, '#a83232', { skills: ['whirl', 'earth'], mana: 70, lifesteal: 0.15, elite: true, desc: '정예. 피를 빨며 주변을 휩쓸고 대지를 가른다.' });
+    MO('abysslord', '심연의 군주 녹스', 5, 99, 9500, 125, 0.55, 3, '#3b2b5a', { boss: 'abysslord', immobile: true, armor: 0.1, desc: '최종 보스. 어둠의 창과 그림자, 분노하면 심연 폭발.' });
+    MO('fallenking', '타락한 왕 모르간', 5, 99, 12500, 160, 0.7, 1, '#4a1f3b', { boss: 'fallenking', armor: 0.15, desc: '최종 보스. 처형의 일격과 어둠의 방패, 분노하면 기사를 부른다.' });
+    // 막이 바뀌는 첫 전투가 너무 튀지 않게 기본치를 조금 낮춘다(라운드에 따른 강화가 따로 붙는다)
+    for (const m of Object.values(GM)) if (m.act === 5 && !m.boss) { m.hp = Math.round(m.hp * 0.88); m.atk = Math.round(m.atk * 0.9); }
+    GD.ACTS[4] = { name: '얼어붙은 봉우리', normal: ['yeti', 'frostwolf', 'icesprite', 'frostskel', 'snowarcher', 'icewitch', 'mammoth', 'frostgolem'],
+      elites: [['frostgiant'], ['yetichief', 'yeti', 'yeti'], ['iceknight', 'frostskel']], bosses: ['icequeen', 'yetiking'], story: '화산 너머 얼음 봉우리. 숨결마저 얼어붙는다.' };
+    GD.ACTS[5] = { name: '심연의 성채', normal: ['demon', 'shade', 'abyssmage', 'hellhound', 'fallen', 'succubus', 'darkpriest', 'abomination'],
+      elites: [['archdemon'], ['fallen', 'fallen', 'shade'], ['succubus', 'abomination', 'darkpriest']], bosses: ['abysslord', 'fallenking'], story: '봉우리 꼭대기에 열린 심연의 문. 모든 것의 끝이 기다린다.' };
+    Object.assign(GD.BOSS_INFO, {
+      icequeen: '움직이지 않습니다. 5초마다 아군 둘의 칸에 얼음 감옥(피해 + 1.5초 기절), 10초마다 얼음 정령을 부릅니다. 체력 50% 이하에서 6초마다 한 줄 전체에 눈보라(둔화). 흩어 두세요.',
+      yetiking: '5초마다 아군 하나 중심 3×3을 내려찍어 기절시키고, 9초마다 설인을 부릅니다. 체력 50% 이하에서 분노해 빠르고 세집니다. 앞줄을 단단하게.',
+      abysslord: '움직이지 않습니다. 6초마다 아군이 선 세로줄에 어둠의 창(받는 피해 증가), 10초마다 그림자를 부릅니다. 체력 50% 이하에서 2×2 심연 폭발 셋을 떨어뜨립니다.',
+      fallenking: '5초마다 앞쪽 3×2에 처형의 일격, 8초마다 어둠의 방패(보호막)를 두릅니다. 체력 50% 이하에서 타락 기사 둘을 부르고 빨라집니다. 보호막이 오르기 전에 몰아치세요.',
+    });
+  }
+
+  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, STARTS, DIFF };
 })(window);

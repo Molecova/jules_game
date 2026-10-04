@@ -224,8 +224,10 @@
         const tgt = u.target;
         if (!tgt) continue;
         if (g.dist(u.cell, tgt.cell) <= u.range) {
-          if (u.ability && u.maxMana > 0 && u.mana >= u.maxMana) {
-            u.mana = 0;
+          // u.bars 가 있으면 스킬마다 따로 찬 마나로 시전(v4), 없으면 마나 하나
+          const bi = u.bars ? u.bars.findIndex((b) => b.mana >= b.max) : -1;
+          if (u.ability && (u.bars ? bi >= 0 : u.maxMana > 0 && u.mana >= u.maxMana)) {
+            if (u.bars) { u.bars[bi].mana = 0; u.castIdx = bi; } else u.mana = 0;
             this.cast(u, tgt);
             u.atkCd = Math.max(u.atkCd, 0.35);
           } else if (u.atkCd <= 0) {
@@ -281,9 +283,14 @@
       return true;
     }
 
+    gainMana(u, amt) {
+      if (u.bars) { const m = u.manaGain || 1; for (const b of u.bars) b.mana = Math.min(b.max, b.mana + amt * m); return; }
+      u.mana = Math.min(u.maxMana, u.mana + amt);
+    }
+
     attack(u, t) {
       if (this.hooks.preAttack && this.hooks.preAttack(u, t, this)) return; // 기본 공격을 다른 행동으로 바꾸는 훅(치유 등)
-      u.mana = Math.min(u.maxMana, u.mana + (u.manaPerHit || 10));
+      this.gainMana(u, u.manaPerHit || 10);
       const crit = Math.random() < u.crit;
       const dmg = u.atk * AC.rand(0.9, 1.1);
       if (u.range > 1) {
@@ -317,7 +324,7 @@
       t.hp -= dmg;
       t.flash = 0.12;
       if (this.hooks.onHit) this.hooks.onHit(t, dmg, src, kind, crit, this);
-      t.mana = Math.min(t.maxMana, t.mana + Math.min(10, (dmg / t.maxHp) * 60));
+      this.gainMana(t, Math.min(10, (dmg / t.maxHp) * 60));
       if (src) {
         src.dmgDealt += dmg;
         if (src.lifesteal && !src.dead) { const h = Math.min(src.maxHp - src.hp, dmg * src.lifesteal); src.hp += h; src.healDone = (src.healDone || 0) + h; }
