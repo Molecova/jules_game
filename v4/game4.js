@@ -636,7 +636,7 @@
     patchKids($('bench'), R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" data-n="${i + 1}" aria-label="빈 칸"></button>`;
       const can = s && s.from === 'bench' && s.c.kind !== 'unit' && c.kind === 'unit' && canEquip(s.c, c);
-      return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
+      return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img class="k-${c.kind}" src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
     }).join(''));
     // 상점 탭: 합성 가능한 카드가 있는 탭에 ★2
     const tab = ui.tab || 'unit';
@@ -644,12 +644,15 @@
     const lk = $('lockBtn'); lk.dataset.lock = tab; lk.classList.toggle('on', !!R.locked[tab]); lk.textContent = R.locked[tab] ? '잠김' : '잠금';
     $('rollBtn').dataset.roll = tab; $('rollBtn').querySelector('[data-cost]').textContent = R.freeRolls > 0 ? '무료' : '1골드';
     const unitSheet = !!s && s.from !== 'shop' && s.c.kind === 'unit' && !drag.on;
-    if (!s || s.c !== ui.infoFor) { ui.openInfo = null; ui.infoFor = s ? s.c : null; }
+    if (s || B) ui.foe = null;
+    const foeCard = !!ui.foe && !drag.on;
+    if (!s || s.c !== ui.infoFor) { ui.openInfo = null; ui.flip = false; ui.infoFor = s ? s.c : null; }
     const showDetail = !!s && s.from !== 'shop' && s.c.kind !== 'unit' && !drag.on, peek = !!s && s.from === 'shop';
     $('detail').hidden = !showDetail;
-    $('peek').hidden = !peek; $('usheet').hidden = !unitSheet;
+    $('peek').hidden = !peek; $('usheet').hidden = !(unitSheet || foeCard);
     if (showDetail) renderDetail(s, $('detail'));
-    if (unitSheet) { renderUnitSheet(s); const us = $('usheet'); us.style.top = 'auto'; us.style.maxHeight = ($('scr-play').clientHeight - 48) + 'px'; } // 내용 높이만큼 아래에서 올라옴
+    if (unitSheet) renderUnitSheet(s);
+    else if (foeCard) renderFoeCard(ui.foe);
     if (peek) { renderDetail(s, $('peek')); $('peek').style.bottom = ($('scr-play').clientHeight - $('shop').offsetTop + 6) + 'px'; }
     const row = $('scards'); row.dataset.row = tab;
     for (const k of [tab]) row.innerHTML = R.shop[k].map((c, i) => {
@@ -772,38 +775,114 @@
   const skillLadder = (sd, cur, e) => ladder((st) => skillMain(sd, st, e) + (st === 3 && wider(sd) ? ' · 범위 확장' : ''), cur);
   const itemLadder = (it, cur, e) => ladder((st) => itemText(it, st, e), cur);
   const unitLadder = (d, cur) => ladder((st) => { const u = BT4.unitStats({ id: d.id, star: st, skills: [], item: null }); return `체력 <em>${Math.round(u.hp)}</em> · 공격 <em>${Math.round(u.atk)}</em> · 스킬 위력 <em>${pct(BT4.POW[st] * (1 + (d.spellBonus || 0)))}%</em>`; }, cur);
+  // ---------- 딱지 정보: 트레이딩 카드(A안) ----------
+  // 딱지를 탭하면 큰 유닛 카드가 가운데로. 체력·공격은 그림 모서리 배지, 칩 줄을 탭하면 그 칩 카드가 앞으로,
+  // 뒤집으면 뒷면에 ★1·★2·★3 성급표. 적 딱지도 같은 카드(붉은 테 + 행동 예고)
+  const IC = {
+    heart: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.5S1.5 10.6 1.5 5.8A3.4 3.4 0 0 1 8 3.6a3.4 3.4 0 0 1 6.5 2.2c0 4.8-6.5 8.7-6.5 8.7z"/></svg>',
+    sword: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M14.5 1.5l-1 3.6-6.4 6.4 1.4 1.4-1.1 1.1-1.6-1.6-2.5 2.5-1.2-1.2 2.5-2.5-1.6-1.6 1.1-1.1 1.4 1.4 6.4-6.4z"/></svg>',
+    bolt: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1L3 9.2h4.2L6.3 15 13 6.8H8.8z"/></svg>',
+    target: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm0 2.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2.2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6z" fill-rule="evenodd"/></svg>',
+    shield: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l6 2.2v4.3c0 3.9-2.7 6.4-6 7.5-3.3-1.1-6-3.6-6-7.5V3.2z"/></svg>',
+    crit: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .8l1.7 4.4 4.7-1.6-2.6 4.2 3.4 3.3-4.7.3L8 15.2l-2.5-3.8-4.7-.3 3.4-3.3-2.6-4.2 4.7 1.6z"/></svg>',
+    spark: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l1.7 5.3L15 8l-5.3 1.7L8 15l-1.7-5.3L1 8l5.3-1.7z"/></svg>',
+    flame: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.5 1c.6 3-3.5 4.6-3.5 8.4A3.6 3.6 0 0 0 8.6 15c2.4 0 4.4-1.8 4.4-4.6 0-2.4-1.5-3.6-2-5.4-.6 1.4-1.2 2-2 2.3.6-2.2 0-4.5-.5-6.3z"/></svg>',
+    eye: '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3C4 3 1.5 8 1.5 8S4 13 8 13s6.5-5 6.5-5S12 3 8 3zm0 2.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill-rule="evenodd"/></svg>',
+  };
+  const DROP = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1S3 7 3 10.2a5 5 0 0 0 10 0C13 7 8 1 8 1z"/></svg>';
+  const drop = (n) => `<span class="drop" aria-label="마나 ${n}">${DROP}${n}</span>`;
+  const XSVG = '<svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
+  // 아이콘 + 값 칸(오른 값은 초록 ▲)
+  const tstat = (ic, col, label, v, up) => `<span class="${up ? 'up' : ''}" title="${label}" aria-label="${label} ${v}"><i style="color:${col}">${IC[ic]}</i>${v}</span>`;
+  function tradingCard(o) {
+    return `<div class="tcard${o.anim ? ' flipin' : ''}${o.foe ? ' foe' : ''}" style="--cc:${o.cc};--tc:${o.tc}" role="dialog" aria-label="${o.name} 카드">
+      <div class="tc-top"><span class="co">${o.coin}</span><b>${o.name}</b>${o.tag}<button class="tc-x" data-act="close" aria-label="닫기">${XSVG}</button></div>
+      ${o.body}
+    </div>`;
+  }
+  function cardFront(o) {
+    return `<div class="tc-art"><img src="${o.img}" alt=""><span class="trs">${o.trs}</span>
+        <span class="bd hp${o.hpUp ? ' up' : ''}">${IC.heart}${o.hp}</span><span class="bd atk${o.atkUp ? ' up' : ''}">${IC.sword}${o.atk}</span></div>
+      <div class="tc-type"><span>${o.typeL}</span><span>${o.typeR}</span></div>
+      <div class="tc-text">${o.text}</div>
+      <div class="tc-stats">${o.stats}</div>
+      ${o.socks}`;
+  }
   function renderUnitSheet(s) {
     const c = s.c, d = def(c), onBoard = R.board.includes(c);
     const e = battleApi.makeAlly(c, grid.idx(c.x || 0, c.y || PLAYER_ROW), battleApi.synergyCounts(onBoard ? R.board : [...R.board, c]));
-    const m = BT4.STAR[c.star];
-    const stat = (label, v, base, fmt = (x) => x) => `<div><small>${label}</small><b class="${v > base + 1e-6 ? 'up' : ''}">${fmt(v)}</b></div>`;
-    const dps = Math.round(e.atk * e.as);
+    const m = BT4.STAR[c.star], cls = CLS[d.cls].name, slots = skillSlots(c);
     const stats = [
-      stat('체력', e.maxHp, Math.round(d.hp * m)),
-      stat('공격력', Math.round(e.atk), Math.round(d.atk * m)),
-      stat('공격 속도', e.as, d.as, (x) => x.toFixed(2) + '/초'),
-      stat('사거리', e.range, d.range, (x) => x + '칸'),
-      stat('받는 피해', e.armor, d.armor || 0, (x) => '−' + pct(x) + '%'),
-      stat('치명타', e.crit, d.crit || 0.05, (x) => pct(Math.min(1, x)) + '%'),
-      stat('스킬 위력', e.spell * e.pow, POWBASE(c), (x) => pct(x) + '%'),
-      stat('초당 피해', dps, Math.round(d.atk * m * d.as)),
+      tstat('bolt', '#d08a1a', '공격 속도(초당)', e.as.toFixed(2), e.as > d.as + 1e-6),
+      tstat('target', '#5a6b8a', '사거리', e.range + '칸', e.range > d.range),
+      tstat('shield', '#2e9e6b', '받는 피해', '−' + pct(e.armor) + '%', e.armor > (d.armor || 0) + 1e-6),
+      tstat('crit', '#c8333f', '치명타', pct(Math.min(1, e.crit)) + '%', e.crit > (d.crit || 0.05) + 1e-6),
+      tstat('spark', '#7a4fc0', '스킬 위력', pct(e.spell * e.pow) + '%', e.spell * e.pow > POWBASE(c) + 1e-6),
+      tstat('flame', '#e8643b', '초당 피해', Math.round(e.atk * e.as), Math.round(e.atk * e.as) > Math.round(d.atk * m * d.as)),
     ].join('');
-    const slots = skillSlots(c), cls = CLS[d.cls].name;
-    let rows = `<div class="usec sk"><span>스킬 <b>${c.skills.length}/${slots}</b></span><small>칩마다 마나가 따로 차고, 차면 그 스킬을 씁니다</small></div>`;
+    let socks = '';
     for (let k = 0; k < slots; k++) {
       const x = c.skills[k];
-      if (!x) { rows += `<div class="urow skrow empty"><span>빈 스킬 칸 · 창고에서 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</span></div>`; continue; }
+      if (!x) { socks += `<div class="sk empty">빈 스킬 칸 · 창고의 ${cls} 스킬(또는 공용)을 탭한 뒤 이 딱지를 탭</div>`; continue; }
       const sd = def(x);
-      const open = ui.openInfo === 's' + k;
-      rows += `<div class="urow skrow${open ? ' open' : ''}" style="--cc:${CLS[sd.cls].col}" data-info="s${k}" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star)}</b> <small class="mana">마나 ${e.bars && e.bars[k] ? e.bars[k].max : '-'}</small><br>${skillText(sd, x.star, e)}${open ? `<span class="uinfo">${hl(sd.desc)}<br><span class="meta">${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · 이 딱지 기준 스킬 성급별 수치</span>${skillLadder(sd, x.star, e)}</span>` : ''}</span>${patternGrid(sd, x.star)}<button class="x" data-un="${k}" aria-label="${sd.name} 빼기">빼기</button></div>`;
+      socks += `<button class="sk" data-info="s${k}" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}</button>`;
     }
-    rows += `<div class="usec wp"><span>무기·아이템 <b>${c.item ? 1 : 0}/1</b></span><small>능력치와 고유 효과</small></div>`;
-    if (c.item) { const it = def(c.item), open = ui.openInfo === 'item'; rows += `<div class="urow wprow${open ? ' open' : ''}" style="--cc:${CLS[it.cls].col}" data-info="item" role="button" tabindex="0" aria-expanded="${open}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star)}</b> <small class="meta">${it.feel}</small><br>${itemText(it, c.item.star, e)}${open ? `<span class="uinfo">${hl(it.desc)}<br><span class="meta">${CLS[it.cls].name} 아이템 · ${it.t}등급 · 아이템 성급별 수치</span>${itemLadder(it, c.item.star, e)}</span>` : ''}</span><button class="x" data-un="item" aria-label="${it.name} 빼기">빼기</button></div>`; }
-    else rows += `<div class="urow wprow empty"><span>빈 무기 칸 · 창고에서 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</span></div>`;
-    $('usheet').innerHTML = `<button class="xbtn" data-act="close" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="uh"><img src="${imgOf(c, 108)}" alt=""><div class="tt"><b>${d.name} <em>${starTxt(c.star)}</em></b> <span class="meta">${cls} · ${d.t}등급 · ${d.traits.map((t) => TRAITS[t].name).join(' · ')}${onBoard ? ' · 출전 중' : ' · 창고'}</span><p>${hl(d.trait)}</p><p class="meta">▲ 장비·시너지·유물로 오른 값 · 칸을 탭하면 설명</p></div></div>
-      <div class="ustats">${stats}</div>
-      ${rows}
-      <div class="dbtn">${onBoard ? '<button class="btn" data-act="tobench">창고로</button>' : ''}<button class="btn warn" data-act="sell">판매 +${price(c)}골드</button></div>`;
+    if (c.item) { const it = def(c.item); socks += `<button class="sk wp" data-info="item" style="--kc:${CLS[it.cls].col}"><img src="${imgOf(c.item, 60)}" alt=""><span><b>${it.name}${starTxt(c.item.star) ? ' ' + starTxt(c.item.star) : ''}</b>${itemText(it, c.item.star, e)}</span><small>무기</small></button>`; }
+    else socks += `<div class="sk empty">빈 무기 칸 · 창고의 ${cls} 아이템을 탭한 뒤 이 딱지를 탭</div>`;
+    const anim = ui.flipAnim; ui.flipAnim = false;
+    let body;
+    if (ui.flip) {
+      let lad = `<div class="tb-sec">딱지 <small>같은 딱지 3장 → ★2 · ★2 3장 → ★3</small></div>${unitLadder(d, c.star)}`;
+      c.skills.forEach((x) => { const sd = def(x); lad += `<div class="tb-sec"><img src="${imgOf(x, 40)}" alt="">${sd.name} <small>칩 ${starTxt(x.star) || '★'} · 이 딱지 기준</small></div>${skillLadder(sd, x.star, e)}`; });
+      if (c.item) { const it = def(c.item); lad += `<div class="tb-sec"><img src="${imgOf(c.item, 40)}" alt="">${it.name} <small>${starTxt(c.item.star) || '★'}</small></div>${itemLadder(it, c.item.star, e)}`; }
+      body = `<div class="tc-back"><div class="tb-h">뒷면 · 성급표</div>${lad}</div>`;
+    } else {
+      body = cardFront({ img: imgOf(c, 200), trs: d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name}</i>`).join(''),
+        hp: e.maxHp, atk: Math.round(e.atk), hpUp: e.maxHp > Math.round(d.hp * m), atkUp: Math.round(e.atk) > Math.round(d.atk * m),
+        typeL: `${cls} 유닛 · ${d.t}등급(${TIERNAME[d.t]})`, typeR: onBoard ? '출전 중' : '창고', text: hl(d.trait), stats, socks: `<div class="tc-sock">${socks}</div>` });
+    }
+    const card = tradingCard({ anim, cc: CLS[d.cls].col, tc: `var(--t${d.t})`, coin: d.t, name: d.name, tag: c.star > 1 ? `<i class="st">${starTxt(c.star)}</i>` : '', body });
+    const btns = [onBoard ? '<button class="wbtn" data-act="tobench">창고로</button>' : '', `<button class="wbtn" data-act="flip"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12.6 1.6v3.6H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${ui.flip ? '앞면' : '뒤집기'}</button>`, `<button class="wbtn red" data-act="sell">판매 +${price(c)}</button>`].filter(Boolean);
+    let sub = '';
+    const oi = ui.openInfo;
+    if (oi && !ui.flip) {
+      const isItem = oi === 'item', x = isItem ? c.item : c.skills[+oi.slice(1)];
+      if (x) {
+        const sd = def(x), k = isItem ? -1 : +oi.slice(1);
+        const lad = isItem ? itemLadder(sd, x.star, e) : skillLadder(sd, x.star, e);
+        const head = isItem ? `<small>${CLS[sd.cls].name} 아이템 · ${sd.t}등급 · 끼우면 ${sd.feel}</small>` : `<small>${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ${d.name}에 장착</small>`;
+        sub = `<button class="scbg" data-act="subclose" aria-label="칩 카드 닫기"></button>
+          <div class="scard ${isItem ? 'k-item' : 'k-skill'}" style="--cc:${CLS[sd.cls].col};--tc:var(--t${sd.t})" role="dialog" aria-label="${sd.name}">
+            <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : drop(e.bars && e.bars[k] ? e.bars[k].max : sd.mana || 60)}</div>
+            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}</p>
+            <div class="sc-r">${isItem ? '' : patternGrid(sd, x.star)}<div class="sc-l"><small>${isItem ? '아이템' : '칩'} 성급별 수치${isItem ? '' : ' · 이 딱지 기준'}</small>${lad}</div></div>
+            <div class="sc-b"><button class="wbtn" data-un="${isItem ? 'item' : k}">${isItem ? '아이템' : '칩'} 빼기</button><button class="wbtn" data-act="subclose">돌아가기</button></div>
+          </div>`;
+      }
+    }
+    $('usheet').innerHTML = `<button class="ucbg" data-act="close" aria-label="카드 닫기"></button>
+      <div class="ucwrap">${card}<div class="tc-btns n${btns.length}">${btns.join('')}</div><div class="tc-hint">${ui.flip ? '앞면으로 돌리면 장착한 칩' : '칩 줄을 탭하면 그 칩 카드 · 바깥을 탭하면 판으로'}</div></div>${sub}`;
+  }
+  // 적 딱지: 붉은 테 카드 + 행동 예고
+  function renderFoeCard(x) {
+    const m = MONSTERS[x.id];
+    const f = battleApi.makeFoe({ uid: x.uid, def: m, cell: x.cell, scale: x.scale, rot: x.rot });
+    const role = m.boss ? '보스' : m.elite ? '정예' : '일반';
+    const skills = (m.skills || []).map((id) => GD.SKILLS.find((q) => q.id === id)).filter(Boolean);
+    const stats = [
+      tstat('bolt', '#d08a1a', '공격 속도(초당)', m.as.toFixed(2)),
+      tstat('target', '#5a6b8a', '사거리', m.range + '칸'),
+      m.dodge ? tstat('crit', '#7a4fc0', '회피', pct(m.dodge) + '%') : '',
+      m.armor ? tstat('shield', '#2e9e6b', '받는 피해', '−' + pct(m.armor) + '%') : '',
+      tstat('flame', '#e8643b', '초당 피해', Math.round(f.atk * m.as)),
+    ].join('');
+    const intent = `<div class="intent">${IC.eye}<span>${m.immobile ? '제자리에서' : m.range > 1 ? `${m.range}칸 안의` : '다가가'} 가까운 적부터 노림${skills.length ? '' : ' · 스킬 없음'}</span></div>`
+      + skills.map((sd) => `<div class="intent sk2"><span class="drop">${DROP}${m.mana || 70}</span><span><b>${sd.name}</b> · ${hl(sd.desc)}</span></div>`).join('')
+      + (m.boss && (BOSS_INFO[m.id] || BOSS_INFO[m.boss]) ? `<div class="intent">${IC.crit}<span>${hl(BOSS_INFO[m.id] || BOSS_INFO[m.boss])}</span></div>` : '');
+    const body = cardFront({ img: ART.discURL(m.id, 1, m.boss ? 'boss' : m.elite ? 'elite' : '', null, 200), trs: `<i style="--c:#7a4f6a">${ACTS[R.act] ? ACTS[R.act].name : ''} · ${role}</i>`,
+      hp: Math.round(f.maxHp), atk: Math.round(f.atk), typeL: `${role} 적 · ${m.range > 1 ? '원거리' : '근접'}`, typeR: '적 진영', text: hl(m.desc || ''), stats, socks: `<div class="tc-sock">${intent}</div>` });
+    $('usheet').innerHTML = `<button class="ucbg" data-act="close" aria-label="카드 닫기"></button>
+      <div class="ucwrap">${tradingCard({ foe: true, cc: '#c8333f', tc: '#f6dfe1', coin: '!', name: m.name, tag: '<span class="foe-tag">적</span>', body })}<div class="tc-btns n1"><button class="wbtn" data-act="close">닫기</button></div><div class="tc-hint">적 딱지 · 전투가 시작되면 이 수치로 싸웁니다</div></div>`;
   }
   const POWBASE = (c) => BT4.POW[c.star] * (1 + (def(c).spellBonus || 0));
 
@@ -856,7 +935,7 @@
   function tapCell(x, y, fromDrag) {
     const s = ui.sel, u = R.board.find((b) => b.x === x && b.y === y);
     if (!fromDrag && u && s && s.c.kind === 'unit' && s.c !== u) { ui.sel = { from: 'board', c: u }; SFX.play('click'); return renderPlay(); }
-    if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); if (e) { const m = MONSTERS[e.id]; toast(`${m.name} · 체력 약 ${Math.round(m.hp * battleApi.foePreview(m).hp)} · ${m.range > 1 ? '원거리' : '근접'}`); } ui.sel = null; return renderPlay(); }
+    if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); ui.sel = null; ui.foe = e && ui.foe !== e ? e : null; if (e) SFX.play('card'); return renderPlay(); }
     if (s && s.from === 'bench' && s.c.kind !== 'unit') { if (u) { equip(s.c, s.i, u); ui.sel = null; } else ui.sel = null; return renderPlay(); }
     if (s && s.from === 'bench' && s.c.kind === 'unit') {
       if (u) { R.board = R.board.filter((b) => b !== u); R.bench[s.i] = u; }
@@ -894,10 +973,12 @@
     if (b.dataset.info != null) { ui.openInfo = ui.openInfo === b.dataset.info ? null : b.dataset.info; SFX.play('click'); return renderPlay(); }
     if (b.dataset.act === 'noop') return;
     const a = b.dataset.act;
+    if (a === 'flip') { ui.flip = !ui.flip; ui.flipAnim = true; ui.openInfo = null; SFX.play('card'); return renderPlay(); }
+    if (a === 'subclose') { ui.openInfo = null; return renderPlay(); }
     if (a === 'buy') { if (performance.now() - (ui.peekT || 0) < 350) return; buy(ui.sel.i, false, ui.sel.kind); }
     else if (a === 'tobench') { const i = R.bench.indexOf(null); if (i < 0) return toast('창고에 빈칸이 없어요'); R.board = R.board.filter((u) => u !== ui.sel.c); R.bench[i] = ui.sel.c; ui.sel = null; SFX.play('card'); renderPlay(); }
     else if (a === 'sell') { const s = ui.sel, g = sellCard(s.c, s.from, s.i); ui.sel = null; SFX.play('coin'); toast(`${def(s.c).name} 판매 +${g}골드`); renderPlay(); }
-    else { ui.sel = null; renderPlay(); }
+    else { ui.sel = null; ui.foe = null; renderPlay(); }
   };
   $('detail').addEventListener('click', onDetail); $('peek').addEventListener('click', onDetail); $('usheet').addEventListener('click', onDetail);
   $('gbox').onclick = () => { const inc = income(); toast(`골드 ${R.gold} · 다음 라운드 수입 약 +${inc.total + 1} (기본 ${inc.base} · 이자 ${inc.interest} · 연승 ${inc.streak} · 승리 1). 10골드마다 이자 +1, 최대 ${5 + (has('vault') ? 2 : 0)}`); };
@@ -993,7 +1074,7 @@
   $('bench').addEventListener('pointerdown', (e) => {
     const b = e.target.closest('[data-b]'); if (!b || B) return;
     const i = +b.dataset.b, c = R.bench[i];
-    if (c) dragBegin(e, b, { from: 'bench', i, c }, null);
+    if (c) dragBegin(e, $('bench'), { from: 'bench', i, c }, null); // 다시 그려지지 않는 창고 틀이 포인터를 잡는다
   });
   window.addEventListener('pointermove', (e) => {
     if (!drag.start || e.pointerId !== drag.start.id) return;
@@ -1310,7 +1391,7 @@
       const items = [
         ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
         ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)]; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
-          if (selU && drag.on) return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, alpha: 0.3 }) };
+          if (selU && drag.on) return { y: c.y, f: () => {} }; // 끄는 동안 원래 자리는 비워 둔다(잔상 없음)
           return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : null, dash: can }) }; }),
       ].sort((a, b) => a.y - b.y);
       for (const it of items) it.f();
