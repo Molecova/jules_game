@@ -8,6 +8,20 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   // 설명 글의 수치(10%, 220, 1.5초, +1 …)를 형광펜으로
   const hl = (s) => esc(s).replace(/(?<![★\w.])([+−-]?\d+(?:\.\d+)?(?:%|초|칸|골드|발|중첩|배)?)/g, '<em class="hn">$1</em>');
+  // 자식 노드를 갈아 끼우지 않고 속성·내용만 고친다. 끌기 중인 칸(손가락이 잡은 노드)이 사라지면
+  // iOS Safari 는 이후 포인터 이벤트를 떨어져 나간 노드로 보내 손을 떼도 끌기가 끝나지 않는다(딱지 잔상)
+  function patchKids(el, html) {
+    const t = document.createElement('template'); t.innerHTML = html;
+    const nk = [...t.content.children], ok = [...el.children];
+    if (nk.length !== ok.length) { el.innerHTML = html; return; }
+    nk.forEach((n, i) => {
+      const o = ok[i];
+      if (o.tagName !== n.tagName) { o.replaceWith(n); return; }
+      for (const at of [...o.attributes]) if (!n.hasAttribute(at.name)) o.removeAttribute(at.name);
+      for (const at of [...n.attributes]) if (o.getAttribute(at.name) !== at.value) o.setAttribute(at.name, at.value);
+      if (o.innerHTML !== n.innerHTML) o.innerHTML = n.innerHTML;
+    });
+  }
   const rnd = (n) => Math.floor(Math.random() * n);
   const pick = (a) => a[rnd(a.length)];
   const def = (c) => DEF[c.kind + ':' + c.id];
@@ -619,11 +633,11 @@
     if (!s || s.from === 'shop') $('benchHint').innerHTML = `출전 <b>${R.board.length}/${deployMax()}</b>`;
     else $('benchHint').textContent = s.c.kind === 'unit' ? '칸을 탭하거나 끌어서 배치·이동' : `${CLS[def(s.c).cls].name === '공용' ? '아무' : CLS[def(s.c).cls].name} 딱지에 끌거나 탭해 장착`;
     $('bench').style.gridTemplateColumns = `repeat(${benchSize()}, minmax(0,1fr))`;
-    $('bench').innerHTML = R.bench.map((c, i) => {
+    patchKids($('bench'), R.bench.map((c, i) => {
       if (!c) return `<button class="slot${s && (s.from === 'board' || (s.from === 'bench' && s.i !== i)) ? ' drop' : ''}" data-b="${i}" data-n="${i + 1}" aria-label="빈 칸"></button>`;
       const can = s && s.from === 'bench' && s.c.kind !== 'unit' && c.kind === 'unit' && canEquip(s.c, c);
       return `<button class="slot${s && s.c === c ? (drag.on ? ' dragsrc' : ' sel') : ''}${can ? ' can' : ''}" data-b="${i}" aria-label="${def(c).name}${starTxt(c.star)}"><img src="${imgOf(c, 80)}" alt=""><span class="stars${c.star > 2 ? ' s3' : ''}">${starTxt(c.star)}</span></button>`;
-    }).join('');
+    }).join(''));
     // 상점 탭: 합성 가능한 카드가 있는 탭에 ★2
     const tab = ui.tab || 'unit';
     for (const b of document.querySelectorAll('[data-tab]')) { const k = b.dataset.tab; b.classList.toggle('on', k === tab); b.setAttribute('aria-selected', k === tab); b.classList.toggle('ready', R.shop[k].some((c) => c && owned(c.kind, c.id) >= 2)); }
@@ -972,6 +986,7 @@
   // ---------- 드래그: 창고·보드의 딱지와 창고의 칩을 끌어다 놓기 ----------
   const drag = { start: null, on: false, src: null, tap: null, ghost: null, endT: 0 };
   function dragBegin(e, el, src, tap) {
+    if (drag.ghost) { drag.ghost.remove(); drag.ghost = null; } // 끝나지 못한 이전 끌기의 잔상 정리
     drag.start = { x: e.clientX, y: e.clientY, id: e.pointerId }; drag.src = src; drag.tap = tap; drag.on = false;
     try { el.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
   }
@@ -1010,6 +1025,10 @@
     dropAt(e.clientX, e.clientY);
   }
   window.addEventListener('pointerup', (e) => dragEnd(e, false));
+  // 안전망: 포인터 이벤트가 끝을 못 알리면 터치 끝에서 마무리한다
+  window.addEventListener('touchend', (e) => { if (drag.start && !e.touches.length) { const t = e.changedTouches[0]; setTimeout(() => { if (drag.start) dragEnd({ pointerId: drag.start.id, clientX: t.clientX, clientY: t.clientY }, false); }, 0); } }, true);
+  window.addEventListener('pointerdown', (e) => { if (drag.start && e.pointerId !== drag.start.id) dragEnd({ pointerId: drag.start.id }, true); }, true);
+  window.addEventListener('touchcancel', () => { if (drag.start) dragEnd({ pointerId: drag.start.id }, true); }, true);
   window.addEventListener('pointercancel', (e) => dragEnd(e, true));
   function dropAt(x, y) {
     const s = ui.sel; if (!s) return renderPlay();
