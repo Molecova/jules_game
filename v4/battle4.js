@@ -88,6 +88,34 @@
       return cells.filter((i) => i >= 0);
     }
     const tiles = (cb, cells, color, life = 0.45) => { for (const i of cells) cb.fx.push({ kind: 'tile', cell: i, color, life, t: 0 }); };
+    // ---------- 베기 연출: 초승달 모양 오린 종이 띠(모든 베기 스킬 공통) ----------
+    const SLASH = new Set(['cross', 'bleedcut', 'earth', 'whirl', 'bladestorm', 'shadowstep', 'assassinate', 'charge', 'heavy']);
+    const STRIP_LIFE = 0.6;
+    const scars = (cb, cells, delay = 0.1) => { for (const i of cells) cb.fx.push({ kind: 'scar', cell: i, delay, life: delay + 0.7, t: 0 }); };
+    // 앞쪽 범위(facing): 앞으로 뻗은 줄 하나 + 옆으로 가장 넓은 줄 하나
+    function slashFacing(cb, u, dir, local, cells) {
+      const a = grid.cells[u.cell], S = grid.size, sx = -dir[1], sy = dir[0];
+      const at = (f, sd) => [a.x + (f * dir[0] + sd * sx) * S, a.y + (f * dir[1] + sd * sy) * S];
+      const fwd = local.filter(([, sd]) => sd === 0).map(([f]) => f), side = {};
+      for (const [f, sd] of local) if (sd) (side[f] = side[f] || []).push(sd);
+      const rows = Object.entries(side).sort((x, y) => y[1].length - x[1].length);
+      let delay = 0;
+      if (fwd.length >= 2 || !rows.length) { const mf = Math.max(...fwd, 1); const [x1, y1] = at(0.45, 0), [x2, y2] = at(mf + 0.45, 0); cb.fx.push({ kind: 'strip', x1, y1, x2, y2, w: 11, delay, life: delay + STRIP_LIFE, t: 0 }); delay += 0.09; }
+      if (rows.length) { const f = +rows[0][0], ss = [...rows[0][1], 0]; const [x1, y1] = at(f, Math.min(...ss) - 0.45), [x2, y2] = at(f, Math.max(...ss) + 0.45); cb.fx.push({ kind: 'strip', x1, y1, x2, y2, w: 11, delay, life: delay + STRIP_LIFE, t: 0 }); }
+      scars(cb, cells, 0.1);
+    }
+    // 둘레 범위(self): 시전자를 도는 초승달 고리
+    function slashRing(cb, u, cells) {
+      const a = grid.cells[u.cell], far = Math.max(1, ...cells.map((i) => Math.max(Math.abs(grid.cells[i].c - a.c), Math.abs(grid.cells[i].r - a.r))));
+      cb.fx.push({ kind: 'strip', arc: true, cx: a.x, cy: a.y, r: grid.size * (far - 0.05), a0: -Math.PI / 2, sweep: Math.PI * 1.9, w: 11 + far * 2, delay: 0, life: STRIP_LIFE + 0.1, t: 0 });
+      scars(cb, cells, 0.15);
+    }
+    // 한 명(단일·도약·처형): 대상 칸을 비스듬히 가르는 띠 하나
+    function slashOne(cb, v, big) {
+      const c = grid.cells[v.cell], S = grid.size * (big ? 0.62 : 0.55);
+      cb.fx.push({ kind: 'strip', x1: c.x - S, y1: c.y + S * 0.75, x2: c.x + S, y2: c.y - S * 0.75, w: big ? 14 : 11, delay: 0, life: STRIP_LIFE, t: 0 });
+      scars(cb, [v.cell], 0.08);
+    }
     const freeNear = (cb, cell) => [cell, ...grid.neighbors[cell]].find((n) => !cb.occ[n]);
 
     // ---------- 시너지(같은 유닛은 한 번만 센다) ----------
@@ -298,8 +326,8 @@
           if (d.mode === 'lowest' || d.mode === 'leap') {
             const v = cb.alive(foe).filter((x) => !x.object).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
             if (!v) break;
-            if (d.mode === 'leap') leapTo(cb, u, v); else cb.beam(u.px, u.py, v.px, v.py, col, 0.35);
-            tiles(cb, [v.cell], col);
+            if (d.mode === 'leap') leapTo(cb, u, v); else if (!SLASH.has(d.id)) cb.beam(u.px, u.py, v.px, v.py, col, 0.35);
+            if (SLASH.has(d.id)) slashOne(cb, v, d.id === 'assassinate'); else tiles(cb, [v.cell], col);
             applySkillHit(cb, u, v, P, d);
             break;
           }
@@ -323,7 +351,9 @@
             break;
           }
           const cells = cellsOf();
-          tiles(cb, cells, col);
+          if (SLASH.has(d.id) && d.mode === 'facing') slashFacing(cb, u, dir, s.cells || d.cells, cells);
+          else if (SLASH.has(d.id) && d.mode === 'self') slashRing(cb, u, cells);
+          else tiles(cb, cells, col);
           let dealt = 0;
           for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe) dealt += applySkillHit(cb, u, v, P, d); }
           if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
@@ -403,7 +433,7 @@
           break;
         }
         case 'heavy':
-          tiles(cb, [t.cell], col);
+          slashOne(cb, t, true);
           cb.damage(u, t, u.atk * d.power * k * scale, 'spell');
           break;
       }

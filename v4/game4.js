@@ -1310,8 +1310,44 @@
       }
     }
   }
+  // 초승달 오린 종이 띠: 축을 따라 s(0~1)에서 바깥·안쪽 가장자리 오프셋
+  const crescentUp = (s, w) => -(w * 1.25 + 8) * Math.sin(Math.PI * s), crescentDn = (s, w) => (w * 0.15 - 8) * Math.sin(Math.PI * s);
+  function stripPath(f, p) {
+    const pts = [], n = f.arc ? 48 : 16;
+    if (f.arc) {
+      const at = (s, o) => { const a = f.a0 + f.sweep * p * s, r = f.r - o; return [f.cx + Math.cos(a) * r, f.cy + Math.sin(a) * r]; };
+      for (let i = 0; i <= n; i++) pts.push(at(i / n, crescentUp(i / n, f.w) * 0.9));
+      for (let i = n; i >= 0; i--) pts.push(at(i / n, crescentDn(i / n, f.w) * 0.9));
+      const e = at(1, 0); return { pts, ex: e[0], ey: e[1] };
+    }
+    const L = Math.hypot(f.x2 - f.x1, f.y2 - f.y1), ang = Math.atan2(f.y2 - f.y1, f.x2 - f.x1), ca = Math.cos(ang), sa = Math.sin(ang);
+    const at = (s, o) => { const x = s * L * p; return [f.x1 + x * ca - o * sa, f.y1 + x * sa + o * ca]; };
+    for (let i = 0; i <= n; i++) pts.push(at(i / n, crescentUp(i / n, f.w)));
+    for (let i = n; i >= 0; i--) pts.push(at(i / n, crescentDn(i / n, f.w)));
+    return { pts, ex: f.x1 + L * p * ca, ey: f.y1 + L * p * sa };
+  }
+  const seg01 = (t, a, b) => Math.max(0, Math.min(1, (t - a) / (b - a)));
+  function drawStrip(f) {
+    const tt = f.t - f.delay; if (tt < 0) return;
+    const grow = 1 - Math.pow(1 - seg01(tt, 0, f.arc ? 0.2 : 0.1), 3), stuck = seg01(tt, 0.08, 0.14), peel = seg01(tt, 0.36, 0.52);
+    if (peel >= 1) return;
+    const B = stripPath(f, grow), lift = (1 - stuck) * 6 + peel * 14, poly = (o) => { ctx.beginPath(); B.pts.forEach(([x, y], i) => (i ? ctx.lineTo(x + o[0], y + o[1]) : ctx.moveTo(x + o[0], y + o[1]))); ctx.closePath(); };
+    ctx.save(); ctx.globalAlpha = 1 - peel;
+    poly([2 + lift * 0.4, 3 + lift * 0.7]); ctx.fillStyle = 'rgba(20,25,35,.28)'; ctx.fill();
+    ctx.translate(0, -lift * 0.3);
+    if (peel > 0) { ctx.translate(B.ex, B.ey); ctx.rotate(peel * 0.5); ctx.translate(-B.ex, -B.ey); }
+    poly([0, 0]); ctx.fillStyle = '#fffdf6'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.restore();
+  }
+  // 맞은 칸에 남는 연필 칼자국(딱지 아래)
+  function drawScar(f) {
+    const a = seg01(f.t, f.delay, f.delay + 0.08) * (1 - seg01(f.t, f.life - 0.25, f.life)); if (!a) return;
+    const c = grid.cells[f.cell]; ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = 'rgba(35,42,59,.55)'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(c.x - 16, c.y + 12); ctx.lineTo(c.x + 14, c.y - 14); ctx.moveTo(c.x - 10, c.y + 17); ctx.lineTo(c.x + 17, c.y - 7); ctx.stroke(); ctx.restore();
+  }
   function drawEffects(cb) {
     for (const f of cb.fx) {
+      if (f.kind === 'strip') { drawStrip(f); continue; }
       const k = f.t / f.life;
       if (f.kind === 'ring') { ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.color; ctx.lineWidth = 4 * (1 - k) + 1; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + k * 0.8), 0, Math.PI * 2); ctx.stroke(); }
       else if (f.kind === 'beam') {
@@ -1413,7 +1449,7 @@
     if (B && B.combat) {
       const cb = B.combat;
       drawTele(cb);
-      for (const f of cb.fx) if (f.kind === 'tile') fillCell(f.cell, f.color, 0.6 * (1 - f.t / f.life), 2);
+      for (const f of cb.fx) if (f.kind === 'tile') fillCell(f.cell, f.color, 0.6 * (1 - f.t / f.life), 2); else if (f.kind === 'scar') drawScar(f);
       const alive = cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py);
       for (const e of alive) { const o = AC.lungeOffset ? AC.lungeOffset(e) : { x: 0, y: 0 }; drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }
       drawVfx();
@@ -1732,7 +1768,7 @@
 
   // 테스트·밸런스용 진입점
   window.__g = {
-    get R() { return R; }, set R(v) { R = v; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
+    get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
     W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, bossUnits,
   };
 })();
