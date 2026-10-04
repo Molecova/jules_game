@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>칼자국 표현 4안</title>
+<title>종이 칼자국 모양 4안</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
@@ -54,8 +54,8 @@ td:first-child { font-weight: 700; white-space: nowrap; }
 <div class="wrap">
   <header>
     <span class="eyebrow">카드 원정대 v4 · 시안</span>
-    <h1>같은 칼자국, 네 가지 재료</h1>
-    <p class="lead">첫 시안의 십자 베기 칼자국 모양(세로 → 가로, 가운데가 두껍고 끝이 뾰족한 두 획)과 타이밍은 그대로 두고, <b>무엇으로 그리는지</b>만 바꿨습니다. 판을 탭하면 다시 재생합니다.</p>
+    <h1>오린 종이 띠, 네 가지 모양</h1>
+    <p class="lead">"오린 종이 띠" 재료는 그대로, 속도를 1.5초 → <b>0.9초</b>로 올리고(두 장이 0.2초 안에 탁탁) 띠의 오린 모양만 4가지로 바꿨습니다. 판을 탭하면 다시 재생합니다.</p>
     <div class="ctrl"><button data-sp="1" class="on">보통 속도</button><button data-sp="0.4">느리게</button></div>
   </header>
 
@@ -63,11 +63,10 @@ td:first-child { font-weight: 700; white-space: nowrap; }
 
   <div class="rules">
     <span class="eyebrow">추천</span>
-    <h3>A 오린 종이 띠</h3>
+    <h3>A 초승달을 기본으로, 무기·특성마다 모양 바꾸기</h3>
     <ul>
-      <li>딱지·판·카드가 모두 종이라, 칼자국도 <b>오린 종이 띠</b>가 붙었다 말려 떨어지면 같은 세계의 물건처럼 보입니다. 그림자 덕에 판 위에서 또렷합니다.</li>
-      <li>화면을 덜 가리고 가볍게 가려면 <b>B 잉크 선화</b>, 타격감을 더 원하면 <b>C 강철 칼날</b>의 반짝임·불똥만 A에 얹는 것도 좋습니다.</li>
-      <li><b>D 찢어진 틈</b>은 딱지가 찢어지는 사망 연출과 같은 언어라, 치명타나 처치 순간에만 쓰면 강조가 됩니다.</li>
+      <li><b>A 초승달</b>은 칼을 휘두른 궤적이 보여서 가장 자연스럽고, 회전 베기·검의 폭풍처럼 둥근 범위로 그대로 늘릴 수 있습니다.</li>
+      <li>모양을 장착 무기로 나누면 같은 스킬도 무기마다 다르게 보입니다: 장검·대검 = <b>초승달</b>, 쌍검·단검 = <b>쌍줄</b>, 도끼·톱날 = <b>톱날</b>, 창·기사 무기 = <b>제비꼬리</b>.</li>
     </ul>
   </div>
 </div>
@@ -190,86 +189,48 @@ td:first-child { font-weight: 700; white-space: nowrap; }
   const lunge = (t) => Math.sin(seg(t, 0.05, 0.35) * Math.PI) * -10;
   const fadeOut = (t) => 1 - seg(t, 0.5, 0.62);
 
+  // 오린 종이 띠: 획 축을 따라 0~1 위치 s 에서 위·아래 가장자리 오프셋을 주는 모양 함수
+  const SHAPES = {
+    crescent: { up: (s, w) => -w * 1.25 * Math.sin(Math.PI * s) - 7 * Math.sin(Math.PI * s), dn: (s, w) => w * 0.15 * Math.sin(Math.PI * s) - 7 * Math.sin(Math.PI * s) },
+    serrate: { up: (s, w) => -w * Math.sin(Math.PI * s) * 0.9, dn: (s, w, i) => w * Math.sin(Math.PI * s) * (i % 2 ? 1.25 : 0.05) },
+    twin: { up: (s, w) => -w * 0.75 * Math.sin(Math.PI * s), dn: (s, w) => -w * 0.25 * Math.sin(Math.PI * s), second: true },
+    swallow: { up: (s, w) => -w * 0.95 * (s < 0.65 ? 1 : 1 - (s - 0.65) / 0.35), dn: (s, w) => w * 0.95 * (s < 0.65 ? 1 : 1 - (s - 0.65) / 0.35), notch: true },
+  };
+  function stripPts(shape, x1, y1, x2, y2, w, p, off = 0) {
+    const S2 = SHAPES[shape], n = shape === 'serrate' ? 18 : 14, L = Math.hypot(x2 - x1, y2 - y1), ang = Math.atan2(y2 - y1, x2 - x1), ca = Math.cos(ang), sa = Math.sin(ang);
+    const P2 = (s, o) => { const x = s * L * p, y = o + off; return [x1 + x * ca - y * sa, y1 + x * sa + y * ca]; };
+    const up = [], dn = [];
+    for (let i = 0; i <= n; i++) { const s = i / n; up.push(P2(s, S2.up(s, w, i))); dn.push(P2(s, S2.dn(s, w, i))); }
+    const pts = [...up, ...dn.reverse()];
+    if (S2.notch) pts.push(P2(0.2, 0)); // 꼬리 홈(제비꼬리)
+    return { pts, ang, ex: x1 + L * p * ca, ey: y1 + L * p * sa };
+  }
+  function paperStrip(c, shape, x1, y1, x2, y2, w, t, a, b, i, peelAt) {
+    const k = seg(t, a, b); if (k <= 0) return;
+    const peel = seg(t, peelAt + i * 0.03, peelAt + 0.14 + i * 0.03); if (peel >= 1) return;
+    const stuck = seg(t, b - 0.02, b + 0.03), lift = (1 - stuck) * 6 + peel * 14;
+    const offs = SHAPES[shape].second ? [-4, 7] : [0];
+    for (const off of offs) {
+      const B = stripPts(shape, x1, y1, x2, y2, off ? w * 0.7 : w, easeOut(k), off);
+      c.save(); c.globalAlpha = 1 - peel;
+      c.fillStyle = 'rgba(20,25,35,.28)'; path(c, B.pts.map(([x, y]) => [x + 2 + lift * 0.4, y + 3 + lift * 0.7])); c.fill();
+      c.translate(0, -lift * 0.3);
+      if (peel > 0) { c.translate(B.ex, B.ey); c.rotate(peel * (i ? -0.5 : 0.5)); c.translate(-B.ex, -B.ey); }
+      path(c, B.pts); c.fillStyle = '#fffdf6'; c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.lineJoin = 'round'; c.stroke();
+      c.restore();
+    }
+  }
+  // 빨라진 박자: 세로 0.04~0.14, 가로 0.13~0.23, 붙었다가 0.4부터 말려 떨어짐(전체 0.9초)
+  const FAST = () => [[cx(2), cy(2) + 30, cx(2), cy(1) - 30, 0.04, 0.14], [cx(1) - 28, cy(2), cx(3) + 28, cy(2), 0.13, 0.23]];
+  const fastScars = (c, t) => { const a = seg(t, 0.2, 0.28) * (1 - seg(t, 0.75, 0.95)); if (!a) return; for (const [q, r] of HITC) { c.save(); c.globalAlpha = a; c.lineCap = 'round'; c.strokeStyle = 'rgba(35,42,59,.55)'; c.lineWidth = 1.6; scarLines(c, q, r); c.stroke(); c.restore(); } };
+  const mk = (id, name, who, shape, w, beats, same) => ({ id, name, who, dur: 0.9, beats, same, units: crossUnits, hits: [[0.14, [1, 2]], [0.23, [3, 4]]], dmg: 247,
+    under: (c, t) => fastScars(c, t),
+    draw(c, t, S) { S.lunge = Math.sin(seg(t, 0, 0.2) * Math.PI) * -10; FAST().forEach(([x1, y1, x2, y2, a, b], i) => paperStrip(c, shape, x1, y1, x2, y2, w, t, a, b, i, 0.4)); } });
   const SCENES = [
-    { id: 'paper', name: 'A 오린 종이 띠', who: '흰 종이를 칼날 모양으로 오려 붙임', dur: 1.5,
-      beats: ['칼자국 모양으로 <b>오린 흰 종이 띠</b>가 그림자를 달고 판 위에 떠서 쓱 미끄러져 들어옴', '맞은 순간 띠가 살짝 휘며 <b>판에 탁 붙음</b>(그림자가 줄어듦)', '두 띠가 <b>모서리부터 말려 올라가며</b> 떨어져 나감, 칸엔 연필 칼자국'],
-      same: '<b>재료</b>: 딱지와 같은 종이 · 가장 "종이 게임"다움',
-      units: crossUnits, hits: [[0.3, [1, 2]], [0.42, [3, 4]]], dmg: 247,
-      under(c, t) { scars(c, t, (c2, q, r) => { c2.strokeStyle = 'rgba(35,42,59,.55)'; c2.lineWidth = 1.6; scarLines(c2, q, r); c2.stroke(); }); },
-      draw(c, t, S) {
-        S.lunge = lunge(t);
-        STROKES().forEach(([x1, y1, x2, y2, a, b], i) => {
-          const k = seg(t, a, b); if (k <= 0) return;
-          const peel = seg(t, 0.52 + i * 0.04, 0.68 + i * 0.04); if (peel >= 1) return;
-          const B = bladePts(x1, y1, x2, y2, 10, easeOut(k)), stuck = seg(t, b - 0.04, b + 0.04), lift = (1 - stuck) * 6 + peel * 14;
-          c.save(); c.globalAlpha = 1 - peel;
-          c.fillStyle = 'rgba(20,25,35,.28)'; path(c, B.pts.map(([x, y]) => [x + 2 + lift * 0.4, y + 3 + lift * 0.7])); c.fill();
-          c.translate(0, -lift * 0.3);
-          if (peel > 0) { c.translate(B.ex, B.ey); c.rotate(peel * (i ? -0.5 : 0.5)); c.translate(-B.ex, -B.ey); }
-          path(c, B.pts); c.fillStyle = '#fffdf6'; c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.lineJoin = 'round'; c.stroke();
-          // 종이 결(가는 결선)
-          c.save(); path(c, B.pts); c.clip(); c.strokeStyle = 'rgba(35,42,59,.12)'; c.lineWidth = 1; for (let d = -12; d <= 12; d += 4) { c.beginPath(); c.moveTo(x1 + B.nx * d, y1 + B.ny * d); c.lineTo(x2 + B.nx * d, y2 + B.ny * d); c.stroke(); } c.restore();
-          c.restore();
-        });
-      } },
-    { id: 'line', name: 'B 잉크 선화', who: '테두리만 그려지는 만화 선', dur: 1.5,
-      beats: ['칼자국 모양의 <b>잉크 테두리만</b> 펜으로 그리듯 빠르게 그어짐', '테두리 안이 <b>빗금</b>으로 채워지고 양 끝에 짧은 <b>효과선</b>이 튐', '선이 지워지듯 끝에서부터 사라지고 칸엔 칼자국 두 줄'],
-      same: '<b>재료</b>: 만화 펜 선 · 가장 가볍고 화면이 덜 가려짐',
-      units: crossUnits, hits: [[0.3, [1, 2]], [0.42, [3, 4]]], dmg: 247,
-      under(c, t) { scars(c, t, (c2, q, r) => { c2.strokeStyle = INK; c2.lineWidth = 2.5; scarLines(c2, q, r); c2.stroke(); }); },
-      draw(c, t, S) {
-        S.lunge = lunge(t);
-        STROKES().forEach(([x1, y1, x2, y2, a, b], i) => {
-          const k = seg(t, a, b); if (k <= 0) return; const out = seg(t, 0.5 + i * 0.05, 0.66 + i * 0.05); if (out >= 1) return;
-          const B = bladePts(x1, y1, x2, y2, 11, 1);
-          let len = 0; const P2 = [...B.pts, B.pts[0]]; for (let j = 1; j < P2.length; j++) len += Math.hypot(P2[j][0] - P2[j - 1][0], P2[j][1] - P2[j - 1][1]);
-          c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
-          // 빗금
-          const fill = seg(t, b - 0.06, b + 0.06) * (1 - out);
-          if (fill > 0) { c.save(); path(c, B.pts); c.clip(); c.globalAlpha = fill; c.strokeStyle = INK; c.lineWidth = 1.3; for (let d = -60; d < 60; d += 5) { c.beginPath(); c.moveTo(B.ex + d, B.ey - 60); c.lineTo(B.ex + d + 60, B.ey); c.stroke(); } c.restore(); }
-          c.setLineDash([len * easeOut(k) * (1 - out), len]); c.lineDashOffset = -len * out;
-          path(c, B.pts); c.strokeStyle = INK; c.lineWidth = 2.6; c.stroke();
-          c.restore();
-          const sp = seg(t, b - 0.02, b + 0.1); if (sp > 0 && sp < 1) { c.save(); c.globalAlpha = 1 - sp; c.strokeStyle = INK; c.lineWidth = 1.8; for (let j = -2; j <= 2; j++) { const ang = B.ang + j * 0.45, r1 = 8 + sp * 6, r2 = r1 + 9; c.beginPath(); c.moveTo(x2 + Math.cos(ang) * r1, y2 + Math.sin(ang) * r1); c.lineTo(x2 + Math.cos(ang) * r2, y2 + Math.sin(ang) * r2); c.stroke(); } c.restore(); }
-        });
-      } },
-    { id: 'steel', name: 'C 강철 칼날', who: '금속 광택 + 불똥', dur: 1.5,
-      beats: ['같은 칼자국 모양을 <b>강철판</b>(위 밝고 아래 어두운 결)으로', '획이 끝나면 칼날을 따라 <b>흰 반짝임</b>이 한 번 지나가고, 맞은 딱지에서 <b>노란 불똥</b> 조각이 튐', '칼날이 얇아지며 사라지고 칸엔 은색 긁힘'],
-      same: '<b>재료</b>: 딱지 무기 그림과 같은 강철 · 가장 "날카로운" 느낌',
-      units: crossUnits, hits: [[0.3, [1, 2]], [0.42, [3, 4]]], dmg: 247,
-      under(c, t) { scars(c, t, (c2, q, r) => { c2.strokeStyle = '#8a95a6'; c2.lineWidth = 3; scarLines(c2, q, r); c2.stroke(); c2.strokeStyle = '#fff'; c2.lineWidth = 1; scarLines(c2, q, r); c2.stroke(); }); },
-      draw(c, t, S) {
-        S.lunge = lunge(t);
-        STROKES().forEach(([x1, y1, x2, y2, a, b], i) => {
-          const k = seg(t, a, b); if (k <= 0) return; const thin = seg(t, 0.5 + i * 0.04, 0.64 + i * 0.04); if (thin >= 1) return;
-          const B = bladePts(x1, y1, x2, y2, 10 * (1 - thin * 0.8), easeOut(k));
-          const g = c.createLinearGradient(x1 + B.nx * 10, y1 + B.ny * 10, x1 - B.nx * 4, y1 - B.ny * 4); g.addColorStop(0, '#f6f9fc'); g.addColorStop(0.45, '#c3cbd6'); g.addColorStop(0.55, '#8a95a6'); g.addColorStop(1, '#5b6475');
-          c.save(); c.globalAlpha = 1 - thin; path(c, B.pts); c.fillStyle = g; c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.lineJoin = 'round'; c.stroke();
-          const gl = seg(t, b, b + 0.12); if (gl > 0 && gl < 1) { c.save(); path(c, B.pts); c.clip(); const gx = x1 + (x2 - x1) * gl, gy = y1 + (y2 - y1) * gl; c.translate(gx, gy); c.rotate(B.ang + Math.PI / 2.6); c.fillStyle = 'rgba(255,255,255,.95)'; c.fillRect(-3, -30, 6, 60); c.restore(); }
-          c.restore();
-        });
-        [[0.3, [[2, 2], [2, 1]]], [0.42, [[1, 2], [3, 2]]]].forEach(([at, cells]) => {
-          const d = seg(t, at, at + 0.22); if (d <= 0 || d >= 1) return;
-          for (const [q, r] of cells) { const R = rng(q * 9 + r); for (let i = 0; i < 6; i++) { const ang = R() * 6.28, dist = 10 + easeOut(d) * 24; c.save(); c.globalAlpha = 1 - d; c.translate(cx(q) + Math.cos(ang) * dist, cy(r) + Math.sin(ang) * dist + d * d * 12); c.rotate(ang); poly(c, [[-4, 0], [0, -1.6], [4, 0], [0, 1.6]], i % 2 ? '#ffe066' : '#ffb347', 1); c.restore(); } }
-        });
-      } },
-    { id: 'tear', name: 'D 찢어진 틈', who: '판이 칼자국 모양으로 찢김', dur: 1.6,
-      beats: ['같은 칼자국 모양으로 <b>판 종이가 찢어져</b> 아래 어두운 붉은 틈이 보임', '찢긴 가장자리는 <b>들쭉날쭉한 흰 섬유</b>, 맞은 딱지는 흔들림', '틈이 천천히 아물며 <b>반창고 테이프</b> 자국만 잠깐 남음'],
-      same: '<b>재료</b>: 판 종이 자체 · 사망 연출(딱지 찢어짐)과 같은 언어',
-      units: crossUnits, hits: [[0.3, [1, 2]], [0.42, [3, 4]]], dmg: 247,
-      under(c, t, S) {
-        STROKES().forEach(([x1, y1, x2, y2, a, b], i) => {
-          const k = seg(t, a, b); if (k <= 0) return; const heal = seg(t, 0.62 + i * 0.04, 0.82 + i * 0.04);
-          const R = rng(31 + i), B = bladePts(x1, y1, x2, y2, 14 * (1 - heal), easeOut(k));
-          // 들쭉날쭉한 찢긴 테
-          const jag = []; const P2 = [...B.pts, B.pts[0]];
-          for (let j = 0; j < 4; j++) { const [ax, ay] = P2[j], [bx, by] = P2[j + 1]; for (let s2 = 0; s2 < 6; s2++) { const tt = s2 / 6, n = (R() - 0.5) * 3.4; jag.push([ax + (bx - ax) * tt + B.nx * n, ay + (by - ay) * tt + B.ny * n]); } }
-          if (heal < 1) { c.save(); path(c, jag.map(([x, y]) => [x + B.nx * 1.5, y + B.ny * 1.5])); c.fillStyle = '#fbf6ea'; c.fill(); path(c, jag); c.fillStyle = '#3a0e16'; c.fill(); c.save(); path(c, jag); c.clip(); c.fillStyle = 'rgba(200,51,63,.55)'; c.fillRect(Math.min(x1, x2) - 20, Math.min(y1, y2) - 20, Math.abs(x2 - x1) + 40, Math.abs(y2 - y1) + 40); c.restore(); c.strokeStyle = INK; c.lineWidth = 1.2; c.stroke(); c.restore(); }
-          const tape = seg(t, 0.78 + i * 0.04, 0.84) * (1 - seg(t, 0.92, 1));
-          if (tape > 0) { c.save(); c.globalAlpha = tape * 0.85; c.translate((x1 + x2) / 2, (y1 + y2) / 2); c.rotate(B.ang); c.fillStyle = 'rgba(255,240,190,.9)'; c.strokeStyle = 'rgba(35,42,59,.4)'; c.lineWidth = 1; for (const o of [-22, 22]) { c.save(); c.translate(o, 0); c.rotate(0.6); rr(c, -6, -11, 12, 22, 2); c.fill(); c.stroke(); c.restore(); } c.restore(); }
-        });
-      },
-      draw(c, t, S) { S.lunge = lunge(t); if ((t > 0.3 && t < 0.33) || (t > 0.42 && t < 0.45)) S.shake = 3; } },
+    mk('crescent', 'A 초승달', '휘어진 칼 궤적', 'crescent', 9, ['종이 띠가 <b>초승달처럼 한쪽으로 휜</b> 모양 — 칼을 휘두른 궤적', '세로 → 가로 두 장이 0.2초 안에 연달아 탁탁 붙음', '모서리부터 말려 떨어짐'], '<b>느낌</b>: 가장 "휘두름"이 느껴짐 · 회전 베기·검의 폭풍에 그대로 이어짐'),
+    mk('serrate', 'B 톱날', '한쪽 가장자리가 들쭉날쭉', 'serrate', 10, ['띠의 한쪽 가장자리를 <b>가위로 지그재그 오린</b> 톱날 모양', '빠르게 탁탁 — 날카롭고 거친 느낌', '말려 떨어지며 톱날이 살짝 펄럭임'], '<b>느낌</b>: 가장 거칠고 아픈 느낌 · 출혈 베기·광전사 계열에 어울림'),
+    mk('twin', 'C 쌍줄', '가는 띠 두 장이 나란히', 'twin', 8, ['가는 종이 띠 <b>두 장이 나란히</b> 붙음(두 번 벤 자국)', '얇아서 판이 덜 가려지고 속도감이 큼', '두 장이 따로 말려 떨어짐'], '<b>느낌</b>: 가장 빠르고 경쾌함 · 쌍검·결투가·연속 공격에 어울림'),
+    mk('swallow', 'D 제비꼬리', '뾰족한 앞, 갈라진 꼬리', 'swallow', 9, ['앞은 뾰족하고 <b>꼬리가 제비꼬리처럼 갈라진</b> 깃발 모양 띠', '날아와 꽂히는 느낌이 강함', '꼬리부터 말려 떨어짐'], '<b>느낌</b>: 가장 장식적이고 "종이 공예"다움 · 기사·성기사 계열에 어울림'),
   ];
 
   // ---------- 재생 ----------
