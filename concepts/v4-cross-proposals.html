@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>십자 베기 4안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 문서: 스킬별 전투 연출 시안 9종. 판·딱지는 게임과 같은 고정 색, 문서 바탕만 테마를 따른다. */
+:root {
+  --bg: #eeede8; --surface: #fbfaf6; --fg: #1f2329; --muted: #60656e; --line: #d6d3ca; --accent: #c8335a;
+  --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); padding-block: 28px 64px; padding-inline: 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 36px; }
+header { display: grid; gap: 8px; max-width: 74ch; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
+h1 { margin: 0; font: 400 clamp(30px, 5vw, 44px)/1.1 var(--display); text-wrap: balance; }
+h2 { margin: 0; font: 400 26px/1.2 var(--display); }
+h3 { margin: 0; font: 700 18px/1.3 var(--body); }
+p { margin: 0; }
+.lead { color: var(--muted); }
+.ctrl { display: flex; gap: 8px; flex-wrap: wrap; }
+.ctrl button { font: 700 13px var(--body); padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.ctrl button.on { border-color: var(--accent); color: var(--accent); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; }
+.fx { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; }
+.fx canvas { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; border-radius: 8px; cursor: pointer; background: #6e4426; }
+.tag { display: flex; gap: 8px; align-items: baseline; }
+.tag b { font: 400 20px var(--display); color: var(--accent); }
+.tag small { margin-left: auto; font-size: 12px; color: var(--muted); }
+ol.beats { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--muted); display: grid; gap: 2px; }
+ol.beats li::marker { color: var(--accent); font-weight: 700; }
+ol.beats b { color: var(--fg); font-weight: 600; }
+.same { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 6px; }
+.same b { color: var(--fg); }
+.rules { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; max-width: 80ch; }
+.rules ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); font-size: 14px; }
+.rules ul b { color: var(--fg); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); }
+td:first-child { font-weight: 700; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">카드 원정대 v4 · 시안</span>
+    <h1>십자 베기, 네 가지 방향</h1>
+    <p class="lead">같은 십자 베기(앞 2칸 + 앞칸 양옆)를 서로 다른 연출 방향으로 그렸습니다. 고른 방향이 나머지 베기 스킬(출혈 베기·회전 베기·대지 가르기·암살 등)의 기준이 됩니다. 판을 탭하면 다시 재생합니다.</p>
+    <div class="ctrl"><button data-sp="1" class="on">보통 속도</button><button data-sp="0.4">느리게</button></div>
+  </header>
+
+  <section class="grid" id="grid"></section>
+
+  <div class="rules">
+    <span class="eyebrow">추천</span>
+    <h3>B 칼 휘두르기, 자국은 A의 먹 붓 한 획</h3>
+    <ul>
+      <li><b>B</b>는 딱지에 꽂힌 무기가 실제로 휘둘러져서 "무기를 끼운다"는 이 게임의 핵심과 바로 이어집니다. 장검·대검·쌍검처럼 장착한 무기마다 칼 모양만 바꾸면 됩니다.</li>
+      <li>다만 칼만으로는 범위 칸이 덜 또렷하니, 지나간 자리에 <b>A의 먹 붓 획</b>을 얇게 남기면 범위가 보입니다.</li>
+      <li><b>C 종이 자르기</b>는 가장 독특하지만 판이 갈라지는 연출이 잦으면 피로할 수 있어 큰 스킬(대지 가르기·검의 폭풍)에 아껴 쓰길 권합니다. <b>D 도장</b>은 범위 스킬 전체의 공통 표시로도 좋습니다.</li>
+    </ul>
+  </div>
+</div>
+
+<script src="../game/data.js"></script>
+<script src="../game/art.js"></script>
+<script src="../v4/data4.js"></script>
+<script>
+(() => {
+  'use strict';
+  const V = window.V4, ART = window.ART, DEF = V.DEF;
+  const INK = '#232a3b', CS = 54, P = 10, COLS = 5, ROWS = 4, W = P * 2 + CS * COLS, H = P * 2 + CS * ROWS;
+  const cx = (c) => P + c * CS + CS / 2, cy = (r) => P + r * CS + CS / 2;
+  const rng = (s) => () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const seg = (t, a, b) => clamp((t - a) / (b - a));           // a~b 구간 진행도
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const back = (x) => { const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  let SPEED = 1;
+  const FREEZE = +new URLSearchParams(location.search).get('t') || 0; // 확인용: ?t=0.4 면 그 시점에 멈춤
+
+  // ---------- 판(게임과 같은 칸 색) ----------
+  const TILE = { foe: ['#e6d6b4', '#dccaa0'], me: ['#cfe3b4', '#bcd69c'] };
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function board(c, shake = 0, cellOff) {
+    c.fillStyle = '#4f7a3a'; rr(c, P - 4, P - 4, CS * COLS + 8, CS * ROWS + 8, 6); c.fill();
+    for (let r = 0; r < ROWS; r++) for (let q = 0; q < COLS; q++) {
+      const o = cellOff ? cellOff(q, r) : [0, 0], foe = r < 2, x = P + q * CS + 3 + o[0] + (shake ? (Math.random() - 0.5) * shake : 0), y = P + r * CS + 3 + o[1], s = CS - 6;
+      c.fillStyle = (foe ? TILE.foe : TILE.me)[(q + r) % 2]; rr(c, x, y, s, s, 7); c.fill();
+      const g = c.createLinearGradient(x, y, x + s, y + s); g.addColorStop(0, 'rgba(255,255,255,.42)'); g.addColorStop(0.45, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.14)');
+      c.fillStyle = g; rr(c, x, y, s, s, 7); c.fill(); c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1.2; rr(c, x + 0.5, y + 0.5, s - 1, s - 1, 7); c.stroke();
+    }
+    const my = P + CS * 2; c.save(); c.strokeStyle = '#c8333f'; c.lineWidth = 2.5; c.setLineDash([8, 5]); c.beginPath(); c.moveTo(P, my); c.lineTo(P + CS * COLS, my); c.stroke(); c.restore();
+  }
+  // ---------- 딱지 ----------
+  const sprCache = {};
+  const spr = (id, side) => sprCache[id + side] || (sprCache[id + side] = ART.token(id, side, 20, 2, side ? undefined : DEF['unit:' + id].cls));
+  function piece(c, u, o = {}) {
+    if (u.dead) return;
+    let x = cx(u.c) + (o.dx || 0), y = cy(u.r) + (o.dy || 0);
+    if (u.hit > 0) x += Math.sin(u.hit * 60) * 3 * u.hit;
+    ART.drawToken(c, spr(u.id, u.side), x, y, 20, { lift: o.lift || 0, rot: o.rot || 0, flash: u.hit > 0 ? u.hit * 0.12 : 0 });
+    if (u.stun > 0) { const t = performance.now() / 260; for (let k = 0; k < 3; k++) { const a = t + k * 2.09; ART.star(c, x + Math.cos(a) * 15, y - 24 + Math.sin(a) * 4, 4.5); c.fillStyle = '#f5c400'; c.fill(); c.strokeStyle = INK; c.lineWidth = 1; c.stroke(); } }
+  }
+  function floater(c, f) {
+    const k = f.t, a = 1 - clamp((k - 0.6) / 0.4), sc = k < 0.12 ? 1.6 - k * 5 : 1;
+    c.save(); c.globalAlpha = a; c.translate(f.x, f.y - k * 18); c.scale(sc, sc);
+    c.font = `${f.big ? 16 : 14}px 'Black Han Sans', sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+    c.strokeStyle = INK; c.lineWidth = 4; c.strokeText(f.text, 0, 0); c.fillStyle = f.col; c.fillText(f.text, 0, 0); c.restore();
+  }
+  // ---------- 종이 조각 도구 ----------
+  function poly(c, pts, fill, lw = 2) { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.fillStyle = fill; c.fill(); c.strokeStyle = INK; c.lineWidth = lw; c.lineJoin = 'round'; c.stroke(); }
+  // 붓 획(가운데 두껍고 끝이 가는 칼날 획)
+  function blade(c, x1, y1, x2, y2, w, p, col = '#f4f7fb') {
+    const ex = x1 + (x2 - x1) * p, ey = y1 + (y2 - y1) * p, ang = Math.atan2(y2 - y1, x2 - x1), nx = -Math.sin(ang), ny = Math.cos(ang);
+    const mx = (x1 + ex) / 2, my = (y1 + ey) / 2;
+    poly(c, [[x1, y1], [mx + nx * w, my + ny * w], [ex, ey], [mx - nx * w * 0.35, my - ny * w * 0.35]], col, 2.2);
+  }
+  function burst(c, x, y, r, col, n = 8, rot = 0) { const pts = []; for (let i = 0; i < n * 2; i++) { const a = rot + (i * Math.PI) / n, rr2 = i % 2 ? r * 0.45 : r; pts.push([x + Math.cos(a) * rr2, y + Math.sin(a) * rr2]); } poly(c, pts, col, 2); }
+  function stamp(c, x, y, text, s, rot, col = '#c8333f') {
+    c.save(); c.translate(x, y); c.rotate(rot); c.scale(s, s);
+    c.font = "22px 'Black Han Sans', sans-serif"; const w = c.measureText(text).width + 14;
+    c.fillStyle = 'rgba(255,253,246,.92)'; rr(c, -w / 2, -15, w, 30, 5); c.fill(); c.strokeStyle = col; c.lineWidth = 3; rr(c, -w / 2, -15, w, 30, 5); c.stroke();
+    c.fillStyle = col; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, 0, 1); c.restore();
+  }
+  function flame(c, x, y, s, wob) {
+    const L = (k, col, sc) => { const pts = []; for (let i = 0; i <= 8; i++) { const a = Math.PI + (i / 8) * Math.PI, rr2 = i % 2 ? 0.55 : 1; pts.push([x + Math.cos(a) * 11 * s * sc * (i % 2 ? 0.8 : 1), y - 4 * s * sc - Math.abs(Math.sin(a)) * 18 * s * sc * rr2 + (i % 2 ? 0 : Math.sin(wob + i) * 2)]); } pts.push([x + 11 * s * sc, y], [x - 11 * s * sc, y]); poly(c, pts, col, k); };
+    L(2, '#e8432a', 1); L(1.6, '#ff9a2e', 0.68); L(1.2, '#ffe07a', 0.38);
+  }
+  function arrow(c, x, y, ang, len = 26) {
+    c.save(); c.translate(x, y); c.rotate(ang);
+    c.strokeStyle = INK; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-len, 0); c.lineTo(4, 0); c.stroke();
+    c.strokeStyle = '#c99a5b'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-len + 1, 0); c.lineTo(3, 0); c.stroke();
+    poly(c, [[10, 0], [2, -4], [2, 4]], '#d7dde6', 1.3);
+    poly(c, [[-len, 0], [-len - 5, -5], [-len + 5, 0], [-len - 5, 5]], '#d6335a', 1.2);
+    c.restore();
+  }
+  function bolt(c, x1, y1, x2, y2, p, seed) {
+    const R = rng(seed), n = 6, pts = [[x1, y1]], ang = Math.atan2(y2 - y1, x2 - x1), nx = -Math.sin(ang), ny = Math.cos(ang);
+    for (let i = 1; i < n; i++) { const t = i / n, o = (R() - 0.5) * 18; pts.push([x1 + (x2 - x1) * t + nx * o, y1 + (y2 - y1) * t + ny * o]); }
+    pts.push([x2, y2]);
+    const m = Math.max(1, Math.round(p * n)), shown = pts.slice(0, m + 1);
+    const L = [], Rr = [];
+    shown.forEach(([x, y], i) => { const w = i === 0 || i === shown.length - 1 ? 1 : 4; L.push([x + nx * w, y + ny * w]); Rr.unshift([x - nx * w, y - ny * w]); });
+    poly(c, [...L, ...Rr], '#ffe066', 2);
+  }
+  function crackCell(c, q, r, p, seed) {
+    const R = rng(seed), x = cx(q), y = cy(r); c.save(); c.strokeStyle = INK; c.lineWidth = 1.6; c.lineCap = 'round'; c.globalAlpha = p;
+    for (let k = 0; k < 4; k++) { let a = R() * 6.28, px = x, py = y; c.beginPath(); c.moveTo(px, py); for (let j = 0; j < 3; j++) { a += (R() - 0.5) * 1.2; px += Math.cos(a) * 8; py += Math.sin(a) * 8; c.lineTo(px, py); } c.stroke(); }
+    c.restore();
+  }
+  function scorch(c, x, y, a) { c.save(); c.globalAlpha = a * 0.55; c.fillStyle = '#4a2a1a'; c.beginPath(); for (let i = 0; i < 12; i++) { const ang = (i / 12) * 6.28, r = 13 + (i % 3) * 3; c.lineTo(x + Math.cos(ang) * r, y + 6 + Math.sin(ang) * r * 0.5); } c.fill(); c.restore(); }
+  function hatchCell(c, q, r, col, a) {
+    const x = P + q * CS + 3, y = P + r * CS + 3, s = CS - 6; c.save(); rr(c, x, y, s, s, 7); c.clip(); c.globalAlpha = a;
+    c.strokeStyle = col; c.lineWidth = 3; for (let k = -s; k < s; k += 8) { c.beginPath(); c.moveTo(x + k, y + s); c.lineTo(x + k + s, y); c.stroke(); }
+    c.restore(); c.save(); c.globalAlpha = a; c.strokeStyle = col; c.lineWidth = 2.5; rr(c, x + 1, y + 1, s - 2, s - 2, 7); c.stroke(); c.restore();
+  }
+  function cross(c, x, y, s, col = '#2e9e6b') { poly(c, [[-1, -3], [1, -3], [1, -1], [3, -1], [3, 1], [1, 1], [1, 3], [-1, 3], [-1, 1], [-3, 1], [-3, -1], [-1, -1]].map(([a, b]) => [x + a * s, y + b * s]), col, 2); }
+  function heart(c, x, y, s, col = '#e8436b') { c.beginPath(); c.moveTo(x, y + s * 0.9); c.bezierCurveTo(x - s * 1.4, y - s * 0.1, x - s * 0.7, y - s * 1.2, x, y - s * 0.4); c.bezierCurveTo(x + s * 0.7, y - s * 1.2, x + s * 1.4, y - s * 0.1, x, y + s * 0.9); c.fillStyle = col; c.fill(); c.strokeStyle = INK; c.lineWidth = 1.5; c.stroke(); }
+
+  // ---------- 장면 ----------
+  // 각 장면: units, dur, draw(c, t, S) — t 0~1, S 는 장면 상태(맞은 딱지 흔들림·숫자)
+  const U = (id, side, c, r) => ({ id, side, c, r, hit: 0, stun: 0 });
+  // 십자 베기 4안: 시전자 (2,3), 맞는 칸 앞 2칸 (2,2)(2,1) + 앞칸 양옆 (1,2)(3,2)
+  const HITC = [[2, 2], [2, 1], [1, 2], [3, 2]];
+  const crossUnits = () => [U('squire', 0, 2, 3), U('goblin', 1, 2, 2), U('wolf', 1, 2, 1), U('slime', 1, 1, 2), U('boar', 1, 3, 2)];
+  // 먹 붓 획: 경로를 따라 굵기가 변하는 원을 찍고, 마른 붓 결(빈 줄)을 낸다
+  function brush(c, x1, y1, x2, y2, p, w, seed) {
+    const R = rng(seed), n = 40, m = Math.floor(n * p), ang = Math.atan2(y2 - y1, x2 - x1), nx = -Math.sin(ang), ny = Math.cos(ang);
+    c.save(); c.fillStyle = INK;
+    for (let i = 0; i <= m; i++) { const t = i / n, ww = w * Math.sin(Math.min(1, t * 1.6 + 0.15) * Math.PI * 0.5) * (1 - t * 0.55) + 1.2, x = x1 + (x2 - x1) * t + nx * Math.sin(t * 5) * 2, y = y1 + (y2 - y1) * t + ny * Math.sin(t * 5) * 2; c.beginPath(); c.ellipse(x, y, ww, ww * 0.9, ang, 0, 7); c.fill(); }
+    // 마른 붓 결: 끝쪽에 가는 빈 줄
+    c.globalCompositeOperation = 'destination-out';
+    for (let k = 0; k < 4; k++) { const off = (R() - 0.5) * w * 1.2, st = 0.55 + R() * 0.2; if (p < st) continue; c.strokeStyle = 'rgba(0,0,0,1)'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(x1 + (x2 - x1) * st + nx * off, y1 + (y2 - y1) * st + ny * off); c.lineTo(x1 + (x2 - x1) * p + nx * off * 1.2, y1 + (y2 - y1) * p + ny * off * 1.2); c.stroke(); }
+    c.restore();
+  }
+  function splat(c, x, y, s, seed, a) { const R = rng(seed); c.save(); c.globalAlpha = a; c.fillStyle = INK; for (let i = 0; i < 7; i++) { const ang = R() * 6.28, d = 8 + R() * 18 * s; c.beginPath(); c.arc(x + Math.cos(ang) * d, y + Math.sin(ang) * d, 1 + R() * 2.4, 0, 7); c.fill(); } c.restore(); }
+  function sword(c, x, y, ang, s = 1, a = 1) {
+    c.save(); c.globalAlpha *= a; c.translate(x, y); c.rotate(ang); c.scale(s, s);
+    poly(c, [[-3, -2], [30, -3.5], [38, 0], [30, 3.5], [-3, 2]], '#e8edf3', 2);
+    c.strokeStyle = 'rgba(35,42,59,.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, 0); c.lineTo(30, 0); c.stroke();
+    poly(c, [[-4, -9], [0, -9], [0, 9], [-4, 9]], '#c9a227', 1.6);
+    poly(c, [[-15, -2.5], [-4, -2.5], [-4, 2.5], [-15, 2.5]], '#7a4f2c', 1.6);
+    c.restore();
+  }
+  const SCENES = [
+    { id: 'ink', name: 'A 먹 붓', who: '서예 붓 두 획', dur: 1.5,
+      beats: ['<b>준비</b>: 딱지가 뒤로 살짝 당겼다가 앞으로', '<b>타격</b>: 굵은 먹 붓 획이 아래→위 세로로, 이어서 왼→오 가로로 — 끝은 마른 붓 결로 갈라짐', '<b>자국</b>: 획이 그대로 남았다가 먹물 방울과 함께 옅어짐'],
+      same: '<b>느낌</b>: 동양 무협 · 가장 힘 있고 묵직함. 화면에 검은 면적이 커서 눈에 잘 띔',
+      units: crossUnits, hits: [[0.3, [1, 2]], [0.46, [3, 4]]], dmg: 247,
+      draw(c, t, S) {
+        S.lunge = -Math.sin(seg(t, 0.0, 0.25) * Math.PI) * 4 + Math.sin(seg(t, 0.12, 0.4) * Math.PI) * -10;
+        const fade = 1 - seg(t, 0.72, 0.98);
+        c.save(); c.globalAlpha = fade;
+        brush(c, cx(2) + 4, cy(2) + 30, cx(2) - 2, cy(1) - 30, easeOut(seg(t, 0.14, 0.32)), 9, 3);
+        brush(c, cx(1) - 30, cy(2) + 4, cx(3) + 30, cy(2) - 4, easeOut(seg(t, 0.3, 0.48)), 8, 5);
+        c.restore();
+        splat(c, cx(2), cy(1) - 18, 1, 11, seg(t, 0.3, 0.36) * fade);
+        splat(c, cx(3) + 18, cy(2), 1, 17, seg(t, 0.46, 0.52) * fade);
+      } },
+    { id: 'blade', name: 'B 칼 휘두르기', who: '종이 칼 + 잔상', dur: 1.5,
+      beats: ['<b>준비</b>: 딱지 위로 오려 낸 종이 칼이 솟음', '<b>타격</b>: 칼이 앞 2칸을 내려찍고(세로) → 그 자리에서 옆으로 크게 휘둘러(가로), 지나간 자리에 잔상 세 장 + 만화 속도선', '<b>자국</b>: 칼이 딱지에게 돌아가며 사라짐'],
+      same: '<b>느낌</b>: 무기 장착 시스템과 이어짐 — 딱지가 든 무기(장검·대검·쌍검)마다 칼 모양만 바꾸면 됨',
+      units: crossUnits, hits: [[0.3, [1, 2]], [0.52, [3, 4]]], dmg: 247,
+      draw(c, t, S) {
+        const up = seg(t, 0.02, 0.14), chop = seg(t, 0.14, 0.3), sweep = seg(t, 0.36, 0.56), ret = seg(t, 0.7, 0.85);
+        S.lunge = -Math.sin(seg(t, 0.1, 0.35) * Math.PI) * 8;
+        let x, y, ang, a = 1;
+        if (t < 0.32) { x = cx(2); y = cy(3) - 20 - up * 12 + (cy(1) - cy(3) + 30) * easeOut(chop); ang = -Math.PI / 2; }
+        else if (t < 0.7) { const e = easeOut(sweep), A = Math.PI * (1.15 - e * 1.3); x = cx(2) + Math.cos(A) * 6; y = cy(2) + 14; ang = -A; }
+        else { x = cx(2); y = cy(2) + 14 + ret * 30; ang = -Math.PI * -0.15; a = 1 - ret; }
+        // 세로 내려찍기 속도선
+        if (chop > 0 && t < 0.42) { c.save(); c.globalAlpha = 1 - seg(t, 0.3, 0.42); c.strokeStyle = INK; c.lineWidth = 1.6; for (const dx of [-14, -8, 8, 14]) { c.beginPath(); c.moveTo(cx(2) + dx, cy(3) - 24); c.lineTo(cx(2) + dx, y + 12); c.stroke(); } c.restore(); }
+        // 가로 휘두르기 잔상과 호
+        if (sweep > 0 && t < 0.72) {
+          const fade = 1 - seg(t, 0.56, 0.72);
+          for (let g = 3; g >= 1; g--) { const e = easeOut(Math.max(0, sweep - g * 0.09)), A = Math.PI * (1.15 - e * 1.3); sword(c, cx(2) + Math.cos(A) * 6, cy(2) + 14, -A, 1.55, 0.18 * g * fade); }
+          c.save(); c.globalAlpha = fade; c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); c.arc(cx(2), cy(2) + 14, 66, -Math.PI * 1.15, -Math.PI * (1.15 - easeOut(sweep) * 1.3), false); c.stroke(); c.lineWidth = 1.2; c.beginPath(); c.arc(cx(2), cy(2) + 14, 58, -Math.PI * 1.1, -Math.PI * (1.15 - easeOut(sweep) * 1.25), false); c.stroke(); c.restore();
+        }
+        sword(c, x, y, ang, t < 0.32 ? 1.2 : 1.55, a);
+      } },
+    { id: 'cut', name: 'C 종이 자르기', who: '판이 십자로 갈라짐', dur: 1.7,
+      beats: ['<b>준비</b>: 맞을 칸 위로 "여기를 자르세요" 점선이 십자로 그어지고 작은 가위 아이콘이 따라감', '<b>타격</b>: 점선을 따라 판 종이가 쩍 갈라지며 아래 어두운 틈이 벌어짐 — 갈라진 양쪽 테가 살짝 들림', '<b>자국</b>: 틈이 다시 붙고 테이프 자국처럼 옅은 선만 남음'],
+      same: '<b>느낌</b>: "종이 딱지 게임"에만 있는 연출. 맞은 딱지보다 판이 반응해서 범위가 가장 또렷함',
+      units: crossUnits, hits: [[0.5, [1, 2, 3, 4]]], dmg: 247,
+      under(c, t) {
+        const open = seg(t, 0.42, 0.52) * (1 - seg(t, 0.72, 0.88)), mark = seg(t, 0.8, 0.9) * (1 - seg(t, 0.92, 1));
+        const V1 = [cx(2), cy(2) + 26], V2 = [cx(2), cy(1) - 26], H1 = [cx(1) - 26, cy(2)], H2 = [cx(3) + 26, cy(2)];
+        const line = (a, b, p) => { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p); c.stroke(); };
+        if (open > 0) {
+          c.save(); c.lineCap = 'round';
+          c.strokeStyle = '#1b1208'; c.lineWidth = 2 + open * 9; line(V1, V2, 1); line(H1, H2, 1);
+          c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 1.2; for (const s2 of [-1, 1]) { const o = (1 + open * 4.5) * s2; c.beginPath(); c.moveTo(V1[0] + o, V1[1]); c.lineTo(V2[0] + o, V2[1]); c.moveTo(H1[0], H1[1] + o); c.lineTo(H2[0], H2[1] + o); c.stroke(); }
+          c.restore();
+        }
+        if (mark > 0) { c.save(); c.globalAlpha = mark * 0.5; c.strokeStyle = '#e8dcc0'; c.lineWidth = 6; line(V1, V2, 1); line(H1, H2, 1); c.restore(); }
+      },
+      draw(c, t, S) {
+        const dash = seg(t, 0.06, 0.38), open = seg(t, 0.42, 0.52) * (1 - seg(t, 0.72, 0.88)), mark = seg(t, 0.8, 0.9) * (1 - seg(t, 0.92, 1));
+        const V1 = [cx(2), cy(2) + 26], V2 = [cx(2), cy(1) - 26], H1 = [cx(1) - 26, cy(2)], H2 = [cx(3) + 26, cy(2)];
+        const line = (a, b, p) => { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p); c.stroke(); };
+        if (dash > 0 && t < 0.5) { c.save(); c.globalAlpha = 1 - seg(t, 0.42, 0.5); c.strokeStyle = INK; c.lineWidth = 2; c.setLineDash([6, 5]); line(V1, V2, Math.min(1, dash * 2)); if (dash > 0.5) line(H1, H2, (dash - 0.5) * 2); c.restore();
+          const p2 = dash < 0.5 ? dash * 2 : (dash - 0.5) * 2, [a, b] = dash < 0.5 ? [V1, V2] : [H1, H2], sx = a[0] + (b[0] - a[0]) * p2, sy = a[1] + (b[1] - a[1]) * p2;
+          c.save(); c.translate(sx, sy); c.rotate(dash < 0.5 ? -Math.PI / 2 : 0);
+          const sn = Math.sin(t * 60) * 0.25;
+          for (const sg of [-1, 1]) { c.save(); c.rotate(sg * (0.25 + sn)); poly(c, [[0, -1.5], [14, -2.5], [14, 2.5], [0, 1.5]], '#d7dde6', 1.4); c.beginPath(); c.arc(-6, sg * 4, 4.5, 0, 7); c.fillStyle = '#c8333f'; c.fill(); c.strokeStyle = INK; c.lineWidth = 1.4; c.stroke(); c.restore(); }
+          c.restore(); }
+      } },
+    { id: 'seal', name: 'D 붉은 도장', who: '십자 모양 도장이 쾅', dur: 1.6,
+      beats: ['<b>준비</b>: 맞을 4칸 위에 나무 도장 손잡이가 크게 떠서 내려옴(그림자가 칸 모양으로 줄어듦)', '<b>타격</b>: 쾅 — 4칸에 붉은 인주 십자가 찍히고 칸이 눌려 들썩, 바깥으로 짧은 충격선', '<b>자국</b>: 인주 결이 남은 붉은 십자가 천천히 옅어짐'],
+      same: '<b>느낌</b>: 보드게임 "도장 찍기" — 판 위 연출과 결과(데미지 범위)가 한 덩어리. 다른 범위 스킬에 모양만 바꿔 쓰기 쉬움',
+      units: crossUnits, hits: [[0.42, [1, 2, 3, 4]]], dmg: 247,
+      under(c, t) {
+        const down = seg(t, 0.08, 0.42);
+        if (t < 0.42) { c.save(); c.globalAlpha = 0.28 * down; c.fillStyle = INK; for (const [q, r] of HITC) { const k = 1.6 - easeOut(down) * 0.6, s2 = (CS - 8) * k; rr(c, cx(2) + (cx(q) - cx(2)) * k - s2 / 2, cy(2) + (cy(r) - cy(2)) * k - s2 / 2, s2, s2, 6); c.fill(); } c.restore(); }
+        const ink = seg(t, 0.42, 0.46) * (1 - seg(t, 0.75, 1));
+        if (!ink) return;
+        c.save(); c.globalAlpha = ink * 0.8;
+        const R = rng(21);
+        for (const [q, r] of HITC) { const x = P + q * CS + 5, y = P + r * CS + 5, s = CS - 10; c.fillStyle = '#c8333f'; rr(c, x, y, s, s, 6); c.fill(); c.save(); rr(c, x, y, s, s, 6); c.clip(); c.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 26; i++) { c.beginPath(); c.arc(x + R() * s, y + R() * s, 1 + R() * 2.5, 0, 7); c.fill(); } c.restore(); }
+        c.restore();
+      },
+      draw(c, t, S) {
+        const down = seg(t, 0.08, 0.42), lift = seg(t, 0.5, 0.68);
+        const sc = 1.6 - easeOut(down) * 0.6 + lift * 0.4, ox = cx(2), a = 1 - lift;
+        if (a > 0) { c.save(); c.globalAlpha = a; c.translate(cx(2), cy(2) - 6 - (1 - down) * 22 - lift * 30); c.scale(sc * 0.96, sc * 0.96);
+          // 십자 모양 도장 몸통(맞을 칸 모양) + 손잡이
+          const cells = HITC.map(([q, r]) => [(q - 2) * CS, (r - 2) * CS]);
+          for (const [x, y] of cells) { c.fillStyle = '#c8333f'; rr(c, x - CS / 2 + 4, y - CS / 2 + 10, CS - 8, CS - 8, 6); c.fill(); }
+          for (const [x, y] of cells) { c.fillStyle = '#b07a44'; rr(c, x - CS / 2 + 4, y - CS / 2 + 2, CS - 8, CS - 8, 6); c.fill(); c.strokeStyle = INK; c.lineWidth = 2.4; c.stroke(); c.strokeStyle = 'rgba(0,0,0,.15)'; c.lineWidth = 1; for (let k = -18; k <= 18; k += 6) { c.beginPath(); c.moveTo(x - CS / 2 + 8, y + k); c.lineTo(x + CS / 2 - 8, y + k + 2); c.stroke(); } }
+          poly(c, [[-12, -50], [12, -50], [16, -14], [-16, -14]], '#7a4f2c', 2.4); c.beginPath(); c.arc(0, -56, 13, 0, 7); c.fillStyle = '#5e3a1e'; c.fill(); c.strokeStyle = INK; c.lineWidth = 2.4; c.stroke();
+          c.restore(); }
+        const hit = seg(t, 0.42, 0.56);
+        if (hit > 0 && hit < 1) { c.save(); c.globalAlpha = 1 - hit; c.strokeStyle = INK; c.lineWidth = 2; for (let i = 0; i < 10; i++) { const ang = (i / 10) * 6.28, r1 = 74 + hit * 14, r2 = r1 + 10; c.beginPath(); c.moveTo(cx(2) + Math.cos(ang) * r1, cy(2) + Math.sin(ang) * r1 * 0.85); c.lineTo(cx(2) + Math.cos(ang) * r2, cy(2) + Math.sin(ang) * r2 * 0.85); c.stroke(); } c.restore(); }
+        if (t > 0.42 && t < 0.46) S.shake = 5;
+      } },
+  ];
+
+  // ---------- 재생 ----------
+  const grid = document.getElementById('grid');
+  const runs = [];
+  for (const sc of SCENES) {
+    const el = document.createElement('article'); el.className = 'fx';
+    el.innerHTML = `<canvas width="${W * 2}" height="${H * 2}" aria-label="${sc.name} 연출"></canvas>
+      <div class="tag"><b>${sc.name}</b><small>${sc.who}</small></div>
+      <ol class="beats">${sc.beats.map((b) => `<li>${b}</li>`).join('')}</ol>
+      <p class="same">${sc.same}</p>`;
+    grid.appendChild(el);
+    const cv = el.querySelector('canvas'), c = cv.getContext('2d');
+    const st = { sc, c, t0: performance.now(), units: sc.units(), fl: [], fired: new Set(), S: {} };
+    cv.addEventListener('click', () => { st.t0 = performance.now(); st.units = sc.units(); st.fl = []; st.fired.clear(); });
+    runs.push(st);
+  }
+  document.querySelector('.ctrl').addEventListener('click', (e) => { const b = e.target.closest('[data-sp]'); if (!b) return; SPEED = +b.dataset.sp; document.querySelectorAll('[data-sp]').forEach((x) => x.classList.toggle('on', x === b)); runs.forEach((r) => { r.t0 = performance.now(); r.fired.clear(); r.units = r.sc.units(); r.fl = []; }); });
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000) * SPEED; last = now;
+    for (const st of runs) {
+      const { sc, c } = st, total = sc.dur + 0.7, el = FREEZE ? Math.min(FREEZE * sc.dur, ((now - st.t0) / 1000)) : ((now - st.t0) / 1000) * SPEED;
+      if (el > total) { st.t0 = now; st.units = sc.units(); st.fl = []; st.fired.clear(); st.S = {}; }
+      const t = clamp(el / sc.dur);
+      // 타격 시점: 흔들림 + 숫자
+      for (const [at, idx] of sc.hits || []) if (t >= at && !st.fired.has('h' + at)) { st.fired.add('h' + at); for (const i of idx) { const u = st.units[i]; u.hit = 1; if (sc.stun && sc.stun.includes(i)) u.stun = 1; st.fl.push({ x: cx(u.c), y: cy(u.r) - 18, text: String(sc.dmg + ((i * 37) % 23)), col: '#fffdf7', big: sc.dmg > 400, t: 0 }); } }
+      for (const [at, idx] of sc.heals || []) if (t >= at && !st.fired.has('g' + at)) { st.fired.add('g' + at); for (const i of idx) { const u = st.units[i]; st.fl.push({ x: cx(u.c), y: cy(u.r) - 18, text: '+' + (sc.heal - i * 11), col: '#9cf0b4', t: i * -0.04 }); } }
+      for (const u of st.units) { u.hit = Math.max(0, u.hit - dt * 4); if (u.stun && t > 0.95) u.stun = 0; }
+      st.fl.forEach((f) => (f.t += dt * 1.1)); st.fl = st.fl.filter((f) => f.t < 1);
+      c.setTransform(2, 0, 0, 2, 0, 0); c.clearRect(0, 0, W, H);
+      const shake = st.S.shake || 0; st.S.shake = Math.max(0, shake - dt * 40);
+      c.save(); if (shake) c.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+      board(c, 0, sc.id === 'seal' && t > 0.42 && t < 0.56 ? (q, r) => (HITC.some(([a, b]) => a === q && b === r) ? [0, Math.sin(seg(t, 0.42, 0.56) * Math.PI) * 3] : [0, 0]) : null);
+      // 장면 아래층(자국)과 딱지, 위층(연출) — 간단히: 딱지 → 연출 순
+      const S = st.S;
+      if (sc.under) sc.under(c, t, S);
+      st.units.forEach((u, i) => piece(c, u, i === 0 ? { dy: S.lunge || 0, rot: S.rot || 0, lift: sc.id === 'whirl' ? Math.sin(seg(t, 0.15, 0.7) * Math.PI) * 5 : 0 } : {}));
+      sc.draw(c, t, S);
+      st.fl.forEach((f) => f.t >= 0 && floater(c, f));
+      c.restore();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
