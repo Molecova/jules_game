@@ -6,15 +6,18 @@
   'use strict';
   const AC = {};
 
+  // Private streams keep combat independent of rendering, sound and replay speed.
+  AC.rng = (seed) => { let state = seed >>> 0; return () => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296); };
+
   // ---------- 유틸 ----------
   AC.rand = (a, b) => a + Math.random() * (b - a);
   AC.randi = (a, b) => Math.floor(AC.rand(a, b + 1));
   AC.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   AC.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   AC.lerp = (a, b, t) => a + (b - a) * t;
-  AC.shuffle = (arr) => {
+  AC.shuffle = (arr, random = Math.random) => {
     for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
@@ -95,7 +98,7 @@
   let uidSeq = 0;
   AC.uid = () => ++uidSeq;
 
-  AC.makeEntity = function (def, star, side, cell, extra) {
+  AC.makeEntity = function (def, star, side, cell, extra, random = Math.random) {
     const m = AC.STAR_MULT[star];
     const e = {
       id: AC.uid(), def, star, side, cell,
@@ -104,7 +107,7 @@
       armor: def.armor || 0, dodge: 0, lifesteal: 0, crit: def.crit || 0.05, spell: 1,
       mana: def.startMana || 0, maxMana: def.mana || 80,
       ability: def.ability || null,
-      shield: 0, stun: 0, atkCd: 0.25 + Math.random() * 0.35,
+      shield: 0, stun: 0, atkCd: 0.25 + random() * 0.35,
       moving: null, moveTime: def.moveTime || 0.38, dead: false, flash: 0, lunge: 0,
       target: null, px: 0, py: 0, dmgDealt: 0, src: null,
     };
@@ -117,6 +120,7 @@
   class Combat {
     constructor(grid, units, opts = {}) {
       this.grid = grid;
+      this.random = opts.random || (() => Math.random());
       this.units = units;
       this.hooks = opts.hooks || {};
       this.maxTime = opts.maxTime || 40;
@@ -142,7 +146,7 @@
       let best = null, bd = Infinity;
       for (const v of this.units) {
         if (v.dead || v.side === u.side) continue;
-        const d = this.grid.dist(u.cell, v.cell) + Math.random() * 0.01;
+        const d = this.grid.dist(u.cell, v.cell) + this.random() * 0.01;
         if (d < bd) { bd = d; best = v; }
       }
       return best;
@@ -292,8 +296,8 @@
     attack(u, t) {
       if (this.hooks.preAttack && this.hooks.preAttack(u, t, this)) return; // 기본 공격을 다른 행동으로 바꾸는 훅(치유 등)
       this.gainMana(u, u.manaPerHit || 10);
-      const crit = Math.random() < u.crit;
-      const dmg = u.atk * AC.rand(0.9, 1.1);
+      const crit = this.random() < u.crit;
+      const dmg = u.atk * (0.9 + this.random() * 0.2);
       if (u.range > 1) {
         this.projectiles.push({ x: u.px, y: u.py, tgt: t, src: u, dmg, crit, kind: 'atk', speed: 560, color: u.side ? this.hooks.enemyShot || '#e66' : this.hooks.playerShot || '#fd6' });
       } else {
@@ -306,7 +310,7 @@
 
     damage(src, t, dmg, kind = 'atk', crit = false) {
       if (t.dead) return 0;
-      if (kind === 'atk' && Math.random() < t.dodge) {
+      if (kind === 'atk' && this.random() < t.dodge) {
         this.float(t.px, t.py - 18, 'MISS', '#bbb');
         if (this.hooks.onDodge) this.hooks.onDodge(t, src, this);
         return 0;
@@ -384,7 +388,7 @@
           this.ring(u.px, u.py, '#9fd8ff', 26);
           break;
         case 'volley': {
-          const ts = AC.shuffle(foes.slice()).slice(0, ab.count || 3);
+          const ts = AC.shuffle(foes.slice(), this.random).slice(0, ab.count || 3);
           for (const f of ts) this.projectiles.push({ x: u.px, y: u.py, tgt: f, src: u, dmg: P, crit: false, kind: 'spell', speed: 480, color: '#c9a2ff' });
           break;
         }

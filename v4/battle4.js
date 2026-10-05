@@ -59,6 +59,11 @@
   function create(env) {
     const { grid, PLAYER_ROW, COLS, ROWS } = env;
     const fx = env.fx;
+    const random = env.random || (() => Math.random());
+    const rand = (a, b) => a + random() * (b - a);
+    const randi = (a, b) => Math.floor(rand(a, b + 1));
+    const pick = (xs) => xs[Math.floor(random() * xs.length)];
+    const shuffle = (xs) => AC.shuffle(xs, random);
     const R = () => env.getR();
     const has = (r) => R().relics.includes(r);
 
@@ -144,10 +149,10 @@
 
     // ---------- 전투 개체 ----------
     function baseEntity(stats, side, cell, extra) {
-      const e = AC.makeEntity({ hp: stats.hp, atk: stats.atk, as: stats.as, range: stats.range, armor: stats.armor, crit: stats.crit, mana: 80 }, 1, side, cell, extra);
+      const e = AC.makeEntity({ hp: stats.hp, atk: stats.atk, as: stats.as, range: stats.range, armor: stats.armor, crit: stats.crit, mana: 80 }, 1, side, cell, extra, random);
       e.st = {};
-      e.dotT = Math.random() * 0.5;
-      e.rot = extra && extra.rot != null ? extra.rot : AC.rand(-0.08, 0.08);
+      e.dotT = random() * 0.5;
+      e.rot = extra && extra.rot != null ? extra.rot : rand(-0.08, 0.08);
       return e;
     }
     const skillMana = (s) => Math.max(30, (s.def.mana || 80) - (s.star - 1) * 8);
@@ -387,7 +392,7 @@
             break;
           }
           if (d.mode === 'volley') {
-            const ts = AC.shuffle(cb.alive(foe).slice());
+            const ts = shuffle(cb.alive(foe).slice());
             const n = (d.count || 3) + (s.star >= 3 ? 2 : 0);
             for (let j = 0; j < n; j++) { const v = d.focus && t && !t.dead ? t : ts[j % Math.max(1, ts.length)]; if (v) cb.projectiles.push({ x: u.px, y: u.py, tgt: v, src: u, dmg: P, crit: false, kind: 'spell', speed: 480 + j * 30, color: col }); }
             break;
@@ -486,7 +491,7 @@
           break;
         }
         case 'markRandom': {
-          for (const v of AC.shuffle(cb.alive(foe).filter((x) => !x.object)).slice(0, d.n || 2)) { addStatus(cb, v, 'vuln', d.vuln, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '표식', '#e2d0ff'); }
+          for (const v of shuffle(cb.alive(foe).filter((x) => !x.object)).slice(0, d.n || 2)) { addStatus(cb, v, 'vuln', d.vuln, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '표식', '#e2d0ff'); }
           break;
         }
         case 'curse': {
@@ -511,7 +516,7 @@
       for (let j = 0; j < n; j++) {
         const free = grid.cells.filter((c) => rows.includes(c.r) && !cb.occ[c.i]);
         if (!free.length) return;
-        const e = makeFoe({ def: MONSTERS[id], cell: AC.pick(free).i, scale });
+        const e = makeFoe({ def: MONSTERS[id], cell: pick(free).i, scale });
         e.atk *= 0.8; e.summon = true; e.popT = 0.35;
         if (cb.spawn(e)) cb.ring(e.px, e.py, '#e8436b', 26, 0.6);
       }
@@ -538,15 +543,15 @@
         if (ratio < 0.33 && !f.s2) { f.s2 = true; say('말랑말랑!'); summonFoe(cb, 'slime', 3, enemyRows, 1.1); }
         if (s.b <= 0) {
           s.b = 5;
-          const tgt = AC.pick(foes), cells = [tgt.cell, ...grid.neighbors[tgt.cell]];
+          const tgt = pick(foes), cells = [tgt.cell, ...grid.neighbors[tgt.cell]];
           say('점프!');
           telegraph(cb, b, cells, 1.4, 150, '#3f9a4f', { onDone: () => { if (b.dead) return; const spot = freeNear(cb, tgt.cell); if (spot !== undefined) { cb.teleport(b, spot); b.popT = 0.35; } } });
         }
       } else if (b.boss === 'lich') {
         if (s.a <= 0) {
           s.a = 5;
-          const targets = AC.shuffle(foes.slice()).slice(0, 2).map((v) => v.cell);
-          const extra = AC.shuffle(grid.cells.filter((c) => c.r >= PLAYER_ROW && !targets.includes(c.i))).slice(0, 2).map((c) => c.i);
+          const targets = shuffle(foes.slice()).slice(0, 2).map((v) => v.cell);
+          const extra = shuffle(grid.cells.filter((c) => c.r >= PLAYER_ROW && !targets.includes(c.i))).slice(0, 2).map((c) => c.i);
           say('죽음의 저주'); telegraph(cb, b, [...targets, ...extra], 1.5, 110, '#7a4fd0');
         }
         if (s.b <= 0) { s.b = 12; if (cb.alive(1).length < 4) { say('일어나라…'); summonFoe(cb, 'skel', 1, enemyRows); } }
@@ -561,21 +566,21 @@
         }
         if (ratio < 0.5 && !f.bats) { f.bats = true; say('박쥐들아!'); summonFoe(cb, 'bat', 3, enemyRows, 0.8); b.as *= 1.25; }
       } else if (b.boss === 'icequeen') {
-        if (s.a <= 0) { s.a = 5; say('얼음 감옥'); telegraph(cb, b, AC.shuffle(foes.slice()).slice(0, 2).map((v) => v.cell), 1.4, 120, '#6ae0ff', { stun: 1.5 }); }
+        if (s.a <= 0) { s.a = 5; say('얼음 감옥'); telegraph(cb, b, shuffle(foes.slice()).slice(0, 2).map((v) => v.cell), 1.4, 120, '#6ae0ff', { stun: 1.5 }); }
         if (s.b <= 0) { s.b = 10; if (cb.alive(1).length < 5) { say('얼어붙어라'); summonFoe(cb, 'icesprite', 1, enemyRows, 0.7); } }
         if (ratio <= 0.5 && !f.rage) { f.rage = true; say('눈보라!'); cb.ring(b.px, b.py, '#bfe8ff', 80, 1); env.phase('2페이즈 · 눈보라'); s.c = 1; }
-        if (f.rage && s.c <= 0) { s.c = 6; const r = AC.randi(PLAYER_ROW, ROWS - 1), cells = []; for (let c = 0; c < COLS; c++) cells.push(grid.idx(c, r)); telegraph(cb, b, cells, 1.6, 140, '#bfe8ff', { slow: 3 }); }
+        if (f.rage && s.c <= 0) { s.c = 6; const r = randi(PLAYER_ROW, ROWS - 1), cells = []; for (let c = 0; c < COLS; c++) cells.push(grid.idx(c, r)); telegraph(cb, b, cells, 1.6, 140, '#bfe8ff', { slow: 3 }); }
       } else if (b.boss === 'yetiking') {
         if (s.b <= 0) { s.b = 5; const tgt = near; say('내려찍기'); telegraph(cb, b, [tgt.cell, ...grid.neighbors[tgt.cell]], 1.3, 160, '#9ab0c4', { stun: 1 }); }
         if (s.a <= 0) { s.a = 9; if (cb.alive(1).length < 5) { say('우가가!'); summonFoe(cb, 'yeti', 1, enemyRows, 0.6); } }
         if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.35; b.atk *= 1.2; say('분노!'); cb.ring(b.px, b.py, '#ff4d6d', 80, 1); fx.shake(8); env.phase('2페이즈 · 분노'); }
       } else if (b.boss === 'abysslord') {
-        if (s.a <= 0) { s.a = 6; const col = grid.cells[AC.pick(foes).cell].c, cells = []; for (let r = PLAYER_ROW; r < ROWS; r++) cells.push(grid.idx(col, r)); say('어둠의 창'); telegraph(cb, b, cells, 1.4, 200, '#b04fd0', { vuln: { dur: 4, amt: 0.25 } }); }
+        if (s.a <= 0) { s.a = 6; const col = grid.cells[pick(foes).cell].c, cells = []; for (let r = PLAYER_ROW; r < ROWS; r++) cells.push(grid.idx(col, r)); say('어둠의 창'); telegraph(cb, b, cells, 1.4, 200, '#b04fd0', { vuln: { dur: 4, amt: 0.25 } }); }
         if (s.b <= 0) { s.b = 10; if (cb.alive(1).length < 6) { say('그림자여'); summonFoe(cb, 'shade', 1, enemyRows, 0.6); } }
         if (ratio <= 0.5 && !f.rage) { f.rage = true; b.atk *= 1.25; say('심연이 열린다'); cb.ring(b.px, b.py, '#d68bff', 90, 1); fx.shake(10); env.phase('2페이즈 · 심연'); s.c = 1; }
         if (f.rage && s.c <= 0) {
           s.c = 6; say('심연 폭발');
-          for (let k = 0; k < 3; k++) { const c0 = AC.randi(0, COLS - 2), r0 = AC.randi(PLAYER_ROW, ROWS - 2); telegraph(cb, b, [grid.idx(c0, r0), grid.idx(c0 + 1, r0), grid.idx(c0, r0 + 1), grid.idx(c0 + 1, r0 + 1)], 1.5, 170, '#b04fd0'); }
+          for (let k = 0; k < 3; k++) { const c0 = randi(0, COLS - 2), r0 = randi(PLAYER_ROW, ROWS - 2); telegraph(cb, b, [grid.idx(c0, r0), grid.idx(c0 + 1, r0), grid.idx(c0, r0 + 1), grid.idx(c0 + 1, r0 + 1)], 1.5, 170, '#b04fd0'); }
         }
       } else if (b.boss === 'fallenking') {
         if (s.b <= 0) { s.b = 5; const dir = facing(b, near), cells = []; for (let k = 1; k <= 2; k++) for (let j = -1; j <= 1; j++) cells.push(rel(b.cell, k, j, dir)); say('처형의 일격'); telegraph(cb, b, cells, 1.3, 190, '#b04fd0'); }
@@ -585,7 +590,7 @@
         if (ratio <= 0.5 && !f.rage) { f.rage = true; b.as *= 1.4; b.thorns = 0.2; say('불의 갑옷!'); cb.ring(b.px, b.py, '#ff8a3b', 80, 1); fx.shake(8); env.phase('2페이즈 · 분노'); s.c = 2; }
         if (s.a <= 0) {
           s.a = f.rage ? 5 : 6;
-          const col = grid.cells[AC.pick(foes).cell].c, cells = [];
+          const col = grid.cells[pick(foes).cell].c, cells = [];
           for (let r = PLAYER_ROW; r < ROWS; r++) cells.push(grid.idx(col, r));
           say('대지 균열'); telegraph(cb, b, cells, 1.4, 170, '#e8643b', { burn: { dps: 30, dur: 3 } });
         }
@@ -608,7 +613,7 @@
         if (s.b <= 0) { s.b = 6; if (foes.some((v) => grid.dist(v.cell, b.cell) <= 1)) { say('꼬리 휩쓸기'); telegraph(cb, b, grid.neighbors[b.cell], 1.0, 150); } }
         if (f.rage && s.c <= 0) {
           s.c = 6; say('운석 낙하');
-          for (let k = 0; k < 2; k++) { const c0 = AC.randi(0, COLS - 2), r0 = AC.randi(PLAYER_ROW, ROWS - 2); telegraph(cb, b, [grid.idx(c0, r0), grid.idx(c0 + 1, r0), grid.idx(c0, r0 + 1), grid.idx(c0 + 1, r0 + 1)], 1.5, 160, '#e8643b'); }
+          for (let k = 0; k < 2; k++) { const c0 = randi(0, COLS - 2), r0 = randi(PLAYER_ROW, ROWS - 2); telegraph(cb, b, [grid.idx(c0, r0), grid.idx(c0 + 1, r0), grid.idx(c0, r0 + 1), grid.idx(c0 + 1, r0 + 1)], 1.5, 160, '#e8643b'); }
         }
       }
     }
@@ -632,7 +637,7 @@
           if (far) leapTo(cb, u, far);
         }
         if (u.ifx === 'markAura') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && !a.object) { a.as *= 1 + 0.1 * u.ifxK; } }
-        if (p === 'starMark') for (const v of AC.shuffle(cb.alive(1).filter((x) => !x.object)).slice(0, 2)) { addStatus(cb, v, 'vuln', { dur: 8, amt: 0.3 }, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '별의 표식', '#e2d0ff'); }
+        if (p === 'starMark') for (const v of shuffle(cb.alive(1).filter((x) => !x.object)).slice(0, 2)) { addStatus(cb, v, 'vuln', { dur: 8, amt: 0.3 }, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '별의 표식', '#e2d0ff'); }
         if (u.ifx === 'towerGuard') u.tauntT = 0;
         if (p === 'holyAura') u.auraT = 2;
         if (p === 'golem') {

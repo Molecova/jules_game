@@ -25,7 +25,15 @@
       if (o.innerHTML !== n.innerHTML) o.innerHTML = n.innerHTML;
     });
   }
-  const rnd = (n) => Math.floor(Math.random() * n);
+  function runRandom() {
+    if (!R) return Math.random();
+    R.rng = (Math.imul(R.rng, 1664525) + 1013904223) >>> 0;
+    return R.rng / 4294967296;
+  }
+  const rnd = (n) => Math.floor(runRandom() * n);
+  const shuffle = (xs) => AC.shuffle(xs, runRandom);
+  const runRand = (a, b) => a + runRandom() * (b - a);
+  const weighted = (xs) => { let n = runRandom() * xs.reduce((a, b) => a + b, 0); for (let i = 0; i < xs.length; i++) { n -= xs[i]; if (n < 0) return i; } return xs.length - 1; };
   const pick = (a) => a[rnd(a.length)];
   const def = (c) => DEF[c.kind + ':' + c.id];
   const POOL = { unit: UNITS, skill: SKILLS, item: ITEMS.filter((d) => !d.special) };
@@ -54,7 +62,9 @@
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
     if (!DIFF[diff]) diff = 'normal';
+    const seed = globalThis.crypto?.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
     R = {
+      rng: seed, saveVersion: SAVE4.VERSION, pending: null, result: null, encounters: { version: 1, seed, used: {}, history: [], nodes: {} },
       v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
       board: [], bench: Array(V.BENCH).fill(null), shop: { unit: [], skill: [], item: [] }, locked: { unit: false, skill: false, item: false },
       pool: {}, map: null, pos: null, path: [], node: null, freeRolls: 0, oddsBonus: 0, enemies: [], mode: 'map',
@@ -71,8 +81,8 @@
     for (let i = row.length - 1; i > 0; i--) { const j = rnd(i + 1); [row[i], row[j]] = [row[j], row[i]]; }
     R.shop.unit = row;
   }
-  function take(c) { R.pool[keyOf(c.kind, c.id)] = Math.max(0, (R.pool[keyOf(c.kind, c.id)] || 0) - 1); return c; }
-  function giveBack(c) { R.pool[keyOf(c.kind, c.id)] = (R.pool[keyOf(c.kind, c.id)] || 0) + copies(c.star); }
+  function take(c, count = 1) { const k = keyOf(c.kind, c.id); if ((R.pool[k] || 0) < count) return false; R.pool[k] -= count; return c; }
+  function giveBack(c) { R.pool[keyOf(c.kind, c.id)] = Math.min(poolN(def(c)), (R.pool[keyOf(c.kind, c.id)] || 0) + copies(c.star)); }
 
   // =====================================================================
   // 지도
@@ -81,7 +91,7 @@
     const floors = [];
     for (let f = 0; f < 5; f++) {
       const n = 2 + rnd(2), xs = n === 2 ? [0.3, 0.7] : [0.18, 0.5, 0.82];
-      floors.push(xs.map((x, i) => ({ id: `${act}-${f}-${i}`, f, x: x + AC.rand(-0.04, 0.04), k: null, next: [] })));
+      floors.push(xs.map((x, i) => ({ id: `${act}-${f}-${i}`, f, x: x + runRand(-0.04, 0.04), k: null, next: [] })));
     }
     floors.push([{ id: `${act}-5-0`, f: 5, x: 0.5, k: 'boss', next: [] }]);
     for (let f = 0; f < 5; f++) {
@@ -89,7 +99,7 @@
       for (const n of a) {
         const s = b.slice().sort((p, q) => Math.abs(p.x - n.x) - Math.abs(q.x - n.x));
         n.next.push(s[0].id);
-        if (s[1] && Math.abs(s[1].x - n.x) < 0.42 && Math.random() < 0.55) n.next.push(s[1].id);
+        if (s[1] && Math.abs(s[1].x - n.x) < 0.42 && runRandom() < 0.55) n.next.push(s[1].id);
       }
       for (const m of b) if (!a.some((n) => n.next.includes(m.id))) a.slice().sort((p, q) => Math.abs(p.x - m.x) - Math.abs(q.x - m.x))[0].next.push(m.id);
     }
@@ -97,7 +107,7 @@
     for (let f = 0; f < 5; f++) for (const n of floors[f]) {
       if (f === 0) { n.k = 'fight'; continue; }
       const keys = Object.keys(W).filter((k) => !(k === 'elite' && f < 2));
-      n.k = keys[AC.weighted(keys.map((k) => W[k]))];
+      n.k = keys[weighted(keys.map((k) => W[k]))];
     }
     const mids = floors.slice(1, 5).flat();
     if (!mids.some((n) => n.k === 'elite')) pick(floors.slice(2, 5).flat()).k = 'elite';
@@ -121,13 +131,13 @@
   function oddsLv() { return Math.min(9, R.lv + (R.oddsBonus || 0) + (has('dice') ? 1 : 0)); }
   function rollTier(kind) {
     const o = ODDS[oddsLv()];
-    const t = AC.weighted(o) + 1;
+    const t = weighted(o) + 1;
     return Math.min(t, MAXT[kind], actCap());
   }
   function rollCard(kind, tier) {
     for (let t = tier; t >= 1; t--) {
       const cand = POOL[kind].filter((d) => d.t === t && R.pool[keyOf(kind, d.id)] > 0);
-      if (cand.length) return mk(kind, cand[AC.weighted(cand.map((d) => R.pool[keyOf(kind, d.id)]))].id);
+      if (cand.length) return mk(kind, cand[weighted(cand.map((d) => R.pool[keyOf(kind, d.id)]))].id);
     }
     return null;
   }
@@ -209,6 +219,7 @@
   function buy(i, quiet, kind = ui.tab) {
     const c = R.shop[kind][i]; if (!c) return false;
     const p = def(c).t;
+    if (!(R.pool[keyOf(c.kind, c.id)] > 0)) { if (!quiet) toast('남은 카드가 없어요. 다시 뽑아 주세요'); return false; }
     if (R.gold < p) { if (!quiet) toast('골드가 모자라요'); return false; }
     const free = freeSlot();
     if (free < 0 && owned(c.kind, c.id) < 2) { if (!quiet) toast('창고가 가득 찼어요. 팔거나 배치하세요'); return false; }
@@ -290,6 +301,7 @@
   }
   function enterNode(n, quiet) {
     R.round++;
+    R.pending = null; R.result = null; R.battleSeed = Math.floor(runRandom() * 4294967296);
     R.node = { id: n.id, k: n.k, f: n.f };
     R.oddsBonus = n.k === 'shop' ? 1 : 0;
     R.freeRolls = has('scale') ? 1 : 0;
@@ -299,9 +311,9 @@
     if (R.round === 1 && !allUnits().length) starterRow();
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
     // 야영지: 일정 확률로 야습(정예급 적). 이겨야 쉴 수 있다
-    if (n.k === 'camp' && Math.random() < CAMP_AMBUSH) { R.node.ambush = 'camp'; R.enemies = genEnemies('elite'); }
+    if (n.k === 'camp' && runRandom() < CAMP_AMBUSH) { R.node.ambush = 'camp'; R.enemies = genEnemies('elite'); }
     // 보물: 일정 확률로 미믹(정예급 적). 이기면 유물 + 골드
-    if (n.k === 'treasure' && Math.random() < MIMIC_P) { R.node.ambush = 'mimic'; R.enemies = genEnemies('elite'); }
+    if (n.k === 'treasure' && runRandom() < MIMIC_P) { R.node.ambush = 'mimic'; R.enemies = genEnemies('elite'); }
     R.mode = R.enemies.length ? 'fight' : 'rest';
     if (quiet) return inc;
     ui.sel = null; ui.tab = 'unit';
@@ -315,6 +327,7 @@
   const CAMP_AMBUSH = 0.35, MIMIC_P = 0.3;
   function finishNode() {
     const n = R.node;
+    R.pending = null; R.result = null;
     R.pos = n.id; R.path.push(n.id); R.lastNode = n; R.node = null; R.enemies = []; R.mode = 'map';
     if (n.k === 'boss') {
       if (R.act >= LAST_ACT) return victory();
@@ -333,18 +346,22 @@
     return ENCOUNTERS4.generate(R, kind, grid);
   }
 
-  const battleApi = BT4.create({
+  const createBattleApi = (random) => BT4.create({
+    random,
     grid, PLAYER_ROW, COLS, ROWS, getR: () => R,
     phase: (t) => { if (B) B.phaseText = t; },
-    fx: { play: (n, g) => { if (B && !B.sim) SFX.play(n, g); }, shake: (n) => shake(n), burst: (x, y, c, n) => burst(x, y, c, n), death: (t) => onTokenDeath(t),
+    fx: { play: (n, g) => { if (B && !B.sim && !B.skipping) SFX.play(n, g); }, shake: (n) => shake(n), burst: (x, y, c, n) => burst(x, y, c, n), death: (t) => onTokenDeath(t),
       skill: (id, data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit(id, data); } },
   });
+  const battleApi = createBattleApi();
   function buildCombat() {
-    const syn = battleApi.synergyCounts(R.board);
-    const ents = R.board.map((c) => battleApi.makeAlly(c, grid.idx(c.x, c.y), syn));
+    if (R.battleSeed == null) R.battleSeed = ENCOUNTERS4.hash(R.rng + ':' + R.node?.id);
+    const random = AC.rng(R.battleSeed), api = createBattleApi(random);
+    const syn = api.synergyCounts(R.board);
+    const ents = R.board.map((c) => api.makeAlly(c, grid.idx(c.x, c.y), syn));
     if (R.nextHp) for (const e of ents) e.hp = Math.round(e.maxHp * R.nextHp); // 이벤트 대가: 다음 전투 시작 체력
-    for (const x of R.enemies) ents.push(battleApi.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot }));
-    const cb = new AC.Combat(grid, ents, { hooks: battleApi.hooks(), maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
+    for (const x of R.enemies) ents.push(api.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot }));
+    const cb = new AC.Combat(grid, ents, { random, hooks: api.hooks(), maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
     cb.tele = cb.tele || [];
     return cb;
   }
@@ -371,15 +388,16 @@
     ui.sel = null;
     B = { sim: false, vfx: newVfx(), speed: ui.speed || 1, phase: 'combat', phaseText: '' };
     B.combat = buildCombat();
-    if (R.nextHp) { toast(`지친 몸으로 싸웁니다: 시작 체력 ${Math.round(R.nextHp * 100)}%`); R.nextHp = null; }
-    R.stats.battles++;
+    if (R.nextHp) toast(`지친 몸으로 싸웁니다: 시작 체력 ${Math.round(R.nextHp * 100)}%`);
     const boss = B.combat.units.find((u) => u.boss);
     bannerStamp(boss ? boss.def.name : R.node.k === 'elite' ? '정예 출현!' : '전투 개시!');
     SFX.play(boss ? 'boss' : 'start');
     renderPlay();
   }
   function endCombat() {
+    if (!B || B.phase === 'result') return;
     const cb = B.combat, won = judge(cb);
+    R.stats.battles++; R.nextHp = null;
     B.phase = 'result'; B.won = won;
     const kind = R.node.k;
     if (won) {
@@ -396,35 +414,36 @@
       SFX.play('lose');
     }
     R.stats.kills += cb.units.filter((u) => u.side === 1 && u.dead && !u.summon).length;
+    R.mode = 'result'; R.result = { won, reward: B.reward || 0 }; save();
     renderPlay();
   }
   function afterCombat() {
-    const won = B.won, kind = R.node.k;
-    B = null;
+    const won = R.result ? R.result.won : B.won, kind = R.node.k;
+    R.result = null; R.mode = 'rest'; B = null;
     $('bstamp').className = 'bstamp';
     if (!won) {
       if (has('phoenix')) { R.relics.splice(R.relics.indexOf('phoenix'), 1); toast('불사조 깃털이 타올라 원정이 이어집니다'); return finishNode(); }
       return gameOver();
     }
     if (R.node.ambush) { // 매복 전투를 이긴 뒤: 원래 노드의 보상
-      const a = R.node.ambush; R.node.ambush = null; R.enemies = []; R.mode = 'rest'; renderPlay();
+      const a = R.node.ambush; R.node.ambush = null; R.enemies = []; R.mode = 'rest';
       if (a === 'camp') return openCamp();
       if (a === 'mimic') { R.gold += 3; toast('미믹이 삼킨 골드 +3'); return openTreasure(); }
-      if (a === 'knight') { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`망령이 지키던 ${def(c).name} 획득`); } return; }
+      if (a === 'knight') { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`망령이 지키던 ${def(c).name} 획득`); } renderPlay(); return; }
       return;
     }
-    if (kind === 'elite') return pickReward('정예 전리품', '한 등급 높은 카드 하나를 고르세요', eliteChoices(), finishNode);
+    if (kind === 'elite') return pickReward('정예 전리품', '한 등급 높은 카드 하나를 고르세요', eliteChoices());
     if (kind === 'boss') {
       if (R.act >= LAST_ACT) return finishNode();
       const loot = bossLoot(), sp = loot.some((c) => def(c).special);
-      return relicPick('보스 전리품', () => pickReward('보스 전리품', sp ? '보스가 특별한 무기를 떨어뜨렸다!' : '전리품 하나를 고르세요', loot, finishNode));
+      return relicPick('보스 전리품', { type: 'reward', title: '보스 전리품', sub: sp ? '보스가 특별한 무기를 떨어뜨렸다!' : '전리품 하나를 고르세요', cards: loot });
     }
-    pickReward('전리품', '쓰러진 적에게서 하나를 챙기세요', lootChoices(), finishNode);
+    pickReward('전리품', '쓰러진 적에게서 하나를 챙기세요', lootChoices());
   }
   // 일반 전투 전리품: 스킬·아이템 셋 중 하나(상점 확률, 막 등급 −1까지)
   function lootChoices() {
     const out = [];
-    for (const k of AC.shuffle(['skill', 'item', pick(['skill', 'item'])])) {
+    for (const k of shuffle(['skill', 'item', pick(['skill', 'item'])])) {
       for (let n = 0; n < 4; n++) {
         const c = rollCard(k, Math.min(rollTier(k), R.act + 1));
         if (c && !out.some((x) => x.kind === c.kind && x.id === c.id)) { out.push(c); break; }
@@ -437,7 +456,7 @@
   function bossLoot() {
     const top = R.act + 2, out = [rollCard('skill', Math.min(MAXT.skill, top)), rollCard('item', Math.min(MAXT.item, top)), rollCard(pick(['skill', 'item']), Math.min(3, top))].filter(Boolean);
     const sp = SPECIALS.filter((d) => R.pool[keyOf('item', d.id)] > 0);
-    if (sp.length && Math.random() < SPECIAL_P) {
+    if (sp.length && runRandom() < SPECIAL_P) {
       const mine = new Set(allUnits().map((u) => def(u).cls)), pref = sp.filter((d) => mine.has(d.cls));
       out[out.length - 1] = mk('item', pick(pref.length ? pref : sp).id);
     }
@@ -452,6 +471,7 @@
   // 화면 공통
   // =====================================================================
   const ui = { tab: 'unit', sel: null, speed: 1, screen: 'title' };
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200); }
   function stampAt(x, y, txt, cls = '') { const ph = $('phone'), el = document.createElement('div'); el.className = 'stamp ' + cls; el.textContent = txt; el.style.left = x + 'px'; el.style.top = y + 'px'; ph.appendChild(el); setTimeout(() => el.remove(), 1200); }
   const phoneRect = () => $('phone').getBoundingClientRect();
@@ -658,13 +678,15 @@
     if (ui.screen !== 'play') return;
     renderHud();
     const combat = !!B;
+    $('penaltyHint').hidden = combat || !R.nextHp;
+    $('penaltyHint').textContent = R.nextHp ? `다음 전투 시작 체력 ${Math.round(R.nextHp * 100)}% · 휴식 중에도 유지` : '';
     $('encounterHint').hidden = combat || !R.encounter || R.mode !== 'fight';
     $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('tug').hidden = !combat;
     $('scr-play').classList.toggle('combat', combat);
 
     if (combat) { ui.synOpen = null; renderDrawer(); renderBattlePanel(); fitBoard(); return; }
     renderPrep();
-    if (R.mode === 'fight') save();
+    save();
     fitBoard();
     renderDrawer();
   }
@@ -1071,7 +1093,20 @@
   $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
   $('spdSeg').onclick = (e) => { const b = e.target.closest('[data-spd]'); if (!b || !B) return; B.speed = ui.speed = +b.dataset.spd; SFX.play('click'); renderBattlePanel(); };
-  $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 60); B.skipping = false; B.vfx = newVfx(); };
+  $('skipBtn').onclick = () => {
+    if (!B || B.phase !== 'combat' || B.skipping) return;
+    const battle = B; battle.skipping = true;
+    const advance = () => {
+      if (B !== battle || B.phase !== 'combat') return;
+      if (!combatPaused()) {
+        const until = performance.now() + 8;
+        do { B.combat.step(1 / 60); } while (!B.combat.done && performance.now() < until);
+        if (B.combat.done) { B.skipping = false; B.vfx = newVfx(); endCombat(); return; }
+      }
+      requestAnimationFrame(advance);
+    };
+    requestAnimationFrame(advance);
+  };
   $('resBtn').onclick = () => { if (B && B.phase === 'result') afterCombat(); };
   // ---------- 전투 기록: 입힌 피해 · 받은 피해 · 회복/보호막 ----------
   let statSort = 'dmg';
@@ -1160,7 +1195,7 @@
     if (!r.width || !r.height) return;
     // 매트 위아래 바깥 여백(mb)은 판 높이에 맞춰 매트를 줄이려고 둔 것이므로 쓸 수 있는 높이에 다시 더한다
     const mb = +(mat.dataset.mb || 0), avail = r.height + mb * 2;
-    kScale = Math.max(0.4, Math.min((r.width - 4) / W, (avail - 4) / vh)); // 매트가 이미 여백을 준다
+    kScale = Math.max(0.1, Math.min((r.width - 4) / W, (avail - 4) / vh)); // 매트가 이미 여백을 준다
     // 판이 폭에 막혀 위아래가 남으면 그만큼 상점 카드를 키운다(최대 +56px)
     if (!B) {
       const cur = ui.cardExtra || 0, total = avail + cur, need = vh * Math.min((r.width - 4) / W, (total - 4) / vh) + 6;
@@ -1333,7 +1368,7 @@
     const r = tokenR(o.kind), spr = sprite(o.artId, o.side, o.kind);
     let sq = 0, jx = 0;
     if (o.popT > 0) { const t = 1 - o.popT / 0.35; sq = 0.2 * Math.sin(t * Math.PI * 2) * (1 - t); }
-    if (o.hitT > 0) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
+    if (o.hitT > 0 && !motionPreference.matches) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
     // 판에 놓인 느낌: 딱지 아래 그림자(들어 올리면 옅어짐)
     if (o.glow) { ctx.save(); ctx.strokeStyle = o.glow; ctx.lineWidth = 3; ctx.setLineDash(o.dash ? [5, 4] : []); ctx.lineDashOffset = -performance.now() / 50; ctx.beginPath(); ctx.arc(x, y + 2, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha });
@@ -1464,15 +1499,15 @@
   }
   const newVfx = () => ({ debris: [], parts: [], pieces: [], shake: 0, skills: VFX4.create({ cellSize: CS }) });
   function burst(x, y, col, n) {
-    if (!B || B.sim || B.skipping) return;
+    if (!B || B.sim || B.skipping || motionPreference.matches) return;
     for (let k = 0; k < n; k++) {
       const a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 120;
       B.vfx.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 16, s: 2.5 + Math.random() * 3, col: Math.random() < 0.35 ? '#fffdf7' : col, t: 0, life: 0.5 + Math.random() * 0.3 });
     }
   }
-  function shake(n) { if (B && !B.sim && !B.skipping) B.vfx.shake = Math.min(14, Math.max(B.vfx.shake, n)); }
+  function shake(n) { if (B && !B.sim && !B.skipping && !motionPreference.matches) B.vfx.shake = Math.min(14, Math.max(B.vfx.shake, n)); }
   function onTokenDeath(t) {
-    if (!B || B.sim || B.skipping) return;
+    if (!B || B.sim || B.skipping || motionPreference.matches) return;
     const kind = kindOf(t);
     B.vfx.debris.push(ART.makeTear(sprite(t.artId, t.side, kind), t.px, t.py, tokenR(kind), t.rot || 0));
     burst(t.px, t.py, t.side ? '#e8436b' : '#2f6fd6', 8);
@@ -1531,7 +1566,7 @@
     ctx.clearRect(0, 0, W, H);
     ctx.save();
     ctx.translate(0, -vy);
-    if (B && B.vfx.shake > 0.2) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
+    if (B && B.vfx.shake > 0.2 && !motionPreference.matches) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
     ctx.drawImage(boardBg(R.act, R.round), 0, 0, W, H);
     const now = performance.now();
     if (B && B.combat) {
@@ -1574,39 +1609,67 @@
     ctx.restore();
   }
   let last = performance.now(), panelT = 0;
+  function combatPaused() { return document.hidden || !$('sheet').hidden || !$('codex').hidden; }
   function loop(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = document.hidden ? 0 : Math.min(1, Math.max(0, (now - last) / 1000)); last = now;
     if (R) R.stats.time += ui.screen === 'play' || ui.screen === 'map' ? dt : 0;
     if (B && B.combat && !B.sim) {
-      if (B.phase === 'combat' && $('sheet').hidden) {
+      if (B.phase === 'combat' && !B.skipping && !combatPaused()) {
         B.tickAccum = (B.tickAccum || 0) + dt * B.speed;
         while (B.tickAccum >= 1 / 60 && !B.combat.done) { B.combat.step(1 / 60); B.vfx.skills.step(1 / 60); B.tickAccum -= 1 / 60; }
         if (B.combat.done) endCombat();
         panelT += dt; if (panelT > 0.2) { panelT = 0; renderBattlePanel(); }
       }
-      else if (B.phase === 'result' && $('sheet').hidden) B.vfx.skills.step(dt);
-      stepVfx(dt);
+      else if (B.phase === 'result' && !combatPaused()) B.vfx.skills.step(dt);
+      if (!combatPaused()) stepVfx(Math.min(dt, 0.1));
     }
-    if (ui.screen === 'play') draw();
+    if (ui.screen === 'play' && !document.hidden) draw();
     requestAnimationFrame(loop);
   }
 
   // =====================================================================
   // 선택 창(보상·이벤트·노드)
   // =====================================================================
-  function openSheet(html) { $('sheetIn').innerHTML = html; $('sheet').hidden = false; }
-  function closeSheet() { $('sheet').hidden = true; }
+  function syncOverlays() {
+    const locked = !$('sheet').hidden || !$('codex').hidden;
+    document.querySelector('.screens').inert = locked;
+    $('hud').inert = locked;
+  }
+  function openSheet(html) {
+    if ($('sheet').hidden) ui.sheetFocus = document.activeElement;
+    $('sheetIn').innerHTML = html; $('sheet').hidden = false;
+    $('sheetIn').setAttribute('aria-label', $('sheetIn').querySelector('h2')?.textContent || '선택');
+    syncOverlays();
+    queueMicrotask(() => { if (!$('sheet').hidden) ($('sheetIn').querySelector('button:not([disabled])') || $('sheetIn')).focus({ preventScroll: true }); });
+  }
+  function closeSheet() {
+    $('sheet').hidden = true; syncOverlays();
+    if (ui.sheetFocus?.isConnected && ui.sheetFocus.getClientRects().length) ui.sheetFocus.focus({ preventScroll: true });
+    ui.sheetFocus = null;
+  }
   function cardTile(c, i) {
     const d = def(c);
     return `<button class="pickcard k-${c.kind} tier${d.t}${d.special ? ' special' : ''}" data-pick="${i}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><span class="cost">${d.t}</span><img src="${imgOf(c, 90)}" alt=""><b>${d.name}</b><small>${CLS[d.cls].name} ${KINDNAME[c.kind]}${c.kind === 'unit' ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}</small><span class="pd">${hl(c.kind === 'unit' ? d.trait : d.desc)}</span></button>`;
   }
-  function pickReward(title, sub, cards, done) {
-    if (!cards.length) return done();
-    openSheet(`<span class="eyebrow">${title}</span><h2>${sub}</h2><div class="picks">${cards.map(cardTile).join('')}</div>`);
+  function restorePending() {
+    const p = R.pending; if (!p) return;
+    if (p.type === 'camp') openCamp();
+    else if (p.type === 'event') EVENTS[p.index]();
+    else if (p.type === 'shop') openBlackMarket();
+    else if (p.type === 'forge') openForge(p.stage, p.first);
+    else if (p.type === 'relic') relicPick(p.title, p.next);
+    else if (p.type === 'reward') pickReward(p.title, p.sub, p.cards);
+  }
+  function pickReward(title, sub, cards) {
+    if (!cards.length) { R.pending = null; return finishNode(); }
+    R.mode = 'reward'; R.pending = { type: 'reward', title, sub, cards };
+    renderPlay();
+    openSheet(`<span class="eyebrow">${esc(title)}</span><h2>${esc(sub)}</h2><div class="picks">${cards.map(cardTile).join('')}</div>`);
+    const pending = R.pending;
     $('sheetIn').onclick = (e) => {
-      const b = e.target.closest('[data-pick]'); if (!b) return;
-      const c = cards[+b.dataset.pick]; take(c); gain(c); SFX.play('card');
-      closeSheet(); done();
+      const b = e.target.closest('[data-pick]'); if (!b || R.pending !== pending) return;
+      const c = cards[+b.dataset.pick]; if (!c) return;
+      R.pending = null; take(c); gain(c); SFX.play('card'); closeSheet(); finishNode();
     };
   }
   function sceneMarkup(title) {
@@ -1621,26 +1684,40 @@
     ctx.setTransform(canvas.width / 320, 0, 0, canvas.height / 140, 0, 0);
     paint(ctx, 320, 140);
   }
-  function relicPick(title, done) {
-    const pool = Object.keys(RELICS).filter((k) => !R.relics.includes(k) && !(k === 'phoenix' && R.relics.includes('phoenix')));
-    const opts = AC.shuffle(pool).slice(0, 3);
-    openSheet(`${sceneMarkup(title)}<span class="eyebrow">${title}</span><h2>유물 하나를 고르세요</h2><div class="relics">${opts.map((k, i) => `<button class="relic" data-r="${i}"><b>${RELICS[k].name}</b><span>${hl(RELICS[k].desc)}</span></button>`).join('')}</div>`);
+  function relicPick(title, next = null) {
+    const pool = Object.keys(RELICS).filter((k) => !R.relics.includes(k));
+    const pending = R.pending?.type === 'relic' ? R.pending : { type: 'relic', title, next, options: shuffle(pool).slice(0, 3) };
+    R.pending = pending;
+    const opts = pending.options;
+    if (!opts.length) { R.pending = next; if (next) restorePending(); else renderPlay(); return; }
+    renderPlay();
+    openSheet(`${sceneMarkup(title)}<span class="eyebrow">${esc(title)}</span><h2>유물 하나를 고르세요</h2><div class="relics">${opts.map((k, i) => `<button class="relic" data-r="${i}"><b>${RELICS[k].name}</b><span>${hl(RELICS[k].desc)}</span></button>`).join('')}</div>`);
     drawScene(title);
     $('sheetIn').onclick = (e) => {
-      const b = e.target.closest('[data-r]'); if (!b) return;
-      const k = opts[+b.dataset.r]; R.relics.push(k); if (k === 'bigbag') fixBench(); SFX.play('coin'); toast(`유물: ${RELICS[k].name}`);
-      closeSheet(); done();
+      const b = e.target.closest('[data-r]'); if (!b || R.pending !== pending) return;
+      const k = opts[+b.dataset.r]; if (!k) return;
+      R.pending = pending.next; R.relics.push(k); if (k === 'bigbag') fixBench(); SFX.play('coin'); toast(`유물: ${RELICS[k].name}`);
+      closeSheet(); if (R.pending) restorePending(); else renderPlay();
     };
   }
   function choice(title, text, opts) {
+    save();
     openSheet(`${sceneMarkup(title)}<span class="eyebrow">${title}</span><h2>${text}</h2><div class="relics">${opts.map((o, i) => `<button class="relic" data-o="${i}" ${o.disabled ? 'disabled' : ''}><b>${o.label}</b><span>${o.desc || ''}</span></button>`).join('')}</div>`);
     drawScene(title);
-    $('sheetIn').onclick = (e) => { const b = e.target.closest('[data-o]'); if (!b || b.disabled) return; closeSheet(); opts[+b.dataset.o].go(); renderPlay(); };
+    let used = false;
+    $('sheetIn').onclick = (e) => {
+      const b = e.target.closest('[data-o]'); if (!b || b.disabled || used) return;
+      used = true; R.pending = null; closeSheet(); opts[+b.dataset.o].go(); renderPlay();
+    };
   }
   // 암시장: 등급 확률 +1(무료 다시 뽑기는 없음), 확률적으로 보스 전용 아이템을 비싸게 판다
   const BM_PRICE = 9;
   function openBlackMarket() {
-    const sp = SPECIALS.filter((d) => R.pool[keyOf('item', d.id)] > 0), offer = sp.length && Math.random() < 0.5 ? pick(sp) : null;
+    if (R.pending?.type !== 'shop') {
+      const sp = SPECIALS.filter((d) => R.pool[keyOf('item', d.id)] > 0);
+      R.pending = { type: 'shop', offer: sp.length && runRandom() < 0.5 ? pick(sp).id : null };
+    }
+    const offer = SPECIALS.find(d => d.id === R.pending.offer);
     const opts = [{ label: '상점 둘러보기', desc: '이번 라운드 상점 등급 확률 +1', go: () => {} }];
     if (offer) opts.unshift({ label: `${offer.name} 산다 (${BM_PRICE}골드)`, desc: `보스 전용 아이템 · ${offer.desc}`, disabled: R.gold < BM_PRICE, go: () => { R.gold -= BM_PRICE; const c = mk('item', offer.id); take(c); gain(c); SFX.play('coin'); toast(`${offer.name} 구입`); } });
     choice('암시장', offer ? '천막 안쪽에 보스가 떨어뜨린 무기가 걸려 있습니다' : '천막 아래 진귀한 물건이 모여 있습니다', opts);
@@ -1648,46 +1725,77 @@
   // 이벤트 중 매복 전투: 정예급 적과 싸워 이기면 보상
   function eventAmbush(kind, msg) { R.node.ambush = kind; R.enemies = genEnemies('elite'); R.mode = 'fight'; toast(msg); }
   function openCamp() {
+    R.pending = { type: 'camp' };
     choice('야영지', '모닥불 앞에서 쉬어 갑니다', [
       { label: '훈련', desc: '경험치 +6', go: () => { if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
       { label: '정비', desc: '골드 +6', go: () => { R.gold += 6; } },
     ]);
   }
-  function openTreasure() { relicPick('보물', () => renderPlay()); }
+  function openTreasure() { relicPick('보물'); }
   // 대장간: 공짜 혜택 대신 값을 치르거나 위험을 지는 선택만
-  function openForge() {
+  const poolLeft = (c) => R.pool[keyOf(c.kind, c.id)] || 0;
+  function remodelOptions(c) {
+    const d = def(c), n = copies(c.star);
+    return POOL.item.filter(x => x.t === d.t && x.cls !== d.cls && (R.pool[keyOf('item', x.id)] || 0) >= n);
+  }
+  function forgeOptions(a, b) {
+    const d = def(a), t = Math.min(4, Math.max(d.t, def(b).t) + 1);
+    return POOL.item.filter(x => x.t === t && x.cls === d.cls && ((R.pool[keyOf('item', x.id)] || 0) + (a.id === x.id ? copies(a.star) : 0) + (b.id === x.id ? copies(b.star) : 0)) > 0);
+  }
+  function openForge(stage = 'menu', first = null) {
+    R.pending = { type: 'forge', stage, first };
     const benchOf = (f) => R.bench.map((c, i) => [c, i]).filter(([c]) => c && f(c));
-    const dupes = benchOf((c) => c.kind !== 'unit' && c.star === 1);
-    const items = benchOf((c) => c.kind === 'item' && !def(c).special);
-    const temper = benchOf((c) => c.kind !== 'unit' && c.star < 3 && !def(c).special);
-    const cheapest = dupes.length ? Math.min(...dupes.map(([c]) => def(c).t * 2)) : 0;
-    const opts = [];
-    opts.push({ label: '복제', desc: dupes.length ? '창고의 ★1 스킬·아이템 하나를 하나 더(등급 × 2골드)' : '창고에 ★1 스킬·아이템이 없어요', disabled: !dupes.length || R.gold < cheapest, go: () => pickFromBench('복제할 카드(등급 × 2골드)', dupes.filter(([c]) => R.gold >= def(c).t * 2), (c) => { R.gold -= def(c).t * 2; const n = mk(c.kind, c.id); take(n); gain(n); toast(`${def(c).name} 복제 · −${def(c).t * 2}골드`); }) });
-    opts.push({ label: '담금질', desc: temper.length ? '스킬·아이템 하나: 60% 확률로 ★+1, 40% 확률로 부서짐' : '담금질할 칩이 없어요', disabled: !temper.length, go: () => pickFromBench('담금질할 카드', temper, (c, i) => {
-      if (Math.random() < 0.6) { const k = keyOf(c.kind, c.id); R.pool[k] = Math.max(0, (R.pool[k] || 0) - (copies(c.star + 1) - copies(c.star))); c.star++; toast(`${def(c).name} ★${c.star}!`); tryMerge(c.kind, c.id, c.star); }
-      else { R.bench[i] = null; giveBack(c); toast(`${def(c).name}이(가) 부서졌습니다`); }
-    }) });
-    opts.push({ label: '단조', desc: items.length >= 2 ? '아이템 둘을 녹여 한 등급 높은 무작위 아이템 하나(첫째 아이템의 클래스)' : '창고에 아이템이 둘 이상 있어야 해요', disabled: items.length < 2, go: () => pickFromBench('녹일 아이템 1', items, (a, ia) => {
-      const rest = items.filter(([c]) => c !== a);
-      setTimeout(() => pickFromBench('녹일 아이템 2', rest, (b, ib) => {
-        const da = def(a), db = def(b), t = Math.min(4, Math.max(da.t, db.t) + 1);
-        const cand = POOL.item.filter((x) => x.t === t && x.cls === da.cls && R.pool[keyOf('item', x.id)] > 0);
-        R.bench[ia] = null; R.bench[ib] = null; giveBack(a); giveBack(b);
-        const n = cand.length ? mk('item', pick(cand).id) : null;
-        if (n) { take(n); gain(n); toast(`${da.name} + ${db.name} → ${def(n).name}`); } else toast('녹였지만 쓸 만한 것이 나오지 않았어요');
-        renderPlay();
-      }), 0);
-    }) });
-    opts.push({ label: '개조 (1골드)', desc: items.length ? '아이템 하나를 같은 등급의 다른 클래스 아이템으로' : '창고에 아이템이 없어요', disabled: !items.length || R.gold < 1, go: () => pickFromBench('개조할 아이템', items, (c, i) => {
-      const d = def(c), cand = POOL.item.filter((x) => x.t === d.t && x.cls !== d.cls);
-      R.gold -= 1; const n = pick(cand); giveBack({ kind: 'item', id: c.id, star: 1 }); c.id = n.id; take(c); R.bench[i] = c; toast(`${d.name} → ${n.name}`); tryMerge('item', c.id, c.star);
-    }) });
-    opts.push({ label: '지나간다', desc: '아무것도 하지 않는다', go: () => {} });
-    choice('대장간', '망치 소리가 울립니다', opts);
+    const dupes = benchOf(c => c.kind !== 'unit' && c.star === 1 && poolLeft(c) >= 1);
+    const items = benchOf(c => c.kind === 'item' && !def(c).special);
+    const temper = benchOf(c => c.kind !== 'unit' && c.star < 3 && !def(c).special && poolLeft(c) >= copies(c.star + 1) - copies(c.star));
+    const remodel = items.filter(([c]) => remodelOptions(c).length);
+    const fuse = items.filter(([a]) => items.some(([b]) => a !== b && forgeOptions(a, b).length));
+    const cheapest = dupes.length ? Math.min(...dupes.map(([c]) => def(c).t * 2)) : Infinity;
+    if (stage === 'duplicate') return pickFromBench('복제할 카드(등급 × 2골드)', dupes.filter(([c]) => R.gold >= def(c).t * 2), c => {
+      const n = mk(c.kind, c.id); if (!take(n)) return;
+      R.gold -= def(c).t * 2; gain(n); toast(`${def(c).name} 복제 · −${def(c).t * 2}골드`);
+    });
+    if (stage === 'temper') return pickFromBench('담금질할 카드', temper, (c, i) => {
+      if (runRandom() < 0.6) {
+        if (!take(c, copies(c.star + 1) - copies(c.star))) return;
+        c.star++; toast(`${def(c).name} ★${c.star}!`); tryMerge(c.kind, c.id, c.star);
+      } else { R.bench[i] = null; giveBack(c); toast(`${def(c).name}이(가) 부서졌습니다`); }
+    });
+    if (stage === 'fuse1') return pickFromBench('녹일 아이템 1', fuse, c => openForge('fuse2', c.uid));
+    if (stage === 'fuse2') {
+      const pair = items.find(([c]) => c.uid === first);
+      if (!pair) return openForge();
+      const [a, ia] = pair, rest = items.filter(([b]) => b !== a && forgeOptions(a, b).length);
+      return pickFromBench('녹일 아이템 2', rest, (b, ib) => {
+        const cand = forgeOptions(a, b); if (!cand.length) return;
+        const da = def(a), db = def(b), n = mk('item', pick(cand).id);
+        R.bench[ia] = null; R.bench[ib] = null; giveBack(a); giveBack(b); take(n); gain(n);
+        toast(`${da.name} + ${db.name} → ${def(n).name}`);
+      });
+    }
+    if (stage === 'remodel') return pickFromBench('개조할 아이템', R.gold >= 1 ? remodel : [], c => {
+      const cand = remodelOptions(c); if (!cand.length || R.gold < 1) return;
+      const d = def(c), next = pick(cand), old = { ...c }, n = copies(c.star);
+      R.gold--; c.id = next.id; giveBack(old); take(c, n); toast(`${d.name} → ${next.name}`); tryMerge('item', c.id, c.star);
+    });
+    choice('대장간', '망치 소리가 울립니다', [
+      { label: '복제', desc: '★1 칩·아이템 하나 더 · 등급 × 2골드', disabled: !dupes.length || R.gold < cheapest, go: () => openForge('duplicate') },
+      { label: '담금질', desc: '성공 60%: ★+1 / 실패 40%: 파괴', disabled: !temper.length, go: () => openForge('temper') },
+      { label: '단조', desc: '아이템 둘 → 한 등급 높은 하나(최대 4등급)', disabled: !fuse.length, go: () => openForge('fuse1') },
+      { label: '개조 (1골드)', desc: '별·등급을 유지해 다른 클래스 아이템으로', disabled: !remodel.length || R.gold < 1, go: () => openForge('remodel') },
+      { label: '지나간다', desc: '아무것도 하지 않는다', go: () => {} },
+    ]);
   }
   function pickFromBench(title, list, fn) {
-    openSheet(`<span class="eyebrow">대장간</span><h2>${title}</h2><div class="picks">${list.map(([c], i) => cardTile(c, i)).join('')}</div>`);
-    $('sheetIn').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; const [c, i] = list[+b.dataset.pick]; closeSheet(); fn(c, i); SFX.play('attach'); renderPlay(); };
+    save();
+    openSheet(`<span class="eyebrow">대장간</span><h2>${title}</h2><div class="picks">${list.map(([c], i) => cardTile(c, i)).join('')}</div><button class="btn" data-forge-back>돌아가기</button>`);
+    let used = false;
+    $('sheetIn').onclick = (e) => {
+      if (used) return;
+      if (e.target.closest('[data-forge-back]')) { used = true; return openForge(); }
+      const b = e.target.closest('[data-pick]'); if (!b || !list[+b.dataset.pick]) return;
+      used = true; const [c, i] = list[+b.dataset.pick]; R.pending = null; closeSheet(); fn(c, i); SFX.play('attach'); renderPlay();
+    };
   }
   const EVENTS = [
     () => choice('떠돌이 상인', '“좋은 물건 있소. 3골드만 내시오.”', [
@@ -1699,12 +1807,12 @@
       { label: '허수아비를 판다', desc: '골드 +2', go: () => { R.gold += 2; } },
     ]),
     () => choice('도박꾼', '“동전 던지기 한 판 어떻소?”', [
-      { label: '4골드 건다', desc: '반반 확률로 10골드', disabled: R.gold < 4, go: () => { R.gold -= 4; if (Math.random() < 0.5) { R.gold += 10; toast('이겼다! +10골드'); SFX.play('coin'); } else toast('졌다…'); } },
+      { label: '4골드 건다', desc: '반반 확률로 10골드', disabled: R.gold < 4, go: () => { R.gold -= 4; if (runRandom() < 0.5) { R.gold += 10; toast('이겼다! +10골드'); SFX.play('coin'); } else toast('졌다…'); } },
       { label: '거절한다', go: () => {} },
     ]),
     () => choice('버려진 무기고', '녹슨 상자 두 개가 있습니다', [
-      { label: '왼쪽 상자', desc: '무작위 아이템 · 35% 함정(골드 −4)', go: () => { if (Math.random() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
-      { label: '오른쪽 상자', desc: '무작위 스킬 칩 · 35% 함정(골드 −4)', go: () => { if (Math.random() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('skill', Math.min(5, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '왼쪽 상자', desc: '무작위 아이템 · 35% 함정(골드 −4)', go: () => { if (runRandom() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '오른쪽 상자', desc: '무작위 스킬 칩 · 35% 함정(골드 −4)', go: () => { if (runRandom() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('skill', Math.min(5, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
       { label: '열지 않는다', go: () => {} },
     ]),
     () => choice('길 잃은 용병', '“밥만 주면 따라가겠소.”', [
@@ -1712,11 +1820,11 @@
       { label: '돈을 주고 실력자를 구한다 (4골드)', desc: '무작위 3등급 유닛', disabled: R.gold < 4, go: () => { R.gold -= 4; const c = rollCard('unit', 3); if (c) { take(c); gain(c); toast(`${def(c).name} 합류`); } } },
     ]),
     () => choice('수상한 제단', '제단이 무언가를 바라는 듯합니다', [
-      { label: '피를 바친다', desc: '골드 −5, 유물 1개', disabled: R.gold < 5, go: () => { R.gold -= 5; relicPick('수상한 제단', () => renderPlay()); } },
+      { label: '피를 바친다', desc: '골드 −5, 유물 1개', disabled: R.gold < 5, go: () => { R.gold -= 5; relicPick('수상한 제단'); } },
       { label: '그냥 떠난다', go: () => {} },
     ]),
     () => choice('신비한 샘', '맑은 물에서 빛이 일렁입니다', [
-      { label: '마신다', desc: '경험치 +6 · 배탈: 다음 전투 시작 체력 85%', go: () => { R.nextHp = 0.85; if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
+      { label: '마신다', desc: '경험치 +6 · 배탈: 다음 전투 시작 체력 85%', go: () => { R.nextHp = Math.min(R.nextHp || 1, 0.85); if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
       { label: '병에 담는다 (2골드)', desc: '무작위 2등급 스킬 칩', disabled: R.gold < 2, go: () => { R.gold -= 2; const c = rollCard('skill', 2); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
     ]),
     () => {
@@ -1730,14 +1838,14 @@
     },
     () => choice('폐허의 서고', '먼지 쌓인 책이 가득합니다', [
       { label: '밤새 읽는다', desc: '경험치 +6, 골드 −2', disabled: R.gold < 2, go: () => { R.gold -= 2; if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
-      { label: '희귀본을 챙긴다', desc: '골드 +5 · 먼지 저주: 다음 전투 시작 체력 90%', go: () => { R.gold += 5; R.nextHp = 0.9; } },
+      { label: '희귀본을 챙긴다', desc: '골드 +5 · 먼지 저주: 다음 전투 시작 체력 90%', go: () => { R.gold += 5; R.nextHp = Math.min(R.nextHp || 1, 0.9); } },
     ]),
     () => choice('쓰러진 기사', '낡은 갑옷 곁에 검이 꽂혀 있습니다', [
-      { label: '장비를 챙긴다', desc: `무작위 ${Math.min(4, R.act + 1)}등급 아이템 · 40% 기사의 망령과 전투(정예급)`, go: () => { if (Math.random() < 0.4) return eventAmbush('knight', '기사의 망령이 일어섭니다! 쓰러뜨리면 장비를 얻어요'); const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '장비를 챙긴다', desc: `무작위 ${Math.min(4, R.act + 1)}등급 아이템 · 40% 기사의 망령과 전투(정예급)`, go: () => { if (runRandom() < 0.4) return eventAmbush('knight', '기사의 망령이 일어섭니다! 쓰러뜨리면 장비를 얻어요'); const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
       { label: '묻어 준다', desc: '경험치 +3, 골드 +2', go: () => { R.gold += 2; if (addXp(3)) toast(`원정대 Lv${R.lv}`); } },
     ]),
     () => choice('좀도둑', '누군가 지갑을 낚아채 달아납니다!', [
-      { label: '쫓아간다', desc: '반반 확률로 골드 +6, 아니면 −2', go: () => { if (Math.random() < 0.5) { R.gold += 6; toast('잡았다! +6골드'); SFX.play('coin'); } else { R.gold = Math.max(0, R.gold - 2); toast('놓쳤다… −2골드'); } } },
+      { label: '쫓아간다', desc: '반반 확률로 골드 +6, 아니면 −2', go: () => { if (runRandom() < 0.5) { R.gold += 6; toast('잡았다! +6골드'); SFX.play('coin'); } else { R.gold = Math.max(0, R.gold - 2); toast('놓쳤다… −2골드'); } } },
       { label: '내버려 둔다', desc: '골드 −2, 경험치 +2', go: () => { R.gold = Math.max(0, R.gold - 2); if (addXp(2)) toast(`원정대 Lv${R.lv}`); } },
     ]),
     () => choice('용병 길드 게시판', '“실력자 구함. 계약금 선불.”', [
@@ -1745,11 +1853,18 @@
       { label: '게시판 뒤 쪽지를 본다', desc: '다음 다시 뽑기 2번 무료', go: () => { R.freeRolls = (R.freeRolls || 0) + 2; } },
     ]),
   ];
-  function openEvent() { pick(EVENTS)(); }
+  function openEvent() { R.pending = { type: 'event', index: rnd(EVENTS.length) }; EVENTS[R.pending.index](); }
 
   // ---------- 최고 기록 ----------
   const BEST_KEY = 'cardExpeditionV4Best';
-  function loadBest() { try { return JSON.parse(localStorage.getItem(BEST_KEY)) || null; } catch (e) { return null; } }
+  function loadBest() {
+    try {
+      const b = JSON.parse(localStorage.getItem(BEST_KEY));
+      if (!b || !['runs', 'act', 'round'].every(k => Number.isSafeInteger(b[k]) && b[k] >= 0) || !b.clears || typeof b.clears !== 'object' || Array.isArray(b.clears)) return null;
+      if (!Object.values(b.clears).every(n => Number.isSafeInteger(n) && n >= 0)) return null;
+      return b;
+    } catch (_) { return null; }
+  }
   function saveBest(win) {
     if (!R || R.bestSaved) return;
     R.bestSaved = true;
@@ -1769,7 +1884,7 @@
     const cur = oddsLv(), rows = [3, 4, 5, 6, 7, 8, 9].map((lv) => `<tr class="${lv === Math.min(9, cur) ? 'on' : ''}"><th>Lv${lv}</th>${ODDS[lv].map((p) => `<td>${p ? p + '%' : '·'}</td>`).join('')}</tr>`).join('');
     openSheet(`<span class="eyebrow">상점 확률 · 원정대 Lv${R.lv}${cur !== R.lv ? ` (확률은 Lv${cur} 기준)` : ''}</span><h2>등급별로 나올 확률</h2>
       <table class="odds"><thead><tr><th></th>${[1, 2, 3, 4, 5].map((t) => `<th><i style="--tc:var(--t${t})"></i>${t}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
-      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < MAXLV ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 3등급, 아이템은 4등급까지 나옵니다.</p>
+      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < MAXLV ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 5등급, 아이템은 4등급까지 나오며 1막은 3등급, 2막은 4등급까지만 나옵니다.</p>
       <button class="btn" data-close>닫기</button>`);
     $('sheetIn').onclick = (e) => { if (e.target.closest('[data-close]')) closeSheet(); };
   }
@@ -1777,9 +1892,21 @@
   // =====================================================================
   // 타이틀 · 출정 · 게임 오버 · 저장
   // =====================================================================
-  function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(R)); } catch (e) { /* 저장 불가 */ } }
-  function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
-  function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* noop */ } }
+  const runStore = SAVE4.create({
+    getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v), removeItem: (k) => localStorage.removeItem(k),
+  }, SAVE_KEY);
+  function saveNotice(message = '') { $('saveNotice').textContent = message; $('saveNotice').hidden = !message; }
+  function save() {
+    if (!R || ui.screen === 'over') return;
+    if (!runStore.write(R)) saveNotice('저장하지 못했습니다. 브라우저 저장 공간을 확인하고 창을 닫지 마세요.');
+    else saveNotice();
+  }
+  function loadSave() {
+    const { run, status } = runStore.read();
+    saveNotice(({ recovered: '저장에 문제가 있어 직전 정상 저장을 복구했습니다.', invalid: '저장을 읽을 수 없습니다. 새 원정을 시작할 수 있습니다.', unavailable: '브라우저 저장 공간을 사용할 수 없습니다. 진행이 저장되지 않을 수 있습니다.' })[status] || '');
+    return run;
+  }
+  function clearSave() { if (!runStore.clear()) saveNotice('이전 저장을 지우지 못했습니다. 브라우저 저장 공간을 확인하세요.'); }
   function title() {
     R = null; B = null;
     show('title');
@@ -1850,7 +1977,7 @@
       <button class="relic" data-m="codex"><b>도감</b><span>유닛 · 스킬 · 아이템 · 유물</span></button>
       <button class="relic" data-m="help"><b>규칙</b><span>상점 · 합성 · 레벨 · 수입</span></button>
       <button class="relic" data-m="sound"><b>소리 ${SFX.muted ? '꺼짐' : '켬'}</b><span>탭해서 바꾸기</span></button>
-      ${inRun ? '<button class="relic" data-m="quit"><b>타이틀로</b><span>지도 화면 기준으로 저장됩니다</span></button>' : ''}
+      ${inRun ? '<button class="relic" data-m="quit"><b>타이틀로</b><span>진행과 선택지를 저장합니다. 전투 중에는 같은 전투의 준비 상태로 이어집니다</span></button>' : ''}
     </div><button class="btn" data-m="close">닫기</button>`);
     $('sheetIn').onclick = (e) => {
       const b = e.target.closest('[data-m]'); if (!b) return;
@@ -1858,10 +1985,10 @@
       if (m === 'close' || m === 'relics') return closeSheet();
       if (m === 'codex') { closeSheet(); return openCodex(); }
       if (m === 'help') return openSheet(`<span class="eyebrow">규칙</span><h2>한 라운드</h2><div class="help">
-        <p><b>상점 단계</b> 칸에 들어가면 내 진영과 상점 세 줄이 보입니다. 적 배치는 ‘적 필드 보기’로 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
-        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지. 딱지나 칩을 상점 카드 칸으로 끌어다 놓으면 판매합니다. 유닛은 산 값 그대로, 스킬·아이템은 산 값보다 1골드 적게 받습니다.</p>
+        <p><b>상점 단계</b> 칸에 들어가면 적·아군 진영과 상점 세 탭이 보입니다. 같은 판 위쪽에서 적 배치를 확인하고, 전투 시작을 누르면 전투 단계로 넘어갑니다.</p>
+        <p><b>상점</b> 유닛·스킬·아이템이 5장씩. 카드를 탭하면 정보가 뜨고, 구매 버튼을 눌러야 삽니다. 딱지를 탭하면 능력치·스킬 수치·장비를 한눈에 봅니다. 줄마다 1골드로 다시 뽑기, 잠그면 다음 라운드에도 유지. 딱지나 칩을 상점 카드 칸으로 끌어다 놓으면 판매합니다. 유닛 ★1은 산 값 그대로, ★2 이상은 합산 구입가보다 1골드 적게 받습니다. 스킬·아이템도 합산 구입가보다 1골드 적게 받습니다.</p>
         <p><b>등급</b> 카드 바탕색이 등급입니다: 1 흰색 · 2 녹색 · 3 파랑 · 4 보라 · 5 노랑. 딱지 테두리 색은 클래스(전사 남색 · 궁수 빨강 · 마법사 청록).</p>
-        <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 시너지 줄의 ‘시너지’ 버튼으로 전체 목록을 봅니다.</p>
+        <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 판 왼쪽 시너지 레일과 ‘전체’ 버튼으로 효과와 구성원을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 칩 1개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 스킬 칩은 재사용 대기시간마다 저절로 쓰고(★마다 10% 짧게), 아이템은 패시브 효과나 일정 시간마다 쓰는 액티브가 있습니다. 같은 스타일 무기를 여러 종류 쥐면 스타일 시너지가 켜집니다.</p>
         <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
@@ -1870,7 +1997,7 @@
         <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템). 창고가 가득 차 있으면 판 위 빈칸에 ‘창고’ 딱지로 놓이고, 창고에 빈칸이 생기면 저절로 들어갑니다.</p>
         <p><b>패배</b> 한 번 지면 원정이 끝납니다.</p></div><button class="btn" data-m="close">닫기</button>`);
       if (m === 'sound') { SFX.setMuted(!SFX.muted); return openMenu(); }
-      if (m === 'quit') { closeSheet(); if (R && ui.screen === 'map') save(); return title(); }
+      if (m === 'quit') { closeSheet(); if (R) save(); return title(); }
     };
   }
   function openCodex() {
@@ -1887,29 +2014,42 @@
       $('codexList').innerHTML = list;
       document.querySelectorAll('[data-cx]').forEach((b) => b.classList.toggle('on', b.dataset.cx === tab));
     };
-    $('codex').hidden = false;
-    $('codex').onclick = (e) => { const b = e.target.closest('[data-cx]'); if (b) { tab = b.dataset.cx; render(); } if (e.target.closest('[data-cxclose]')) $('codex').hidden = true; };
+    ui.codexFocus = document.activeElement;
+    $('codex').hidden = false; syncOverlays();
+    $('codex').querySelector('[data-cxclose]').focus({ preventScroll: true });
+    $('codex').onclick = (e) => { const b = e.target.closest('[data-cx]'); if (b) { tab = b.dataset.cx; render(); } if (e.target.closest('[data-cxclose]')) { $('codex').hidden = true; syncOverlays(); if (ui.codexFocus?.isConnected && ui.codexFocus.getClientRects().length) ui.codexFocus.focus({ preventScroll: true }); } };
     render();
   }
   document.querySelectorAll('[data-menu]').forEach((b) => (b.onclick = openMenu));
   $('newBtn').onclick = setupRun;
   $('contBtn').onclick = () => {
-    const s = loadSave(); if (!s) return; R = s;
-    // 카드가 늘어난 판에서 이전 저장을 이어 할 때: 새 카드 몫을 풀에 채운다
-    for (const d of [...UNITS, ...SKILLS, ...ITEMS]) if (R.pool[keyOf(d.kind, d.id)] == null) R.pool[keyOf(d.kind, d.id)] = poolN(d);
-    // 없어진 카드(부활의 기도 등)는 저장에서 걷어 낸다
-    const known = (c) => c && DEF[c.kind + ':' + c.id];
-    for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) u.skills = u.skills.filter(known);
-    R.bench = R.bench.map((c) => (c && !known(c) ? null : c));
-    for (const k of ['unit', 'skill', 'item']) if (R.shop && R.shop[k]) R.shop[k] = R.shop[k].map((c) => (known(c) ? c : null));
-    // 스킬 칩 1칸으로 바뀐 뒤: 칩이 둘 이상 끼워진 딱지는 첫 칩만 남기고 나머지는 창고로(넘치면 판 위 창고 딱지)
+    const s = loadSave(); if (!s) return; const notice = $('saveNotice').textContent; R = s;
     for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) while (u.skills.length > skillSlots(u)) toBench(u.skills.pop());
-    if (!DIFF[R.diff]) R.diff = 'normal'; // 없어진 난이도(쉬움)로 저장된 판
-    fixBench(); if (R.mode === 'fight' && R.node && R.enemies.length) showPlay(); else showMap();
+    fixBench();
+    if (R.node) {
+      showPlay();
+      if (R.result) { B = { won: R.result.won }; afterCombat(); }
+      else restorePending();
+    } else showMap();
+    if (notice) saveNotice(notice);
   };
   $('codexBtn').onclick = openCodex;
   $('overNew').onclick = () => { title(); setupRun(); };
   $('overTitle').onclick = title;
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"]:not(button)')) { e.preventDefault(); e.target.click(); return; }
+    const modal = !$('codex').hidden ? $('codex') : !$('sheet').hidden ? $('sheetIn') : null;
+    if (!modal) return;
+    if (e.key === 'Escape') { const close = modal.querySelector('[data-cxclose],[data-close],[data-m="close"],[data-x],[data-forge-back]'); if (close) { e.preventDefault(); close.click(); } }
+    if (e.key === 'Tab') {
+      const buttons = [...modal.querySelectorAll('button:not([disabled]),[tabindex="0"]')].filter(x => x.getClientRects().length);
+      const first = buttons[0] || modal, end = buttons[buttons.length - 1] || modal;
+      if (e.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) { e.preventDefault(); end.focus(); }
+      else if (!e.shiftKey && (document.activeElement === end || !modal.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+    }
+  });
+  window.addEventListener('pagehide', () => { if (R) save(); });
+  document.addEventListener('visibilitychange', () => { last = performance.now(); if (document.hidden && R) save(); });
   $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet') && ui.screen === 'title') closeSheet(); });
   document.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && !b.closest('#row') && !b.closest('#bench')) SFX.play('click', 0.05); });
   new ResizeObserver(() => { if (ui.screen === 'play') { fitBoard(); renderPrepPeek(); } if (ui.screen === 'map') renderMap(); }).observe($('phone'));
