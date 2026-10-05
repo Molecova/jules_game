@@ -324,46 +324,14 @@
   const W = ML + CS * COLS + M, H = CS * ROWS + M * 2;
   const grid = AC.squareGrid(COLS, ROWS, CS, { ox: ML, oy: M, diag: true });
   function genEnemies(kind) {
-    const A = ACTS[R.act], out = [], used = new Set(R.board.map((u) => grid.idx(u.x, u.y)));
-    const t = window.__tune || {};
-    const put = (id, rows, col) => {
-      const d = MONSTERS[id];
-      for (let k = 0; k < 60; k++) {
-        const cell = grid.idx(col != null && k === 0 ? col : AC.randi(0, COLS - 1), AC.pick(rows));
-        if (!used.has(cell)) { used.add(cell); out.push({ uid: 'e' + (uidN++), def: d, cell, scale: 1, rot: AC.rand(-0.09, 0.09) }); return; }
-      }
-    };
-    const rowsFor = (d) => (d.range > 1 ? [0] : [1, 2]);
-    if (kind === 'boss') {
-      const boss = MONSTERS[R.map.boss];
-      put(boss.id, [1], 2);
-      const adds = { gobking: ['goblin', 'goblin'], slimeking: ['slime', 'slime'], lich: ['skel', 'skelarch'], vampire: ['bat', 'bat', 'cultist'], dragon: ['imp', 'imp', 'salam'], surt: ['imp', 'salam', 'firecult'], icequeen: ['icesprite', 'snowarcher', 'frostwolf'], yetiking: ['yeti', 'frostwolf'], abysslord: ['shade', 'abyssmage', 'demon'], fallenking: ['fallen', 'darkpriest'] }[boss.boss];
-      for (const id of adds) put(id, rowsFor(MONSTERS[id]));
-    } else if (kind === 'elite') {
-      for (const id of AC.pick(A.elites)) put(id, rowsFor(MONSTERS[id]));
-      const extra = Math.min(3, Math.floor((R.round - 3) / 4));
-      const minV = Math.min(...A.normal.map((x) => MONSTERS[x].v)), small = A.normal.filter((x) => MONSTERS[x].v <= Math.max(1.5, minV));
-      for (let k = 0; k < extra; k++) { const id = AC.pick(small); put(id, rowsFor(MONSTERS[id])); }
-    } else {
-      let budget = (t.b0 || 2.2) + (t.bK || 0.4) * R.round;
-      while (budget > 0.4 && out.length < 9) {
-        const opts = A.normal.filter((id) => MONSTERS[id].v <= budget + 0.5);
-        if (!opts.length) break;
-        const id = AC.pick(opts);
-        budget -= MONSTERS[id].v;
-        put(id, rowsFor(MONSTERS[id]));
-      }
-    }
-    return out.map((x) => ({ uid: x.uid, id: x.def.id, cell: x.cell, scale: x.scale, rot: x.rot }));
+    return ENCOUNTERS4.generate(R, kind, grid);
   }
 
-  // =====================================================================
-  // 전투
-  // =====================================================================
   const battleApi = BT4.create({
     grid, PLAYER_ROW, COLS, ROWS, getR: () => R,
     phase: (t) => { if (B) B.phaseText = t; },
-    fx: { play: (n, g) => { if (B && !B.sim) SFX.play(n, g); }, shake: (n) => shake(n), burst: (x, y, c, n) => burst(x, y, c, n), death: (t) => onTokenDeath(t) },
+    fx: { play: (n, g) => { if (B && !B.sim) SFX.play(n, g); }, shake: (n) => shake(n), burst: (x, y, c, n) => burst(x, y, c, n), death: (t) => onTokenDeath(t),
+      skill: (id, data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit(id, data); } },
   });
   function buildCombat() {
     const syn = battleApi.synergyCounts(R.board);
@@ -382,7 +350,7 @@
     B = { sim: true, vfx: newVfx() };
     const cb = buildCombat();
     B.combat = cb;
-    while (!cb.done) cb.step(1 / 30);
+    while (!cb.done) cb.step(1 / 60);
     const won = judge(cb);
     const al = cb.units.filter((u) => u.side === 0 && !u.summon && !u.object);
     const fo = cb.units.filter((u) => u.side === 1 && !u.summon && !u.object);
@@ -516,7 +484,7 @@
     $('eLv').textContent = 'Lv' + R.lv; $('eXpT').textContent = $('xpT').textContent; $('eXp').style.width = $('xpBar').style.width;
     const n = R.node, A = ACTS[R.act];
     if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료`; }
-    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : `라운드 ${R.round}`; }
+    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : R.encounter && R.mode === 'fight' ? R.encounter.name : `라운드 ${R.round}`; }
   }
 
   // ---------- 이미지 ----------
@@ -675,11 +643,13 @@
     if (ui.screen !== 'play') return;
     renderHud();
     const combat = !!B;
+    $('encounterHint').hidden = combat || !R.encounter || R.mode !== 'fight';
     $('prepUI').hidden = combat; $('bpanel').hidden = !combat; $('tug').hidden = !combat;
     $('scr-play').classList.toggle('combat', combat);
 
     if (combat) { ui.synOpen = null; renderDrawer(); renderBattlePanel(); fitBoard(); return; }
     renderPrep();
+    if (R.mode === 'fight') save();
     fitBoard();
     renderDrawer();
   }
@@ -726,6 +696,8 @@
         <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>${d.job ? `<span class="tr jt"><i style="--c:${TRAITS[d.job].col}">${TRAITS[d.job].name}</i></span>` : ''}`}<span class="dsc">${hl(unit ? d.trait : d.desc)}</span></button>`;
     }).join('');
     $('lvBtn').textContent = R.lv >= MAXLV ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= MAXLV;
+    $('encounterHint').hidden = !R.encounter || !!B || R.mode !== 'fight';
+    $('encounterHint').textContent = R.encounter ? `${R.encounter.tag} · ${R.encounter.hint}` : '';
     $('goBtn').textContent = R.mode === 'fight' ? (R.node.k === 'boss' ? '보스 전투' : '전투 시작') : '지도로';
   }
   function renderDetail(s, el) {
@@ -958,6 +930,7 @@
     const m = MONSTERS[x.id];
     const f = battleApi.makeFoe({ uid: x.uid, def: m, cell: x.cell, scale: x.scale, rot: x.rot });
     const role = m.boss ? '보스' : m.elite ? '정예' : '일반';
+    const enemySkill = ENEMIES4.abilities[m.enemyAbility];
     const skills = (m.skills || []).map((id) => GD.SKILLS.find((q) => q.id === id)).filter(Boolean);
     const stats = [
       tstat('bolt', '#d08a1a', '공격 속도(초당)', m.as.toFixed(2)),
@@ -966,11 +939,11 @@
       m.armor ? tstat('shield', '#2e9e6b', '받는 피해', '−' + pct(m.armor) + '%') : '',
       tstat('flame', '#e8643b', '초당 피해', Math.round(f.atk * m.as)),
     ].join('');
-    const intent = `<div class="intent">${IC.eye}<span>${m.immobile ? '제자리에서' : m.range > 1 ? `${m.range}칸 안의` : '다가가'} 가까운 적부터 노림${skills.length ? '' : ' · 스킬 없음'}</span></div>`
+    const intent = `<div class="intent">${IC.eye}<span>${m.immobile ? '제자리에서' : m.range > 1 ? `${m.range}칸 안의` : '다가가'} 가까운 적부터 노림${skills.length || enemySkill ? '' : ' · 스킬 없음'}</span></div>`
       + skills.map((sd) => `<div class="intent sk2"><span class="drop">${DROP}${m.mana || 70}</span><span><b>${sd.name}</b> · ${hl(sd.desc)}<br>${castTxt({ atk: Math.ceil((m.mana || 70) / 10), every: (m.mana || 70) / (10 * m.as), first: 0, start: 0 })}</span></div>`).join('')
       + (m.boss && (BOSS_INFO[m.id] || BOSS_INFO[m.boss]) ? `<div class="intent">${IC.crit}<span>${hl(BOSS_INFO[m.id] || BOSS_INFO[m.boss])}</span></div>` : '');
     const body = cardFront({ img: ART.discURL(m.id, 1, m.boss ? 'boss' : m.elite ? 'elite' : '', null, 200), trs: `<i style="--c:#7a4f6a">${ACTS[R.act] ? ACTS[R.act].name : ''} · ${role}</i>`,
-      hp: Math.round(f.maxHp), atk: Math.round(f.atk), typeL: `${role} 적 · ${m.range > 1 ? '원거리' : '근접'}`, typeR: '적 진영', text: hl(m.desc || ''), stats, socks: `<div class="tc-sock">${intent}</div>` });
+      hp: Math.round(f.maxHp), atk: Math.round(f.atk), typeL: `${role} 적 · ${m.range > 1 ? '원거리' : '근접'}`, typeR: '적 진영', text: hl(m.desc || '') + (enemySkill ? `<br><b>${enemySkill.name}</b> · ${enemySkill.passive ? '조건 발동' : enemySkill.once ? '전투당 1회' : enemySkill.cd + '초마다'} · ${enemySkill.wind}초 예고<br>${enemySkill.hint}` : ''), stats, socks: `<div class="tc-sock">${intent}</div>` });
     $('usheet').innerHTML = `<button class="ucbg" data-act="close" aria-label="카드 닫기"></button>
       <div class="ucwrap">${tradingCard({ foe: true, cc: '#c8333f', tc: '#f6dfe1', coin: '!', name: m.name, tag: '<span class="foe-tag">적</span>', body })}<div class="tc-btns n1"><button class="wbtn" data-act="close">닫기</button></div></div>`;
   }
@@ -979,7 +952,7 @@
   function battleNote() {
     const boss = B && B.combat && B.combat.units.find((u) => u.boss && u.side === 1);
     if (boss) return `${boss.def.name}${B.phaseText ? ' · ' + B.phaseText : ''}`;
-    return R.node && R.node.k === 'elite' ? '정예 · 지면 원정 끝' : '지면 원정 끝';
+    return R.encounter ? R.encounter.name : R.node && R.node.k === 'elite' ? '정예 · 지면 원정 끝' : '지면 원정 끝';
   }
   // 체력 고리(빨강 35% 미만) + 스킬마다 마나 점(차오르는 부채꼴, 가득 차면 금색)
   function ringSVG(hp, mps) {
@@ -1083,7 +1056,7 @@
   $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
   $('spdSeg').onclick = (e) => { const b = e.target.closest('[data-spd]'); if (!b || !B) return; B.speed = ui.speed = +b.dataset.spd; SFX.play('click'); renderBattlePanel(); };
-  $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 30); B.skipping = false; B.vfx = newVfx(); };
+  $('skipBtn').onclick = () => { if (!B || B.phase !== 'combat') return; const cb = B.combat; B.skipping = true; while (!cb.done) cb.step(1 / 60); B.skipping = false; B.vfx = newVfx(); };
   $('resBtn').onclick = () => { if (B && B.phase === 'result') afterCombat(); };
   // ---------- 전투 기록: 입힌 피해 · 받은 피해 · 회복/보호막 ----------
   let statSort = 'dmg';
@@ -1390,38 +1363,9 @@
       ctx.fillStyle = b.mana >= b.max ? '#f5c400' : '#2f6fd6'; ctx.fillRect(x, yy + 0.8, (w * Math.min(b.mana, b.max)) / b.max, 2.4);
     });
   }
-  const SHOT = { mag: ['#b48cff', '#efe2ff'], mage: ['#b48cff', '#efe2ff'], fire: ['#e8643b', '#ffd36b'] };
-  // 마법 공격: 꼬리를 끄는 빛나는 마법 구슬(둘레를 도는 불티 둘)
-  function drawOrb(p, style, r) {
-    const tr = p.trail || (p.trail = []);
-    tr.push([p.x, p.y]); if (tr.length > 8) tr.shift();
-    for (let i = 0; i < tr.length - 1; i++) {
-      const k = (i + 1) / tr.length;
-      ctx.globalAlpha = 0.45 * k; ctx.fillStyle = style[0];
-      ctx.beginPath(); ctx.arc(tr[i][0], tr[i][1], r * (0.35 + 0.5 * k), 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    const g = ctx.createRadialGradient(p.x, p.y, r * 0.4, p.x, p.y, r * 2.2);
-    g.addColorStop(0, style[0] + 'aa'); g.addColorStop(1, style[0] + '00');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = style[0]; ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = style[1]; ctx.beginPath(); ctx.arc(p.x - r * 0.3, p.y - r * 0.3, r * 0.42, 0, Math.PI * 2); ctx.fill();
-    const t = performance.now() / 120;
-    for (const o of [0, Math.PI]) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x + Math.cos(t + o) * r * 1.5, p.y + Math.sin(t + o) * r * 1.5, 1.4, 0, Math.PI * 2); ctx.fill(); }
-  }
   function drawProjectiles(cb) {
-    for (const p of cb.projectiles) {
-      const ang = Math.atan2(p.tgt.py - p.y, p.tgt.px - p.x), style = p.src && (SHOT[p.src.cls] || (p.kind === 'spell' && p.src.cls !== 'arc' && p.src.cls !== 'bow' ? SHOT.mag : null));
-      if (style) drawOrb(p, style, p.kind === 'spell' ? 9 : 7);
-      else {
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
-        ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(4, 0); ctx.stroke();
-        ctx.fillStyle = '#c3cbd6'; ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(2, -3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill(); ctx.lineWidth = 1.2; ctx.stroke();
-        ctx.fillStyle = p.src && p.src.side ? '#e8436b' : '#2e9e6b'; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(-17, -4); ctx.lineTo(-10, 0); ctx.lineTo(-17, 4); ctx.closePath(); ctx.fill();
-        ctx.restore();
-      }
-    }
+    for (const p of cb.projectiles) SHOTS4.draw(ctx, p, cb.t);
+    SHOTS4.drawImpacts(ctx, cb);
   }
   // 초승달 오린 종이 띠: 축을 따라 s(0~1)에서 바깥·안쪽 가장자리 오프셋
   const crescentUp = (s, w) => -(w * 1.25 + 8) * Math.sin(Math.PI * s), crescentDn = (s, w) => (w * 0.15 - 8) * Math.sin(Math.PI * s);
@@ -1503,7 +1447,7 @@
     ctx.fillRect(c.x - CS / 2 + inset, c.y - CS / 2 + inset, CS - inset * 2, CS - inset * 2);
     ctx.globalAlpha = 1;
   }
-  const newVfx = () => ({ debris: [], parts: [], pieces: [], shake: 0 });
+  const newVfx = () => ({ debris: [], parts: [], pieces: [], shake: 0, skills: VFX4.create({ cellSize: CS }) });
   function burst(x, y, col, n) {
     if (!B || B.sim || B.skipping) return;
     for (let k = 0; k < n; k++) {
@@ -1578,13 +1522,19 @@
     if (B && B.combat) {
       const cb = B.combat;
       drawTele(cb);
+      ENEMYCOMBAT4.draw(ctx, cb, grid, 'under');
       for (const f of cb.fx) if (f.kind === 'tile') fillCell(f.cell, f.color, 0.6 * (1 - f.t / f.life), 2); else if (f.kind === 'scar') drawScar(f);
+      B.vfx.skills.draw(ctx, 'under');
       const alive = cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py);
       for (const e of alive) { const o = AC.lungeOffset ? AC.lungeOffset(e) : { x: 0, y: 0 }; drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }
       drawVfx();
+      drawProjectiles(cb); drawEffects(cb);
+      B.vfx.skills.draw(ctx, 'over');
+      ENEMYCOMBAT4.draw(ctx, cb, grid, 'over');
       for (const e of alive) drawBar(e);
-      drawProjectiles(cb); drawEffects(cb); drawFloaters(cb);
+      drawFloaters(cb);
     } else {
+      ENEMYCOMBAT4.preview(ctx, grid, R.enemies, R.board, ui.foe);
       const s = ui.sel;
       if (s && s.c.kind === 'unit' && s.from !== 'shop') {
         ctx.save(); ctx.globalAlpha = 0.35 + 0.2 * Math.sin(now / 200);
@@ -1614,11 +1564,12 @@
     if (R) R.stats.time += ui.screen === 'play' || ui.screen === 'map' ? dt : 0;
     if (B && B.combat && !B.sim) {
       if (B.phase === 'combat' && $('sheet').hidden) {
-        let left = dt * B.speed;
-        while (left > 0 && !B.combat.done) { const s = Math.min(1 / 60, left); B.combat.step(s); left -= s; }
+        B.tickAccum = (B.tickAccum || 0) + dt * B.speed;
+        while (B.tickAccum >= 1 / 60 && !B.combat.done) { B.combat.step(1 / 60); B.vfx.skills.step(1 / 60); B.tickAccum -= 1 / 60; }
         if (B.combat.done) endCombat();
         panelT += dt; if (panelT > 0.2) { panelT = 0; renderBattlePanel(); }
       }
+      else if (B.phase === 'result' && $('sheet').hidden) B.vfx.skills.step(dt);
       stepVfx(dt);
     }
     if (ui.screen === 'play') draw();
@@ -1894,7 +1845,7 @@
     for (const k of ['unit', 'skill', 'item']) if (R.shop && R.shop[k]) R.shop[k] = R.shop[k].map((c) => (known(c) ? c : null));
     // 스킬 칩 1칸으로 바뀐 뒤: 칩이 둘 이상 끼워진 딱지는 첫 칩만 남기고 나머지는 창고로(넘치면 판 위 창고 딱지)
     for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) while (u.skills.length > skillSlots(u)) toBench(u.skills.pop());
-    fixBench(); showMap();
+    fixBench(); if (R.mode === 'fight' && R.node && R.enemies.length) showPlay(); else showMap();
   };
   $('codexBtn').onclick = openCodex;
   $('overNew').onclick = () => { title(); setupRun(); };

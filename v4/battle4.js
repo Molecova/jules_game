@@ -349,6 +349,11 @@
       const Hm = H(u);
       const cellsOf = () => skillCells(u, t, d, dir, s.cells);
       const allies = (cells) => cells.map((i) => cb.occ[i]).filter((v) => v && v.side === u.side && !v.dead && !v.object);
+      const pos = v => ({ x: v.px, y: v.py });
+      const origin = pos(u);
+      const visualData = (cells, points, extra = {}) => ({ source: origin, target: pos(t), dir: { x: dir[0], y: dir[1] }, star: s.star || 1,
+        cells: cells.map(i => ({ x: grid.cells[i].x, y: grid.cells[i].y })), points: points.map(pos), ...extra });
+      const visual = (cells, points, extra) => { if (fx.skill) fx.skill(d.id, visualData(cells, points, extra)); };
       switch (d.effect) {
         case 'dmg': {
           if (d.mode === 'lowest' || d.mode === 'leap' || d.mode === 'farthest' || d.mode === 'single') {
@@ -356,25 +361,29 @@
             const v = d.mode === 'single' ? (t && !t.dead ? t : pool[0]) : d.mode === 'farthest' ? pool.sort((a, b) => grid.dist(u.cell, b.cell) - grid.dist(u.cell, a.cell))[0] : pool.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
             if (!v) break;
             if (d.mode === 'leap') leapTo(cb, u, v); else if (!SLASH.has(d.id) && d.mode !== 'single') cb.beam(u.px, u.py, v.px, v.py, col, 0.35);
+            visual([v.cell], [v], { target: pos(v), destination: pos(u) });
             if (SLASH.has(d.id) || d.slash) slashOne(cb, v, d.id === 'assassinate' || d.crit); else tiles(cb, [v.cell], col);
             const dealt = applySkillHit(cb, u, v, P, d);
             if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
             if (d.finisher && !v.dead && !v.boss && v.hp / v.maxHp <= d.finisher) { cb.float(v.px, v.py - 30, '처형!', '#f5c400', true); cb.kill(v, u); }
-            if (d.bounty && v.dead && (u.bountyN || 0) < 2) { u.bountyN = (u.bountyN || 0) + 1; cb.goldBonus = (cb.goldBonus || 0) + 1; cb.float(u.px, u.py - 52, '+1골드', '#f5c400', true); }
+            if (d.bounty && v.dead && !v.noReward && (u.bountyN || 0) < 2) { u.bountyN = (u.bountyN || 0) + 1; cb.goldBonus = (cb.goldBonus || 0) + 1; cb.float(u.px, u.py - 52, '+1골드', '#f5c400', true); }
             if (d.nextCrit) u.nextCrit = true;
             break;
           }
           if (d.mode === 'chain') {
             let cur = t, amt = P, from = u;
             const hit = new Set();
+            const links = [];
             for (let n = 0; n < (d.jumps || 4) + (s.star >= 3 ? 2 : 0) && cur; n++) {
               hit.add(cur);
+              links.push({ px: cur.px, py: cur.py, cell: cur.cell });
               cb.beam(from.px, from.py, cur.px, cur.py, '#b48cff', 0.35);
               tiles(cb, [cur.cell], col);
               applySkillHit(cb, u, cur, amt, d);
               amt *= 0.85; from = cur;
               cur = cb.alive(foe).filter((v) => !hit.has(v)).sort((a, b) => grid.dist(from.cell, a.cell) - grid.dist(from.cell, b.cell))[0];
             }
+            visual(links.map(v => v.cell), links);
             break;
           }
           if (d.mode === 'volley') {
@@ -384,6 +393,7 @@
             break;
           }
           const cells = cellsOf();
+          visual(cells, cells.map(i => cb.occ[i]).filter(v => v && v.side === foe && !v.dead));
           if (SLASH.has(d.id) && d.mode === 'facing') slashFacing(cb, u, dir, s.cells || d.cells, cells);
           else if (SLASH.has(d.id) && d.mode === 'self') slashRing(cb, u, cells);
           else tiles(cb, cells, col);
@@ -399,9 +409,13 @@
           for (const i of cells) { const v = cb.occ[i]; if (!v || v.dead) continue; if (v.side === foe) applySkillHit(cb, u, v, P, d); else if (!v.object) cb.heal(v, P * 0.6 * Hm, u); }
           break;
         }
-        case 'tele':
-          cb.tele.push({ cells: cellsOf(), t: 0, delay: d.delay || 1.2, dmg: P, side: foe, src: u, color: col, burn: d.burn });
+        case 'tele': {
+          const cells = cellsOf(), delay = d.delay || 1.2;
+          const visualInfo = visualData(cells, [], { phase: 'warn', delay });
+          if (fx.skill) fx.skill(d.id, visualInfo);
+          cb.tele.push({ cells, t: 0, delay, dmg: P, side: foe, src: u, color: col, burn: d.burn, visualInfo, skillId: d.id });
           break;
+        }
         case 'heal': {
           if (d.mode === 'lowestAlly') {
             const a = lowestAlly(cb, u.side);
@@ -409,12 +423,14 @@
             break;
           }
           const cells = cellsOf();
+          visual(cells, allies(cells));
           tiles(cb, cells, '#2e9e6b');
           for (const a of allies(cells)) { cb.heal(a, P * Hm, u); if (d.cleanse) cleanse(a); }
           break;
         }
         case 'shield': {
           const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
+          visual(d.mode === 'all' ? list.map(a => a.cell) : cellsOf(), list);
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#6aa8ff');
           for (const a of list) { giveShield(a, P * Hm, u); if (d.heal) cb.heal(a, d.heal * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
           break;
@@ -630,7 +646,7 @@
 
     // ---------- 훅 ----------
     function hooks() {
-      return {
+      const h = {
         playerShot: '#2f6fd6', enemyShot: '#e8436b',
         onStart,
         // 성서: 다친 아군이 있으면 기본 공격 대신 치유
@@ -729,6 +745,7 @@
         onDodge: (t) => { if (t.ifx === 'evasive' && t.side === 0) { t.nextCrit = true; } },
         onHit: (t, dmg, src, kind, crit, cb) => {
           t.hitT = 0.22;
+          if (kind === 'atk' && global.SHOTS4) SHOTS4.impact(cb, src, t);
           if (kind === 'atk' || kind === 'spell' || kind === 'splash') {
             fx.play(crit ? 'crit' : 'hit', 0.04);
             fx.burst(t.px, t.py, src && !src.side ? clsCol(src.cls) : '#e8436b', crit ? 7 : 3);
@@ -817,6 +834,7 @@
             tl.t += dt;
             if (tl.t >= tl.delay && !tl.done) {
               tl.done = true;
+              if (tl.visualInfo && fx.skill) fx.skill(tl.skillId, { ...tl.visualInfo, phase: 'impact' });
               tiles(cb, tl.cells, tl.color, 0.5);
               fx.play('boom', 0.1);
               fx.shake(tl.dmg >= 200 ? 8 : 5);
@@ -856,6 +874,7 @@
           }
         },
       };
+      return global.ENEMYCOMBAT4 ? ENEMYCOMBAT4.wrap(h, { grid, makeFoe }) : h;
     }
 
     return { facing, rel, skillCells, synergyCounts, makeAlly, makeFoe, makeSummon, hooks, loadoutOf, wpArt, unitStats, foePreview: foeMul };

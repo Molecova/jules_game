@@ -655,6 +655,7 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
   .wbtn { height: 38px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; transition: none !important; } }
+.encounter-hint { padding: 7px 12px; background: #efe7d7; color: #5b483d; font-size: 11px; line-height: 1.4; border-bottom: 1px solid #cfc3ab; }
 </style>
 </head>
 <body>
@@ -696,7 +697,7 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
         <div><small id="tugF">적 100%</small><span class="tbar"><i id="tugFi"></i></span></div>
       </div>
       <div class="mat" id="mat">
-        <div class="boardwrap" id="boardwrap"><canvas id="cv" aria-label="전투 보드"></canvas><div class="srail" id="srail" aria-label="시너지"></div><div class="sdrawer" id="sdrawer" role="dialog" aria-label="시너지 정보" hidden></div><div class="bstamp" id="bstamp"></div></div>
+        <div id="encounterHint" class="encounter-hint" hidden></div><div class="boardwrap" id="boardwrap"><canvas id="cv" aria-label="전투 보드"></canvas><div class="srail" id="srail" aria-label="시너지"></div><div class="sdrawer" id="sdrawer" role="dialog" aria-label="시너지 정보" hidden></div><div class="bstamp" id="bstamp"></div></div>
         <div class="benchbox" id="benchbox">
           <div class="lbl"><span>창고 <b id="benchN">0/8</b></span><span id="benchHint"></span></div>
           <div class="bench" id="bench"></div>
@@ -764,7 +765,13 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
 <script src="../game/art.js"></script>
 <script src="../game/sfx.js"></script>
 <script src="data4.js"></script>
+<script src="enemies4.js"></script>
+<script src="encounters4.js"></script>
+<script src="enemy-combat4.js"></script>
+<script src="enemy-art4.js"></script>
+<script src="projectiles4.js"></script>
 <script src="terrain4.js"></script>
+<script src="vfx4.js"></script>
 <script src="battle4.js"></script>
 <script src="game4.js"></script>
 </body>

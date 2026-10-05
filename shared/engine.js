@@ -266,7 +266,8 @@
 
       // 설치물(바리케이드 등)은 승패 판정에서 제외
       const a0 = this.units.filter((u) => !u.dead && u.side === 0 && !u.object).length, a1 = this.alive(1).length;
-      if (a0 === 0 || a1 === 0 || this.t >= this.maxTime) {
+      const pendingThreat = this.hooks.hasPendingThreats && this.hooks.hasPendingThreats(this);
+      if (a0 === 0 || (a1 === 0 && !pendingThreat) || this.t >= this.maxTime) {
         this.done = true;
         this.winner = a1 === 0 && a0 > 0 ? 0 : a0 === 0 && a1 > 0 ? 1 : -1; // -1: 시간초과(무승부)
         if (this.hooks.onEnd) this.hooks.onEnd(this);
