@@ -318,11 +318,11 @@
   const NODE = {
     fight: { name: '전투', icon: 'slash', col: '#4b5160', info: '일반 몬스터. 이기면 다음 층으로. 지면 원정 끝.' },
     elite: { name: '정예', icon: 'skull', col: '#d6335a', info: '강한 적. 이기면 한 등급 높은 카드 3장 중 1장을 고릅니다. 지면 원정 끝.' },
-    shop: { name: '암시장', icon: 'star', col: '#c48a00', info: '이번 라운드 상점 등급 확률이 한 단계 오르고, 다시 뽑기 3번이 무료. 전투 없음.' },
-    forge: { name: '대장간', icon: 'fist', col: '#5b6475', info: '창고의 ★1 스킬·아이템 하나를 복제하거나, 아이템을 다른 클래스용으로 개조. 전투 없음.' },
-    camp: { name: '야영지', icon: 'fire', col: '#e07a00', info: '경험치 +6, 또는 골드 +6. 전투 없음.' },
+    shop: { name: '암시장', icon: 'star', col: '#c48a00', info: '이번 라운드 상점 등급 확률이 한 단계 오른다. 절반 확률로 보스 전용 아이템을 판다. 전투 없음.' },
+    forge: { name: '대장간', icon: 'fist', col: '#5b6475', info: '골드를 내고 복제하거나, 담금질(★+1 또는 부서짐)·단조(아이템 둘 → 한 등급 높은 하나)·개조. 전투 없음.' },
+    camp: { name: '야영지', icon: 'fire', col: '#e07a00', info: '경험치 +6, 또는 골드 +6. 35% 확률로 야습(정예급 전투)을 이겨야 쉴 수 있다.' },
     event: { name: '이벤트', icon: 'eye', col: '#7a4fd0', info: '무슨 일이 생길지 모릅니다. 전투 없음.' },
-    treasure: { name: '보물', icon: 'heart', col: '#2e9e6b', info: '유물 3개 중 1개. 전투 없음.' },
+    treasure: { name: '보물', icon: 'heart', col: '#2e9e6b', info: '유물 3개 중 1개. 30% 확률로 미믹(정예급 전투), 이기면 골드 +3도.' },
     boss: { name: '보스', icon: 'skull', col: '#232a3b', info: '막의 주인. 이기면 유물과 4·5등급 유닛을 고릅니다. 지면 원정 끝.' },
   };
 

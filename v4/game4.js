@@ -292,25 +292,27 @@
     R.round++;
     R.node = { id: n.id, k: n.k, f: n.f };
     R.oddsBonus = n.k === 'shop' ? 1 : 0;
-    R.freeRolls = (has('scale') ? 1 : 0) + (n.k === 'shop' ? 3 : 0);
+    R.freeRolls = has('scale') ? 1 : 0;
     let inc = null;
     if (R.round > 1) { inc = income(); R.gold += inc.total; R.stats.goldEarned += inc.total; addXp(2); }
     rollAll(R.round === 1);
     if (R.round === 1 && !allUnits().length) starterRow();
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
     // 야영지: 일정 확률로 야습(정예급 적). 이겨야 쉴 수 있다
-    if (n.k === 'camp' && Math.random() < CAMP_AMBUSH) { R.node.ambush = true; R.enemies = genEnemies('elite'); }
+    if (n.k === 'camp' && Math.random() < CAMP_AMBUSH) { R.node.ambush = 'camp'; R.enemies = genEnemies('elite'); }
+    // 보물: 일정 확률로 미믹(정예급 적). 이기면 유물 + 골드
+    if (n.k === 'treasure' && Math.random() < MIMIC_P) { R.node.ambush = 'mimic'; R.enemies = genEnemies('elite'); }
     R.mode = R.enemies.length ? 'fight' : 'rest';
     if (quiet) return inc;
     ui.sel = null; ui.tab = 'unit';
     showPlay();
     if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
-    if (n.k === 'camp') { if (R.node.ambush) toast('야습! 정예급 적이 야영지를 덮쳤습니다. 이기면 쉴 수 있어요'); else openCamp(); } else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
-    else if (n.k === 'shop') choice('암시장', '천막 아래 진귀한 물건이 모여 있습니다', [{ label: '상점 둘러보기', desc: '상점 등급 확률 +1, 다시 뽑기 3번 무료', go: () => {} }]);
+    if (n.k === 'camp') { if (R.node.ambush) toast('야습! 정예급 적이 야영지를 덮쳤습니다. 이기면 쉴 수 있어요'); else openCamp(); } else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') { if (R.node.ambush) toast('보물 상자가 이빨을 드러냅니다! 미믹을 쓰러뜨리면 보물을 얻어요'); else openTreasure(); }
+    else if (n.k === 'shop') openBlackMarket();
     return inc;
   }
-  const CAMP_AMBUSH = 0.35;
+  const CAMP_AMBUSH = 0.35, MIMIC_P = 0.3;
   function finishNode() {
     const n = R.node;
     R.pos = n.id; R.path.push(n.id); R.lastNode = n; R.node = null; R.enemies = []; R.mode = 'map';
@@ -340,6 +342,7 @@
   function buildCombat() {
     const syn = battleApi.synergyCounts(R.board);
     const ents = R.board.map((c) => battleApi.makeAlly(c, grid.idx(c.x, c.y), syn));
+    if (R.nextHp) for (const e of ents) e.hp = Math.round(e.maxHp * R.nextHp); // 이벤트 대가: 다음 전투 시작 체력
     for (const x of R.enemies) ents.push(battleApi.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot }));
     const cb = new AC.Combat(grid, ents, { hooks: battleApi.hooks(), maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
     cb.tele = cb.tele || [];
@@ -368,6 +371,7 @@
     ui.sel = null;
     B = { sim: false, vfx: newVfx(), speed: ui.speed || 1, phase: 'combat', phaseText: '' };
     B.combat = buildCombat();
+    if (R.nextHp) { toast(`지친 몸으로 싸웁니다: 시작 체력 ${Math.round(R.nextHp * 100)}%`); R.nextHp = null; }
     R.stats.battles++;
     const boss = B.combat.units.find((u) => u.boss);
     bannerStamp(boss ? boss.def.name : R.node.k === 'elite' ? '정예 출현!' : '전투 개시!');
@@ -402,7 +406,13 @@
       if (has('phoenix')) { R.relics.splice(R.relics.indexOf('phoenix'), 1); toast('불사조 깃털이 타올라 원정이 이어집니다'); return finishNode(); }
       return gameOver();
     }
-    if (R.node.ambush) { R.enemies = []; R.mode = 'rest'; renderPlay(); return openCamp(); } // 야습을 물리치면 야영
+    if (R.node.ambush) { // 매복 전투를 이긴 뒤: 원래 노드의 보상
+      const a = R.node.ambush; R.node.ambush = null; R.enemies = []; R.mode = 'rest'; renderPlay();
+      if (a === 'camp') return openCamp();
+      if (a === 'mimic') { R.gold += 3; toast('미믹이 삼킨 골드 +3'); return openTreasure(); }
+      if (a === 'knight') { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`망령이 지키던 ${def(c).name} 획득`); } return; }
+      return;
+    }
     if (kind === 'elite') return pickReward('정예 전리품', '한 등급 높은 카드 하나를 고르세요', eliteChoices(), finishNode);
     if (kind === 'boss') {
       if (R.act >= LAST_ACT) return finishNode();
@@ -1627,6 +1637,16 @@
     drawScene(title);
     $('sheetIn').onclick = (e) => { const b = e.target.closest('[data-o]'); if (!b || b.disabled) return; closeSheet(); opts[+b.dataset.o].go(); renderPlay(); };
   }
+  // 암시장: 등급 확률 +1(무료 다시 뽑기는 없음), 확률적으로 보스 전용 아이템을 비싸게 판다
+  const BM_PRICE = 9;
+  function openBlackMarket() {
+    const sp = SPECIALS.filter((d) => R.pool[keyOf('item', d.id)] > 0), offer = sp.length && Math.random() < 0.5 ? pick(sp) : null;
+    const opts = [{ label: '상점 둘러보기', desc: '이번 라운드 상점 등급 확률 +1', go: () => {} }];
+    if (offer) opts.unshift({ label: `${offer.name} 산다 (${BM_PRICE}골드)`, desc: `보스 전용 아이템 · ${offer.desc}`, disabled: R.gold < BM_PRICE, go: () => { R.gold -= BM_PRICE; const c = mk('item', offer.id); take(c); gain(c); SFX.play('coin'); toast(`${offer.name} 구입`); } });
+    choice('암시장', offer ? '천막 안쪽에 보스가 떨어뜨린 무기가 걸려 있습니다' : '천막 아래 진귀한 물건이 모여 있습니다', opts);
+  }
+  // 이벤트 중 매복 전투: 정예급 적과 싸워 이기면 보상
+  function eventAmbush(kind, msg) { R.node.ambush = kind; R.enemies = genEnemies('elite'); R.mode = 'fight'; toast(msg); }
   function openCamp() {
     choice('야영지', '모닥불 앞에서 쉬어 갑니다', [
       { label: '훈련', desc: '경험치 +6', go: () => { if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
@@ -1675,19 +1695,20 @@
       { label: '지나간다', go: () => {} },
     ]),
     () => choice('훈련장', '허수아비가 줄지어 서 있습니다', [
-      { label: '훈련한다', desc: '경험치 +4', go: () => { if (addXp(4)) toast(`원정대 Lv${R.lv}`); } },
-      { label: '허수아비를 판다', desc: '골드 +3', go: () => { R.gold += 3; } },
+      { label: '훈련한다 (2골드)', desc: '경험치 +5', disabled: R.gold < 2, go: () => { R.gold -= 2; if (addXp(5)) toast(`원정대 Lv${R.lv}`); } },
+      { label: '허수아비를 판다', desc: '골드 +2', go: () => { R.gold += 2; } },
     ]),
     () => choice('도박꾼', '“동전 던지기 한 판 어떻소?”', [
       { label: '4골드 건다', desc: '반반 확률로 10골드', disabled: R.gold < 4, go: () => { R.gold -= 4; if (Math.random() < 0.5) { R.gold += 10; toast('이겼다! +10골드'); SFX.play('coin'); } else toast('졌다…'); } },
       { label: '거절한다', go: () => {} },
     ]),
     () => choice('버려진 무기고', '녹슨 상자 두 개가 있습니다', [
-      { label: '왼쪽 상자', desc: '무작위 아이템', go: () => { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
-      { label: '오른쪽 상자', desc: '무작위 스킬 칩', go: () => { const c = rollCard('skill', Math.min(3, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '왼쪽 상자', desc: '무작위 아이템 · 35% 함정(골드 −4)', go: () => { if (Math.random() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '오른쪽 상자', desc: '무작위 스킬 칩 · 35% 함정(골드 −4)', go: () => { if (Math.random() < 0.35) { R.gold = Math.max(0, R.gold - 4); return toast('함정! 골드 −4'); } const c = rollCard('skill', Math.min(5, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '열지 않는다', go: () => {} },
     ]),
     () => choice('길 잃은 용병', '“밥만 주면 따라가겠소.”', [
-      { label: '데려간다', desc: '무작위 1등급 유닛', go: () => { const c = rollCard('unit', 1); if (c) { take(c); gain(c); toast(`${def(c).name} 합류`); } } },
+      { label: '데려간다 (1골드)', desc: '무작위 1등급 유닛', disabled: R.gold < 1, go: () => { R.gold -= 1; const c = rollCard('unit', 1); if (c) { take(c); gain(c); toast(`${def(c).name} 합류`); } } },
       { label: '돈을 주고 실력자를 구한다 (4골드)', desc: '무작위 3등급 유닛', disabled: R.gold < 4, go: () => { R.gold -= 4; const c = rollCard('unit', 3); if (c) { take(c); gain(c); toast(`${def(c).name} 합류`); } } },
     ]),
     () => choice('수상한 제단', '제단이 무언가를 바라는 듯합니다', [
@@ -1695,8 +1716,8 @@
       { label: '그냥 떠난다', go: () => {} },
     ]),
     () => choice('신비한 샘', '맑은 물에서 빛이 일렁입니다', [
-      { label: '마신다', desc: '경험치 +3, 골드 +1', go: () => { R.gold += 1; if (addXp(3)) toast(`원정대 Lv${R.lv}`); } },
-      { label: '병에 담는다', desc: '무작위 2등급 스킬 칩', go: () => { const c = rollCard('skill', 2); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '마신다', desc: '경험치 +6 · 배탈: 다음 전투 시작 체력 85%', go: () => { R.nextHp = 0.85; if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
+      { label: '병에 담는다 (2골드)', desc: '무작위 2등급 스킬 칩', disabled: R.gold < 2, go: () => { R.gold -= 2; const c = rollCard('skill', 2); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
     ]),
     () => {
       const cand = R.board.filter((u) => u.star === 1 && def(u).t <= 2 && (R.pool[keyOf('unit', u.id)] || 0) >= 2);
@@ -1709,10 +1730,10 @@
     },
     () => choice('폐허의 서고', '먼지 쌓인 책이 가득합니다', [
       { label: '밤새 읽는다', desc: '경험치 +6, 골드 −2', disabled: R.gold < 2, go: () => { R.gold -= 2; if (addXp(6)) toast(`원정대 Lv${R.lv}`); } },
-      { label: '희귀본을 챙긴다', desc: '골드 +5', go: () => { R.gold += 5; } },
+      { label: '희귀본을 챙긴다', desc: '골드 +5 · 먼지 저주: 다음 전투 시작 체력 90%', go: () => { R.gold += 5; R.nextHp = 0.9; } },
     ]),
     () => choice('쓰러진 기사', '낡은 갑옷 곁에 검이 꽂혀 있습니다', [
-      { label: '장비를 챙긴다', desc: `무작위 ${Math.min(4, R.act + 1)}등급 아이템`, go: () => { const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
+      { label: '장비를 챙긴다', desc: `무작위 ${Math.min(4, R.act + 1)}등급 아이템 · 40% 기사의 망령과 전투(정예급)`, go: () => { if (Math.random() < 0.4) return eventAmbush('knight', '기사의 망령이 일어섭니다! 쓰러뜨리면 장비를 얻어요'); const c = rollCard('item', Math.min(4, R.act + 1)); if (c) { take(c); gain(c); toast(`${def(c).name} 획득`); } } },
       { label: '묻어 준다', desc: '경험치 +3, 골드 +2', go: () => { R.gold += 2; if (addXp(3)) toast(`원정대 Lv${R.lv}`); } },
     ]),
     () => choice('좀도둑', '누군가 지갑을 낚아채 달아납니다!', [
