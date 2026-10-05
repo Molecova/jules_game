@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>상점 유닛 카드 4안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 문서: 상점 유닛 카드에서 시너지가 3개일 때 딱지 그림이 작아지는 문제의 4안.
+   상점 상자(호두나무 테 + 종이 카드)는 게임 고유 재질이라 고정 색, 문서 바탕만 테마를 따른다. */
+:root {
+  --bg: #eeede8; --surface: #fbfaf6; --fg: #1f2329; --muted: #60656e; --line: #d6d3ca; --accent: #c8335a;
+  --display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --ink: #232a3b; --card: #fffdf6; --gold: #f5c400; --wood: #6b4a2e; --wood2: #4f3520; --felt: #fffdf6;
+  --t1: #f7f5ef; --t2: #a6dcae; --t3: #9cc3f2; --t4: #c7aaf0; --t5: #f6d64e;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #16181c; --surface: #1f2227; --fg: #ecebe6; --muted: #a2a6ad; --line: #33373e; --accent: #ff7a98; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); padding-block: 28px 64px; padding-inline: 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 40px; }
+header { display: grid; gap: 8px; max-width: 72ch; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
+h1 { margin: 0; font: 400 clamp(30px, 5vw, 42px)/1.1 var(--display); text-wrap: balance; }
+h2 { margin: 0; font: 400 24px/1.2 var(--display); text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--muted); }
+section { display: grid; gap: 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.tag { display: flex; gap: 10px; align-items: baseline; }
+.tag b { font: 400 24px var(--display); color: var(--accent); }
+.body { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.demo { display: grid; gap: 10px; justify-items: center; }
+.side { display: grid; gap: 10px; min-width: 0; }
+ul.pts { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 3px; }
+ul.pts li b { color: var(--fg); font-weight: 600; }
+.cap { font-size: 12px; color: var(--muted); text-align: center; }
+.zoom { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.zoom .cardwrap { zoom: 1.7; }
+.reco { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 8px; max-width: 80ch; }
+@media (max-width: 780px) { .body { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- 게임 상점 상자(폰 가로 390 기준 실제 크기) ---- */
+.shopbox { width: 100%; max-width: 360px; padding: 8px; border-radius: 12px; background: linear-gradient(160deg, #7a5536, var(--wood) 40%, var(--wood2)); box-shadow: inset 0 0 0 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.25); }
+.srow { padding: 6px; border-radius: 7px; background: var(--felt); box-shadow: inset 0 2px 5px rgba(0,0,0,.22); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; height: 128px; }
+.card { position: relative; overflow: hidden; border: 3px solid var(--cc); border-radius: 9px; box-shadow: 0 0 0 1.5px var(--ink); background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), var(--tc); display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; min-width: 0; min-height: 0; color: var(--ink); font-family: var(--body); }
+.card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--cc); }
+.card .cost { position: absolute; top: 6px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff4b0, var(--gold) 60%, #b98f00); border: 1.5px solid var(--ink); font: 400 9px/13px var(--display); text-align: center; z-index: 2; }
+.card .pr { width: 100%; min-height: 0; display: grid; place-items: center; padding: 7px 3px 0; }
+.card img { width: 100%; height: 100%; max-width: 64px; object-fit: contain; min-height: 0; }
+.card b { width: 100%; font: 700 10px/1.15 var(--body); letter-spacing: -.3px; text-align: center; padding: 1px 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .txt { width: 100%; display: grid; position: relative; z-index: 1; background: linear-gradient(rgba(255,255,255,0), color-mix(in srgb, var(--tc) 88%, transparent) 30%); }
+/* 지금: 시너지 한 줄에 하나 */
+.now .tr { display: grid; justify-items: center; padding: 0 2px 2px; }
+.now .tr i { max-width: 100%; font: 700 8px/9.5px var(--body); font-style: normal; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.4px; }
+.now .tr i::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--c); margin-right: 2px; }
+/* A. 약자 도장 한 줄 */
+.a .tr { display: flex; justify-content: center; gap: 2px; padding: 1px 2px 3px; }
+.a .tr i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); color: #fff; font: 400 8.5px/12px var(--display); font-style: normal; text-align: center; border: 1px solid var(--ink); }
+/* B. 그림 위 옆 꼬리표 */
+.b .pr { position: relative; padding: 7px 2px 0; }
+.b .tabs { position: absolute; right: -3px; top: 8px; display: grid; gap: 2px; z-index: 2; }
+.b .tabs i { display: block; width: 15px; height: 14px; border-radius: 4px 0 0 4px; background: var(--c); color: #fff; font: 400 8.5px/12px var(--display); font-style: normal; text-align: center; border: 1px solid var(--ink); border-right: none; }
+.b .txt { padding-bottom: 3px; }
+/* C. 한 줄 이름 + 남은 수 */
+.c .tr { display: flex; justify-content: center; align-items: center; gap: 1px; padding: 0 2px 3px; white-space: nowrap; overflow: hidden; }
+.c .tr i { font: 700 8px/10px var(--body); font-style: normal; color: var(--c); letter-spacing: -.5px; }
+.c .tr i + i::before { content: "·"; color: var(--ink); opacity: .5; margin: 0 1px; }
+.c .tr .more { font: 700 7.5px/10px var(--body); color: #fff; background: var(--ink); border-radius: 6px; padding: 0 3px; margin-left: 2px; }
+/* D. 그림 칸 고정 + 시너지 막대 */
+.d { grid-template-rows: 62px auto; }
+.d .pr { padding-top: 7px; height: 62px; }
+.d .bars { display: flex; width: calc(100% - 8px); height: 5px; border-radius: 3px; overflow: hidden; border: 1px solid var(--ink); margin: 2px auto 0; }
+.d .bars i { flex: 1; background: var(--c); }
+.d .bars i + i { border-left: 1px solid var(--ink); }
+.d .tr2 { display: grid; justify-items: center; padding: 1px 2px 3px; }
+.d .tr2 i { font: 700 7.5px/9px var(--body); font-style: normal; color: var(--ink); opacity: .78; white-space: nowrap; letter-spacing: -.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">카드 원정대 · 상점</span>
+    <h1>상점 유닛 카드 4안</h1>
+    <p class="lead">시너지가 3개인 유닛(견습 궁수 · 매사냥꾼 · 견습 마법사)은 시너지 줄이 세 줄을 차지해서 딱지 그림이 눌립니다. 아래는 폰 화면(가로 390) 기준 실제 크기의 상점 줄이고, 같은 다섯 장을 네 가지 방식으로 그렸습니다. 아래쪽은 시너지 3개 카드를 크게 본 것입니다.</p>
+  </header>
+
+  <section id="now">
+    <div class="tag"><b>지금</b><h2>시너지마다 한 줄</h2></div>
+    <div class="body">
+      <div class="demo"><div class="shopbox"><div class="srow" data-v="now"></div></div><div class="zoom" data-z="now"></div></div>
+      <div class="side"><ul class="pts">
+        <li><b>문제</b>: 카드 높이는 그대로인데 글자 줄이 늘어나 그림 칸이 줄어든다. 시너지 1개 카드와 3개 카드의 딱지 크기가 눈에 띄게 다르다.</li>
+        <li>시너지 이름이 길면(스승과 제자) 잘린다.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="a">
+    <div class="tag"><b>A</b><h2>약자 도장 한 줄</h2></div>
+    <div class="body">
+      <div class="demo"><div class="shopbox"><div class="srow" data-v="a"></div></div><div class="zoom" data-z="a"></div></div>
+      <div class="side"><ul class="pts">
+        <li><b>방식</b>: 시너지를 색 동그라미 + 한 글자(견·야·질)로 이름 아래 한 줄에. 판 왼쪽 시너지 레일의 약자와 같은 글자라 바로 연결된다.</li>
+        <li><b>장점</b>: 시너지 수와 상관없이 글자 칸 높이가 같아 딱지 크기가 모두 같다. 가장 단순하게 고칠 수 있다.</li>
+        <li><b>단점</b>: 이름 전체는 카드를 눌러 정보창에서 본다. 처음엔 약자가 낯설 수 있다.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="b">
+    <div class="tag"><b>B</b><h2>그림 옆 꼬리표</h2></div>
+    <div class="body">
+      <div class="demo"><div class="shopbox"><div class="srow" data-v="b"></div></div><div class="zoom" data-z="b"></div></div>
+      <div class="side"><ul class="pts">
+        <li><b>방식</b>: 시너지를 카드 오른쪽 테에서 삐져나온 책갈피 꼬리표로. 글자 칸에는 이름만 남는다.</li>
+        <li><b>장점</b>: 그림 칸이 가장 크다. 보드게임 카드의 색인 탭처럼 보여 재질과 어울린다.</li>
+        <li><b>단점</b>: 꼬리표가 딱지 오른쪽을 조금 덮는다. 보유 수(1장·★2!) 표시와 자리가 겹쳐서 그 표시는 왼쪽 아래로 옮겨야 한다.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="c">
+    <div class="tag"><b>C</b><h2>한 줄 이름 + 남은 수</h2></div>
+    <div class="body">
+      <div class="demo"><div class="shopbox"><div class="srow" data-v="c"></div></div><div class="zoom" data-z="c"></div></div>
+      <div class="side"><ul class="pts">
+        <li><b>방식</b>: 시너지 이름을 점으로 이어 한 줄에. 넘치면 들어가는 만큼만 보이고 나머지는 "+1"로 줄인다.</li>
+        <li><b>장점</b>: 대부분의 이름을 그대로 읽을 수 있고 높이는 한 줄로 고정된다.</li>
+        <li><b>단점</b>: 3개짜리는 하나가 숨겨진다. 어떤 것이 숨는지는 순서에 달려 있다.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="d">
+    <div class="tag"><b>D</b><h2>그림 칸 고정 + 색 막대</h2></div>
+    <div class="body">
+      <div class="demo"><div class="shopbox"><div class="srow" data-v="d"></div></div><div class="zoom" data-z="d"></div></div>
+      <div class="side"><ul class="pts">
+        <li><b>방식</b>: 딱지 칸 높이를 고정하고, 그 아래 시너지 색을 나란히 나눈 막대 하나 + 작은 이름 한 줄(견습·야생·질풍).</li>
+        <li><b>장점</b>: 딱지 크기가 항상 같고, 색 막대로 시너지 수와 종류를 한눈에 본다.</li>
+        <li><b>단점</b>: 이름 글씨가 가장 작다. 색만으로 구분하기 어려운 시너지(베테랑·장인 갈색 계열)가 있다.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <div class="reco">
+    <h2>추천</h2>
+    <p>A안(약자 도장)을 추천합니다. 시너지 레일과 같은 약자·색을 써서 판과 상점이 연결되고, 고치는 범위가 가장 작습니다. 그림을 가장 크게 보여 주는 쪽이 중요하면 B안이 좋습니다.</p>
+  </div>
+</div>
+<script src="../game/data.js"></script>
+<script src="../game/art.js"></script>
+<script src="../v4/data4.js"></script>
+<script>
+(() => {
+  const V = window.V4, TB = [null, '#cfcabd', '#86c991', '#7eaaea', '#ad8be6', '#efc33f'];
+  for (const d of V.UNITS) ART.TIER_BG[d.id] = TB[d.t];
+  const ROW = ['archer', 'squire', 'apprentice', 'pyro', 'hunter'];
+  const ZOOM = ['archer', 'squire'];
+  const tr = (d) => d.traits.map((k) => V.TRAITS[k]);
+  const img = (d) => ART.discURL(d.id, 0, d.cls, null, 96);
+  const style = (d) => `--cc:${V.CLS[d.cls].col};--tc:var(--t${d.t})`;
+  const body = {
+    now: (d) => `<span class="pr"><img src="${img(d)}" alt=""></span><span class="txt"><b>${d.name}</b><span class="tr">${tr(d).map((t) => `<i style="--c:${t.col}">${t.name}</i>`).join('')}</span></span>`,
+    a: (d) => `<span class="pr"><img src="${img(d)}" alt=""></span><span class="txt"><b>${d.name}</b><span class="tr">${tr(d).map((t) => `<i style="--c:${t.col}" title="${t.name}">${t.short}</i>`).join('')}</span></span>`,
+    b: (d) => `<span class="pr"><img src="${img(d)}" alt=""><span class="tabs">${tr(d).map((t) => `<i style="--c:${t.col}" title="${t.name}">${t.short}</i>`).join('')}</span></span><span class="txt"><b>${d.name}</b></span>`,
+    c: (d) => { const T = tr(d), show = T.length > 2 ? T.slice(0, 2) : T; return `<span class="pr"><img src="${img(d)}" alt=""></span><span class="txt"><b>${d.name}</b><span class="tr">${show.map((t) => `<i style="--c:${t.col}">${t.name.replace(/ /g, '')}</i>`).join('')}${T.length > show.length ? `<span class="more">+${T.length - show.length}</span>` : ''}</span></span>`; },
+    d: (d) => `<span class="pr"><img src="${img(d)}" alt=""></span><span class="txt"><b>${d.name}</b><span class="bars">${tr(d).map((t) => `<i style="--c:${t.col}"></i>`).join('')}</span><span class="tr2"><i>${tr(d).map((t) => t.name.replace(/ /g, '')).join('·')}</i></span></span>`,
+  };
+  const card = (v, id) => { const d = V.DEF['unit:' + id]; return `<div class="card ${v}" style="${style(d)}"><span class="cost">${d.t}</span>${body[v](d)}</div>`; };
+  for (const el of document.querySelectorAll('[data-v]')) el.innerHTML = ROW.map((id) => card(el.dataset.v, id)).join('');
+  for (const el of document.querySelectorAll('[data-z]')) el.innerHTML = ZOOM.map((id) => `<div class="cardwrap" style="width:64px;height:118px;display:grid">${card(el.dataset.z, id)}</div>`).join('');
+})();
+</script>
+</body>
+</html>
