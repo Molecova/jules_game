@@ -298,16 +298,19 @@
     rollAll(R.round === 1);
     if (R.round === 1 && !allUnits().length) starterRow();
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
+    // 야영지: 일정 확률로 야습(정예급 적). 이겨야 쉴 수 있다
+    if (n.k === 'camp' && Math.random() < CAMP_AMBUSH) { R.node.ambush = true; R.enemies = genEnemies('elite'); }
     R.mode = R.enemies.length ? 'fight' : 'rest';
     if (quiet) return inc;
     ui.sel = null; ui.tab = 'unit';
     showPlay();
     if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
-    if (n.k === 'camp') openCamp(); else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
+    if (n.k === 'camp') { if (R.node.ambush) toast('야습! 정예급 적이 야영지를 덮쳤습니다. 이기면 쉴 수 있어요'); else openCamp(); } else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
     else if (n.k === 'shop') toast('암시장: 상점 등급 확률 +1, 다시 뽑기 3번 무료');
     return inc;
   }
+  const CAMP_AMBUSH = 0.35;
   function finishNode() {
     const n = R.node;
     R.pos = n.id; R.path.push(n.id); R.lastNode = n; R.node = null; R.enemies = []; R.mode = 'map';
@@ -399,6 +402,7 @@
       if (has('phoenix')) { R.relics.splice(R.relics.indexOf('phoenix'), 1); toast('불사조 깃털이 타올라 원정이 이어집니다'); return finishNode(); }
       return gameOver();
     }
+    if (R.node.ambush) { R.enemies = []; R.mode = 'rest'; renderPlay(); return openCamp(); } // 야습을 물리치면 야영
     if (kind === 'elite') return pickReward('정예 전리품', '한 등급 높은 카드 하나를 고르세요', eliteChoices(), finishNode);
     if (kind === 'boss') {
       if (R.act >= LAST_ACT) return finishNode();
@@ -1616,16 +1620,35 @@
     ]);
   }
   function openTreasure() { relicPick('보물', () => renderPlay()); }
+  // 대장간: 공짜 혜택 대신 값을 치르거나 위험을 지는 선택만
   function openForge() {
-    const dupes = R.bench.map((c, i) => [c, i]).filter(([c]) => c && c.kind !== 'unit' && c.star === 1);
-    const items = R.bench.map((c, i) => [c, i]).filter(([c]) => c && c.kind === 'item');
+    const benchOf = (f) => R.bench.map((c, i) => [c, i]).filter(([c]) => c && f(c));
+    const dupes = benchOf((c) => c.kind !== 'unit' && c.star === 1);
+    const items = benchOf((c) => c.kind === 'item' && !def(c).special);
+    const temper = benchOf((c) => c.kind !== 'unit' && c.star < 3 && !def(c).special);
+    const cheapest = dupes.length ? Math.min(...dupes.map(([c]) => def(c).t * 2)) : 0;
     const opts = [];
-    opts.push({ label: '복제', desc: dupes.length ? '창고의 ★1 스킬·아이템 하나를 그대로 하나 더' : '창고에 ★1 스킬·아이템이 없어요', disabled: !dupes.length, go: () => pickFromBench('복제할 카드', dupes, (c) => { const n = mk(c.kind, c.id); take(n); gain(n); toast(`${def(c).name} 복제`); }) });
-    opts.push({ label: '개조', desc: items.length ? '아이템 하나를 같은 등급의 다른 클래스 아이템으로' : '창고에 아이템이 없어요', disabled: !items.length, go: () => pickFromBench('개조할 아이템', items, (c, i) => {
-      const d = def(c), cand = ITEMS.filter((x) => x.t === d.t && x.cls !== d.cls);
-      const n = pick(cand); giveBack({ kind: 'item', id: c.id, star: 1 }); c.id = n.id; take(c); R.bench[i] = c; toast(`${d.name} → ${n.name}`); tryMerge('item', c.id, c.star);
+    opts.push({ label: '복제', desc: dupes.length ? '창고의 ★1 스킬·아이템 하나를 하나 더(등급 × 2골드)' : '창고에 ★1 스킬·아이템이 없어요', disabled: !dupes.length || R.gold < cheapest, go: () => pickFromBench('복제할 카드(등급 × 2골드)', dupes.filter(([c]) => R.gold >= def(c).t * 2), (c) => { R.gold -= def(c).t * 2; const n = mk(c.kind, c.id); take(n); gain(n); toast(`${def(c).name} 복제 · −${def(c).t * 2}골드`); }) });
+    opts.push({ label: '담금질', desc: temper.length ? '스킬·아이템 하나: 60% 확률로 ★+1, 40% 확률로 부서짐' : '담금질할 칩이 없어요', disabled: !temper.length, go: () => pickFromBench('담금질할 카드', temper, (c, i) => {
+      if (Math.random() < 0.6) { const k = keyOf(c.kind, c.id); R.pool[k] = Math.max(0, (R.pool[k] || 0) - (copies(c.star + 1) - copies(c.star))); c.star++; toast(`${def(c).name} ★${c.star}!`); tryMerge(c.kind, c.id, c.star); }
+      else { R.bench[i] = null; giveBack(c); toast(`${def(c).name}이(가) 부서졌습니다`); }
     }) });
-    opts.push({ label: '고철 팔기', desc: '골드 +4', go: () => { R.gold += 4; } });
+    opts.push({ label: '단조', desc: items.length >= 2 ? '아이템 둘을 녹여 한 등급 높은 무작위 아이템 하나(첫째 아이템의 클래스)' : '창고에 아이템이 둘 이상 있어야 해요', disabled: items.length < 2, go: () => pickFromBench('녹일 아이템 1', items, (a, ia) => {
+      const rest = items.filter(([c]) => c !== a);
+      setTimeout(() => pickFromBench('녹일 아이템 2', rest, (b, ib) => {
+        const da = def(a), db = def(b), t = Math.min(4, Math.max(da.t, db.t) + 1);
+        const cand = POOL.item.filter((x) => x.t === t && x.cls === da.cls && R.pool[keyOf('item', x.id)] > 0);
+        R.bench[ia] = null; R.bench[ib] = null; giveBack(a); giveBack(b);
+        const n = cand.length ? mk('item', pick(cand).id) : null;
+        if (n) { take(n); gain(n); toast(`${da.name} + ${db.name} → ${def(n).name}`); } else toast('녹였지만 쓸 만한 것이 나오지 않았어요');
+        renderPlay();
+      }), 0);
+    }) });
+    opts.push({ label: '개조 (1골드)', desc: items.length ? '아이템 하나를 같은 등급의 다른 클래스 아이템으로' : '창고에 아이템이 없어요', disabled: !items.length || R.gold < 1, go: () => pickFromBench('개조할 아이템', items, (c, i) => {
+      const d = def(c), cand = POOL.item.filter((x) => x.t === d.t && x.cls !== d.cls);
+      R.gold -= 1; const n = pick(cand); giveBack({ kind: 'item', id: c.id, star: 1 }); c.id = n.id; take(c); R.bench[i] = c; toast(`${d.name} → ${n.name}`); tryMerge('item', c.id, c.star);
+    }) });
+    opts.push({ label: '지나간다', desc: '아무것도 하지 않는다', go: () => {} });
     choice('대장간', '망치 소리가 울립니다', opts);
   }
   function pickFromBench(title, list, fn) {
