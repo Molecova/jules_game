@@ -407,6 +407,7 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 /* 시트(보상·이벤트·메뉴) */
 .sheet { position: absolute; inset: 0; z-index: 30; background: rgba(35,42,59,.55); display: grid; align-items: end; }
 .sheet .in { background: var(--paper); border-top: 3px solid var(--ink); border-radius: 14px 14px 0 0; padding: 16px var(--g) calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; max-height: 100%; overflow: auto; }
+.scene { display: block; width: 100%; height: auto; aspect-ratio: 16 / 7; min-width: 0; box-sizing: border-box; border: 2px solid #232a3b; border-radius: 8px; }
 .sheet h2 { margin: 0; font: 400 20px var(--display); text-wrap: balance; }
 .eyebrow { font-size: 11px; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
 .picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -783,6 +784,7 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
 <script src="terrain4.js"></script>
 <script src="vfx4.js"></script>
 <script src="battle4.js"></script>
+<script src="scenes4.js"></script>
 <script src="game4.js"></script>
 </body>
 </html>

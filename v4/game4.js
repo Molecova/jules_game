@@ -307,7 +307,7 @@
     if (inc) toast(`라운드 ${R.round}: 수입 +${inc.total}골드 (기본 ${inc.base} · 이자 ${inc.interest})`);
     else toast('상점 카드를 탭해 정보를 보고 구매 버튼으로 사세요. 딱지를 탭하면 능력치와 장비가 보입니다');
     if (n.k === 'camp') { if (R.node.ambush) toast('야습! 정예급 적이 야영지를 덮쳤습니다. 이기면 쉴 수 있어요'); else openCamp(); } else if (n.k === 'event') openEvent(); else if (n.k === 'forge') openForge(); else if (n.k === 'treasure') openTreasure();
-    else if (n.k === 'shop') toast('암시장: 상점 등급 확률 +1, 다시 뽑기 3번 무료');
+    else if (n.k === 'shop') choice('암시장', '천막 아래 진귀한 물건이 모여 있습니다', [{ label: '상점 둘러보기', desc: '상점 등급 확률 +1, 다시 뽑기 3번 무료', go: () => {} }]);
     return inc;
   }
   const CAMP_AMBUSH = 0.35;
@@ -1599,10 +1599,23 @@
       closeSheet(); done();
     };
   }
+  function sceneMarkup(title) {
+    return typeof window.SCENES4?.[title] === 'function' ? `<canvas class="scene" role="img" aria-label="${esc(title)} 장면"></canvas>` : '';
+  }
+  function drawScene(title) {
+    const canvas = $('sheetIn').querySelector('canvas.scene'), paint = window.SCENES4?.[title];
+    if (!canvas || typeof paint !== 'function') return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(320 * dpr); canvas.height = Math.round(140 * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(canvas.width / 320, 0, 0, canvas.height / 140, 0, 0);
+    paint(ctx, 320, 140);
+  }
   function relicPick(title, done) {
     const pool = Object.keys(RELICS).filter((k) => !R.relics.includes(k) && !(k === 'phoenix' && R.relics.includes('phoenix')));
     const opts = AC.shuffle(pool).slice(0, 3);
-    openSheet(`<span class="eyebrow">${title}</span><h2>유물 하나를 고르세요</h2><div class="relics">${opts.map((k, i) => `<button class="relic" data-r="${i}"><b>${RELICS[k].name}</b><span>${hl(RELICS[k].desc)}</span></button>`).join('')}</div>`);
+    openSheet(`${sceneMarkup(title)}<span class="eyebrow">${title}</span><h2>유물 하나를 고르세요</h2><div class="relics">${opts.map((k, i) => `<button class="relic" data-r="${i}"><b>${RELICS[k].name}</b><span>${hl(RELICS[k].desc)}</span></button>`).join('')}</div>`);
+    drawScene(title);
     $('sheetIn').onclick = (e) => {
       const b = e.target.closest('[data-r]'); if (!b) return;
       const k = opts[+b.dataset.r]; R.relics.push(k); if (k === 'bigbag') fixBench(); SFX.play('coin'); toast(`유물: ${RELICS[k].name}`);
@@ -1610,7 +1623,8 @@
     };
   }
   function choice(title, text, opts) {
-    openSheet(`<span class="eyebrow">${title}</span><h2>${text}</h2><div class="relics">${opts.map((o, i) => `<button class="relic" data-o="${i}" ${o.disabled ? 'disabled' : ''}><b>${o.label}</b><span>${o.desc || ''}</span></button>`).join('')}</div>`);
+    openSheet(`${sceneMarkup(title)}<span class="eyebrow">${title}</span><h2>${text}</h2><div class="relics">${opts.map((o, i) => `<button class="relic" data-o="${i}" ${o.disabled ? 'disabled' : ''}><b>${o.label}</b><span>${o.desc || ''}</span></button>`).join('')}</div>`);
+    drawScene(title);
     $('sheetIn').onclick = (e) => { const b = e.target.closest('[data-o]'); if (!b || b.disabled) return; closeSheet(); opts[+b.dataset.o].go(); renderPlay(); };
   }
   function openCamp() {
