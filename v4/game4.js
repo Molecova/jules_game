@@ -53,6 +53,7 @@
 
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
+    if (!DIFF[diff]) diff = 'normal';
     R = {
       v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
       board: [], bench: Array(V.BENCH).fill(null), shop: { unit: [], skill: [], item: [] }, locked: { unit: false, skill: false, item: false },
@@ -284,7 +285,7 @@
   function income() {
     const intMax = 5 + (has('vault') ? 2 : 0);
     const interest = Math.min(intMax, Math.floor(R.gold / 10));
-    const base = 5 + (has('crown') ? 1 : 0) + (DIFF[R.diff || 'normal'].income || 0);
+    const base = 5 + (has('crown') ? 1 : 0) + ((DIFF[R.diff] || DIFF.normal).income || 0);
     return { base, interest, total: base + interest };
   }
   function enterNode(n, quiet) {
@@ -1845,6 +1846,7 @@
     for (const k of ['unit', 'skill', 'item']) if (R.shop && R.shop[k]) R.shop[k] = R.shop[k].map((c) => (known(c) ? c : null));
     // 스킬 칩 1칸으로 바뀐 뒤: 칩이 둘 이상 끼워진 딱지는 첫 칩만 남기고 나머지는 창고로(넘치면 판 위 창고 딱지)
     for (const u of [...R.board, ...R.bench.filter((c) => c && c.kind === 'unit')]) while (u.skills.length > skillSlots(u)) toBench(u.skills.pop());
+    if (!DIFF[R.diff]) R.diff = 'normal'; // 없어진 난이도(쉬움)로 저장된 판
     fixBench(); if (R.mode === 'fight' && R.node && R.enemies.length) showPlay(); else showMap();
   };
   $('codexBtn').onclick = openCodex;
