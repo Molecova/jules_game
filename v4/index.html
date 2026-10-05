@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>카드 원정대 v4</title>
+<title>Paper Token Forces</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
 <style>
 /* 폰 한 화면(스크롤 없음): HUD → 보드(남는 높이) → 시너지 → 창고 → 상점(탭 3 × 5장) → 행동 버튼.
    보드게임 테이블 위 종이·플라스틱 톤 하나로 고정(라이트/다크 공통). 데스크톱은 폰 프레임. */
@@ -374,8 +374,14 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 
 /* 타이틀 */
 .titlebox { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding-inline: var(--g); text-align: center; }
-.logo { font: 400 46px/1 var(--display); color: var(--ink); text-shadow: 3px 3px 0 var(--gold); }
-.logo small { display: block; font: 600 13px var(--body); color: var(--muted); text-shadow: none; margin-top: 8px; letter-spacing: .1em; }
+/* 타이틀 로고: 좁은 대문자 세 줄, PAPER 는 찢은 종이 띠 위, 아래 점선 전선과 깃대 */
+.logo { margin: 0; display: grid; justify-items: center; gap: 0; font: 800 54px/.9 "Barlow Condensed", var(--display); letter-spacing: .05em; color: var(--ink); }
+.logo .lw { display: block; }
+.logo .paper { color: var(--card); background: var(--ink); padding: 6px 14px 0; margin-bottom: 4px; transform: rotate(-2deg); clip-path: polygon(0 5%, 18% 0, 40% 6%, 62% 1%, 84% 6%, 100% 2%, 99% 95%, 80% 100%, 58% 94%, 36% 100%, 14% 95%, 1% 100%); }
+.logo .front { position: relative; width: 190px; margin-top: 12px; border-top: 2px dashed var(--stamp); }
+.logo .front::before, .logo .front::after { content: ""; position: absolute; top: -15px; width: 2px; height: 15px; background: var(--ink); }
+.logo .front::before { left: 0; } .logo .front::after { right: 0; }
+.logo small { display: block; font: 600 12px var(--body); color: var(--muted); margin-top: 10px; letter-spacing: .08em; }
 .fan { position: relative; width: 280px; height: 150px; }
 .ftok { position: absolute; width: 84px; height: 84px; }
 .ftok.t0 { left: 0; top: 50px; transform: rotate(-12deg); } .ftok.t1 { left: 58px; top: 10px; transform: rotate(-4deg); } .ftok.t2 { left: 98px; top: 40px; width: 96px; height: 96px; } .ftok.t3 { left: 160px; top: 6px; transform: rotate(6deg); } .ftok.t4 { left: 200px; top: 56px; transform: rotate(12deg); }
@@ -675,7 +681,7 @@ em.hn, .urow > span em, .ladder em, .ddesc em { font-style: normal; font-weight:
   <div class="screens">
     <section class="screen" id="scr-title">
       <div class="titlebox">
-        <div class="logo">카드 원정대<small>종이 딱지 오토배틀 로그라이크</small></div>
+        <h1 class="logo" aria-label="Paper Token Forces"><span class="lw paper">PAPER</span><span class="lw">TOKEN</span><span class="lw">FORCES</span><span class="front" aria-hidden="true"></span><small>페이퍼 토큰 포스 · 종이 딱지 오토배틀 로그라이크</small></h1>
         <div class="fan" id="fan"></div>
         <p class="tagline">상점에서 딱지와 스킬 칩, 아이템을 모아 같은 카드 3장으로 합성하세요. 한 번 지면 원정이 끝납니다.</p>
         <div class="tbtns">

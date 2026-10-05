@@ -1,6 +1,6 @@
 # 오토체스 탑뷰 2D 시안
 
-## 카드 원정대 v4 — `v4/index.html` (폰 한 화면)
+## Paper Token Forces (페이퍼 토큰 포스, v4) — `v4/index.html` (폰 한 화면)
 
 오토체스식 상점·합성으로 바꾼 버전. 설계는 `docs/v4-design.md`, 화면 시안은 `concepts/v4-phone.html`.
 

@@ -1,4 +1,4 @@
-/* 카드 원정대 v4 — 원정·상점·창고·합성·지도·전투 화면 */
+/* Paper Token Forces (v4) — 원정·상점·창고·합성·지도·전투 화면 */
 (function () {
   'use strict';
   const GD = window.GD, V = window.V4, ART = window.ART, SFX = window.SFX;
@@ -1787,7 +1787,7 @@
   // ---------- 메뉴 · 도감 ----------
   function openMenu() {
     const inRun = !!R;
-    openSheet(`<span class="eyebrow">메뉴</span><h2>카드 원정대</h2><div class="relics">
+    openSheet(`<span class="eyebrow">메뉴</span><h2>Paper Token Forces</h2><div class="relics">
       ${inRun ? `<button class="relic" data-m="relics"><b>유물 ${R.relics.length}개</b><span>${R.relics.map((k) => RELICS[k].name).join(', ') || '아직 없음'}</span></button>` : ''}
       <button class="relic" data-m="codex"><b>도감</b><span>유닛 · 스킬 · 아이템 · 유물</span></button>
       <button class="relic" data-m="help"><b>규칙</b><span>상점 · 합성 · 레벨 · 수입</span></button>
