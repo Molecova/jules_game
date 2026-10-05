@@ -694,7 +694,7 @@
       const unit = c.kind === 'unit';
       return `<button class="card k-${c.kind} tier${d.t}${n >= 2 ? ' ready' : ''}${s && s.c === c ? ' sel' : ''}" data-s="${i}" data-k="${k}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}" aria-label="${d.name} ${d.t}골드${unit ? ' · ' + d.traits.map((t) => TRAITS[t].name).join(' · ') : ''}">
         <span class="cost">${d.t}</span>${unit ? '' : `<span class="cl">${CLS[d.cls].short}</span>`}${n ? `<span class="own">${n >= 2 ? '★2!' : n + '장'}</span>` : ''}
-        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}">${TRAITS[t].name.replace(/ /g, '')}</i>`).join('')}</span></span>` : `<b>${d.name}</b>${d.job ? `<span class="tr jt"><i style="--c:${TRAITS[d.job].col}">${TRAITS[d.job].name}</i></span>` : ''}`}<span class="dsc">${hl(unit ? d.trait : d.desc)}</span></button>`;
+        <span class="pr"><img src="${imgOf(c, 84)}" alt=""></span>${unit ? `<span class="txt"><b>${d.name}</b><span class="tr">${d.traits.map((t) => `<i style="--c:${TRAITS[t].col}" title="${TRAITS[t].name}">${TRAITS[t].short}</i>`).join('')}</span></span>` : `<b>${d.name}</b>${d.job ? `<span class="tr jt"><i style="--c:${TRAITS[d.job].col}">${TRAITS[d.job].name}</i></span>` : ''}`}<span class="dsc">${hl(unit ? d.trait : d.desc)}</span></button>`;
     }).join('');
     $('lvBtn').textContent = R.lv >= MAXLV ? 'MAX' : `▲ ${lvCost()}골드`; $('lvBtn').disabled = R.lv >= MAXLV;
     $('encounterHint').hidden = !R.encounter || !!B || R.mode !== 'fight';

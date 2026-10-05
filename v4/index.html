@@ -203,6 +203,10 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
 .card .tr { width: 100%; display: grid; justify-items: center; padding: 0 2px 3px; pointer-events: none; }
 .card .tr i { max-width: 100%; font: 700 8.5px/11px var(--body); font-style: normal; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.4px; }
 .card .tr i::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--c); margin-right: 2px; vertical-align: 0; }
+/* 유닛 카드 시너지: 약자 도장 한 줄(시너지 수와 상관없이 높이가 같아 딱지 크기가 같다) */
+.card.k-unit .tr { display: flex; justify-content: center; gap: 2px; padding: 1px 2px 3px; }
+.card.k-unit .tr i { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--c); color: #fff; font: 400 8.5px/12px var(--display); text-align: center; border: 1px solid var(--ink); letter-spacing: 0; overflow: visible; }
+.card.k-unit .tr i::before { content: none; }
 /* 이름·특성 글자 뒤 바탕(좁은 화면에서 초상과 겹칠 때 읽히게) */
 .card.k-unit .txt { width: 100%; display: grid; background: linear-gradient(rgba(255,255,255,0), color-mix(in srgb, var(--tc) 88%, transparent) 30%); position: relative; z-index: 1; }
 .cost { position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2b0, var(--gold) 55%, var(--golddk)); border: 2px solid var(--ink); font: 700 11px/18px var(--body); text-align: center; }
