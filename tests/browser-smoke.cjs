@@ -26,7 +26,7 @@ const { chromium } = require('playwright');
     await page.locator('[data-df="normal"]').click();
     await page.locator('[data-go]').click();
     await page.locator('#scr-map').waitFor({ state: 'visible' });
-    assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem('card-expedition-v4')).map.floors.length === 6));
+    assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem('card-expedition-v4')).map.floors.length === 9));
     // Reachable nodes animate continuously; skip Playwright's stability wait.
     await page.locator('.node.next').first().click({ force: true });
     await page.locator('#mapGo').click();

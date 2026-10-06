@@ -22,7 +22,7 @@ fs.mkdirSync(out, { recursive: true });
       }));
       __g.showMap();
     });
-    for (let step = 0; step < 30; step++) {
+    for (let step = 0; step < 45; step++) {
       // Every map boundary goes through the actual Continue control.
       await p.reload(); await p.locator('#contBtn').click();
       assert.equal(await p.locator('#saveNotice').isVisible(), false);
@@ -57,13 +57,13 @@ fs.mkdirSync(out, { recursive: true });
       if (await p.evaluate(() => __g.ui.screen === 'over')) break;
     }
     const ending = await p.evaluate(() => ({ text: document.getElementById('overStamp').textContent, act: __g.R.act, round: __g.R.round, screen: __g.ui.screen, saved: localStorage.getItem('card-expedition-v4'), backup: localStorage.getItem('card-expedition-v4:backup'), best: JSON.parse(localStorage.getItem('cardExpeditionV4Best')) }));
-    assert.equal(visited.length, 30); assert.equal(ending.text, '원정 완수!');
-    assert.equal(ending.round, 30); assert.equal(ending.act, 5); assert.equal(ending.screen, 'over');
+    assert.equal(visited.length, 45); assert.equal(ending.text, '원정 완수!');
+    assert.equal(ending.round, 45); assert.equal(ending.act, 5); assert.equal(ending.screen, 'over');
     assert.equal(ending.saved, null); assert.equal(ending.backup, null);
     assert.equal(ending.best.runs, 1); assert.equal(fights.filter(f => f.kind === 'boss').length, 5);
     assert.deepEqual(errors, []);
     await p.screenshot({ path: path.join(out, 'run-complete.png') });
     fs.writeFileSync(path.join(out, 'run-complete.json'), JSON.stringify({ visited, fights, ending, errors }, null, 2));
-    console.log('PASS all 5 acts, 30 nodes, 5 bosses, map/result reloads, one clear record, deleted save/backup; JavaScript exceptions 0');
+    console.log('PASS all 5 acts, 45 nodes, 5 bosses, map/result reloads, one clear record, deleted save/backup; JavaScript exceptions 0');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -9,7 +9,7 @@
       const s = JSON.parse(JSON.stringify(input)), V = global.V4, M = global.GD.MONSTERS;
       const require = (ok) => { if (!ok) throw new Error('Invalid save'); };
       require(object(s) && s.v === 4 && (s.saveVersion == null || s.saveVersion === VERSION));
-      require(int(s.act, 1, 5) && int(s.round, 0, 30) && int(s.lv, 3, 9) && int(s.gold, 0) && int(s.xp, 0));
+      require(int(s.act, 1, 5) && int(s.round, 0, 5 * (V.ACT_LEN || 6)) && int(s.lv, 3, 9) && int(s.gold, 0) && int(s.xp, 0));
       require(['map', 'fight', 'rest', 'result', 'reward'].includes(s.mode));
       require(Array.isArray(s.relics) && s.relics.every(k => typeof k === 'string'));
       s.relics = [...new Set(s.relics.filter(k => Object.hasOwn(V.RELICS, k)))];
@@ -45,7 +45,7 @@
         s.shop[k] = s.shop[k].map(c => c && !V.DEF[c.kind + ':' + c.id] ? null : c);
         for (const c of s.shop[k]) if (c) { card(c); require(c.kind === k); }
       }
-      require(object(s.map) && Array.isArray(s.map.floors) && s.map.floors.length === 6 && !!M[s.map.boss]?.boss);
+      require(object(s.map) && Array.isArray(s.map.floors) && [6, V.ACT_LEN || 6].includes(s.map.floors.length) && !!M[s.map.boss]?.boss);
       const nodes = new Set();
       s.map.floors.forEach((floor, f) => {
         require(Array.isArray(floor) && floor.length > 0 && floor.length <= 3);
@@ -57,7 +57,7 @@
       for (const n of s.map.floors.flat()) require(n.next.every(id => nodes.has(id)));
       require((s.pos == null || nodes.has(s.pos)) && Array.isArray(s.path) && s.path.every(id => nodes.has(id)));
       if (s.node) {
-        require(object(s.node) && nodes.has(s.node.id) && Object.hasOwn(V.NODE, s.node.k) && int(s.node.f, 0, 5));
+        require(object(s.node) && nodes.has(s.node.id) && Object.hasOwn(V.NODE, s.node.k) && int(s.node.f, 0, s.map.floors.length - 1));
         require(!s.node.ambush || ['camp', 'mimic', 'knight', true].includes(s.node.ambush));
         if (s.node.ambush === true) s.node.ambush = 'camp';
       }

@@ -397,13 +397,14 @@
 
   // 적 강도: 일반 적 한 마리의 체력·공격이 1막 대비 2막 2배 · 3막 4배 · 4막 8배 · 5막 15배가 되도록 막마다 맞춘 배수.
   // 막 안에서는 라운드마다 ×ramp(막 가운데가 기준). 정예전은 같은 라운드 일반전 대비 체력 합 1.5배·초당 피해 1.25배,
-  // 보스전은 막 마지막 일반전 대비 체력 합 3배·초당 피해 1.4배가 되도록 핵심 적(정예 0번·보스)마다 따로 맞췄다
+  // 보스전은 막 마지막 일반전 대비 체력 합 2배·초당 피해 1.2배가 되도록(처음 3배·1.4배로 맞춘 뒤 ×2/3·×6/7) 핵심 적(정예 0번·보스)마다 따로 맞췄다
   // (같은 막의 정예·보스끼리는 체력×공격이 같고, 체력과 공격의 비율은 원래 개성을 따른다). 난이도 배수는 여기에 곱한다.
+  const ACT_LEN = 9; // 한 막의 칸 수(첫 전투 1 + 중간 7 + 보스 1)
   const FOE = {
-    mult: [0, 1, 2, 4, 8, 15], ramp: 1.12,
+    mult: [0, 1, 2, 4, 8, 15], ramp: 1.08,
     normal: { hp: [0, 1.65, 1.936, 2.528, 3.916, 5.504], atk: [0, 1.18, 1.469, 2.044, 4.51, 6.354] },
     elite: { ogre: [0.807, 0.721], alpha: [0.825, 0.737], banditchief: [0.827, 0.739], dknight: [2.123, 3.007], gargoyle: [3.033, 4.295], banshee: [3.588, 5.082], giant: [3.676, 5.606], dragonkin: [6.483, 9.887], demonknight: [3.97, 6.055], frostgiant: [6.142, 9.944], yetichief: [8.865, 14.353], iceknight: [8.585, 13.899], archdemon: [10.518, 14.05], fallen: [24.442, 32.649], succubus: [36.488, 48.74] },
-    boss: { gobking: [2.593, 2.537], slimeking: [2.902, 2.839], lich: [5.608, 6.458], vampire: [5.109, 5.883], dragon: [7.037, 10.233], surt: [7.292, 10.604], icequeen: [14.267, 19.914], yetiking: [10.968, 15.309], abysslord: [20.315, 35.254], fallenking: [13.876, 24.079] },
+    boss: { gobking: [1.729, 2.175], slimeking: [1.935, 2.433], lich: [3.739, 5.535], vampire: [3.406, 5.043], dragon: [4.691, 8.771], surt: [4.861, 9.089], icequeen: [9.511, 17.069], yetiking: [7.312, 13.122], abysslord: [13.543, 30.218], fallenking: [9.251, 20.639] },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
@@ -457,5 +458,5 @@
     });
   }
 
-  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, DIFF, FOE };
+  global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, DIFF, FOE, ACT_LEN };
 })(window);

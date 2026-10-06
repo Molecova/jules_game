@@ -88,13 +88,13 @@
   // 지도
   // =====================================================================
   function genMap(act) {
-    const floors = [];
-    for (let f = 0; f < 5; f++) {
+    const L = V.ACT_LEN || 6, B = L - 1, floors = []; // 0층 전투 · 1~L-2층 · L-1층 보스
+    for (let f = 0; f < B; f++) {
       const n = 2 + rnd(2), xs = n === 2 ? [0.3, 0.7] : [0.18, 0.5, 0.82];
       floors.push(xs.map((x, i) => ({ id: `${act}-${f}-${i}`, f, x: x + runRand(-0.04, 0.04), k: null, next: [] })));
     }
-    floors.push([{ id: `${act}-5-0`, f: 5, x: 0.5, k: 'boss', next: [] }]);
-    for (let f = 0; f < 5; f++) {
+    floors.push([{ id: `${act}-${B}-0`, f: B, x: 0.5, k: 'boss', next: [] }]);
+    for (let f = 0; f < B; f++) {
       const a = floors[f], b = floors[f + 1];
       for (const n of a) {
         const s = b.slice().sort((p, q) => Math.abs(p.x - n.x) - Math.abs(q.x - n.x));
@@ -103,18 +103,29 @@
       }
       for (const m of b) if (!a.some((n) => n.next.includes(m.id))) a.slice().sort((p, q) => Math.abs(p.x - m.x) - Math.abs(q.x - m.x))[0].next.push(m.id);
     }
-    const W = { fight: 46, elite: 14, event: 12, camp: 9, forge: 8, shop: 8, treasure: 5 };
-    for (let f = 0; f < 5; f++) for (const n of floors[f]) {
+    const W = { fight: 60, elite: 14, event: 8, camp: 5, forge: 5, shop: 8, treasure: 4 };
+    for (let f = 0; f < B; f++) for (const n of floors[f]) {
       if (f === 0) { n.k = 'fight'; continue; }
       const keys = Object.keys(W).filter((k) => !(k === 'elite' && f < 2));
       n.k = keys[weighted(keys.map((k) => W[k]))];
     }
-    const mids = floors.slice(1, 5).flat();
-    if (!mids.some((n) => n.k === 'elite')) pick(floors.slice(2, 5).flat()).k = 'elite';
-    if (!mids.some((n) => n.k === 'shop')) pick(mids.filter((n) => n.k !== 'elite')).k = 'shop';
-    for (let f = 1; f < 5; f++) if (!floors[f].some((n) => n.k === 'fight' || n.k === 'elite')) pick(floors[f]).k = 'fight';
+    const mids = floors.slice(1, B).flat(), combat = (n) => n.k === 'fight' || n.k === 'elite';
+    const parents = (n) => floors.flat().filter((p) => p.next.includes(n.id));
+    if (!mids.some((n) => n.k === 'elite')) pick(floors.slice(2, B).flat()).k = 'elite';
+    // 비전투 칸이 경로에서 연달아 나오지 않게(앞 칸이 비전투면 전투로)
+    for (let f = 1; f < B; f++) for (const n of floors[f]) if (!combat(n) && parents(n).some((p) => !combat(p))) n.k = 'fight';
+    for (let f = 1; f < B; f++) if (!floors[f].some(combat)) pick(floors[f]).k = 'fight';
+    // 상점은 막마다 하나: 앞뒤가 전투이고, 그 층에 다른 전투 칸이 남는 자리에
+    if (!mids.some((n) => n.k === 'shop')) {
+      const kids = (n) => n.next.map((id) => floors.flat().find((x) => x.id === id));
+      const ok = mids.filter((n) => n.k === 'fight' && parents(n).every(combat) && kids(n).every((m) => m.k === 'boss' || combat(m)) && floors[n.f].filter(combat).length > 1);
+      const alt = mids.filter((n) => n.k === 'fight' && floors[n.f].filter(combat).length > 1);
+      const sh = pick(ok.length ? ok : alt.length ? alt : mids.filter((n) => n.k !== 'elite')); sh.k = 'shop';
+      for (const m of [...parents(sh), ...kids(sh)]) if (m.k !== 'boss' && !combat(m)) m.k = 'fight'; // 상점 앞뒤는 전투
+    }
     return { act, floors, boss: pick(ACTS[act].bosses) };
   }
+  const bossF = () => (R && R.map ? R.map.floors.length - 1 : (V.ACT_LEN || 6) - 1);
   const allNodes = () => R.map.floors.flat();
   const nodeById = (id) => allNodes().find((n) => n.id === id);
   function reachable() {
@@ -521,7 +532,7 @@
     $('eLv').textContent = 'Lv' + R.lv; $('eXpT').textContent = $('xpT').textContent; $('eXp').style.width = $('xpBar').style.width;
     const n = R.node, A = ACTS[R.act];
     if (ui.screen === 'map') { $('hWhere').textContent = `${R.act}막 ${A.name}`; $('hSub').textContent = `라운드 ${R.round} 완료`; }
-    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === 5 ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : R.encounter && R.mode === 'fight' ? R.encounter.name : `라운드 ${R.round}`; }
+    else if (n) { $('hWhere').textContent = `${R.act}막 · ${n.f === bossF() ? '' : n.f + 1 + '층 '}${NODE[n.k].name}`; $('hSub').textContent = B ? battleNote() : R.encounter && R.mode === 'fight' ? R.encounter.name : `라운드 ${R.round}`; }
   }
 
   // ---------- 이미지 ----------
@@ -641,11 +652,11 @@
     renderHud();
     const rc = reachable(), sel = nodeById(mapPick);
     const bossNote = sel && sel.k === 'boss' ? ` ${MONSTERS[R.map.boss].name}: ${BOSS_INFO[R.map.boss] || ''}` : '';
-    $('mapinfo').innerHTML = sel ? `<b>${sel.f === 5 ? '보스' : sel.f + 1 + '층'} · ${NODE[sel.k].name}</b><p>${NODE[sel.k].info}${esc(bossNote)}</p>
+    $('mapinfo').innerHTML = sel ? `<b>${sel.f === bossF() ? '보스' : sel.f + 1 + '층'} · ${NODE[sel.k].name}</b><p>${NODE[sel.k].info}${esc(bossNote)}</p>
       <div class="party">${R.board.map((u) => `<img src="${imgOf(u, 64)}" alt="${def(u).name}">`).join('')}<span class="deploy">출전 ${R.board.length}/${deployMax()} · 창고 ${R.bench.filter(Boolean).length}/${benchSize()} · 유물 ${R.relics.length}</span></div>` : '';
     $('legend').innerHTML = ['fight', 'elite', 'shop', 'forge', 'camp', 'event', 'treasure'].map((k) => `<span><img src="${nodeIcon(k, 32)}" alt="">${NODE[k].name}</span>`).join('');
     const box = $('mapbox'), Wd = box.clientWidth, Hd = box.clientHeight;
-    const pos = (n) => [n.x * Wd, 42 + (5 - n.f) * ((Hd - 72) / 5)];
+    const BF = bossF(), pos = (n) => [n.x * Wd, 36 + (BF - n.f) * ((Hd - 64) / BF)];
     box.querySelectorAll('.node,.floor').forEach((el) => el.remove());
     const pathSet = new Set(R.path);
     let svg = '';
@@ -656,14 +667,14 @@
     }
     $('mapsvg').innerHTML = svg;
     for (const fl of R.map.floors) {
-      const f = fl[0].f, flEl = document.createElement('span'); flEl.className = 'floor'; flEl.style.top = pos(fl[0])[1] + 'px'; flEl.textContent = f === 5 ? '보스' : `${f + 1}층`; box.appendChild(flEl);
+      const f = fl[0].f, flEl = document.createElement('span'); flEl.className = 'floor'; flEl.style.top = pos(fl[0])[1] + 'px'; flEl.textContent = f === BF ? '보스' : `${f + 1}층`; box.appendChild(flEl);
       for (const n of fl) {
         const b = document.createElement('button'), [x, y] = pos(n);
         const done = pathSet.has(n.id), here = n.id === R.pos, next = rc.includes(n.id);
         b.className = 'node' + (n.k === 'boss' ? ' boss' : '') + (done && !here ? ' done' : '') + (next ? ' next' : '') + (mapPick === n.id ? ' pick' : '');
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.innerHTML = `<img src="${nodeIcon(n.k, n.k === 'boss' ? 96 : 64)}" alt="">${here ? '<span class="here">현재</span>' : ''}`;
-        b.setAttribute('aria-label', `${f === 5 ? '보스' : f + 1 + '층'} ${NODE[n.k].name}${next ? ', 갈 수 있음' : ''}`);
+        b.setAttribute('aria-label', `${f === BF ? '보스' : f + 1 + '층'} ${NODE[n.k].name}${next ? ', 갈 수 있음' : ''}`);
         b.onclick = () => { if (next) { mapPick = n.id; SFX.play('click'); renderMap(); } else toast(done ? '이미 지나온 곳' : '아직 갈 수 없는 곳'); };
         box.appendChild(b);
       }
@@ -1958,7 +1969,7 @@
     $('overText').textContent = win ? `${boss ? boss.name : '화산의 주인'}이(가) 쓰러지고 심연의 문이 닫혔습니다. 원정대의 이름이 노래로 남을 것입니다.`
       : `${R.act}막 ${ACTS[R.act].name}${n.k ? ', ' + NODE[n.k].name : ''}에서 쓰러졌습니다.${(DIFF[R.diff] || {}).phoenix ? ' 불사조 깃털 유물이 있으면 한 번은 버틸 수 있습니다.' : ''}`;
     const m = Math.floor(R.stats.time / 60);
-    $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === 5 ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / ${LAST_ACT * 6}`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
+    $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === bossF() ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / ${LAST_ACT * (V.ACT_LEN || 6)}`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
     $('overTeam').innerHTML = R.board.map((u) => `<img src="${imgOf(u, 80)}" alt="${def(u).name}">`).join('') + R.relics.map((k) => `<span class="rpill">${RELICS[k].name}</span>`).join('');
     ui.tearUnit = R.board[0] ? R.board[0].id : 'squire';
     ui.winBoss = boss ? boss.id : 'dragon';

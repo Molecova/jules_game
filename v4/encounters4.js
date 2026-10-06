@@ -26,7 +26,7 @@
   let t=kind==='fight'&&r.act===1&&used.length<3?templates[[0,1,3][used.length]]:pick(choices);
   if(kind==='fight')used.push(t.id);
   let ids=[],info={id:t.id,name:t.name,tag:t.tag,hint:t.hint,core:t.core};
-  const budget=2.2+.4*r.round;
+  const budget=2.2+.4*r.round*6/(g.V4.ACT_LEN||6); // 적 수 예산: 한 막 6칸 시절 라운드로 환산
   if(kind==='boss'){
    const boss=r.map.boss,variants=templates.filter(x=>x.act===r.act&& !['summon','heal','channel'].includes(g.ENEMIES4.abilities[M[x.core].enemyAbility]?.action));
    t=pick(variants);ids=[boss,t.core,t.filler];
