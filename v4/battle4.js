@@ -271,12 +271,12 @@
 
     /** 막·라운드별 적 강화(V4.FOE). x.elite: 정예전의 핵심 적 */
     function foeMul(d, x) {
-      const r = R(), F = V.FOE, t = global.__tune || {}, df = t.foe || (V.DIFF[r.diff] || V.DIFF.normal).foe;
+      const r = R(), F = V.FOE, t = global.__tune || {}, D = V.DIFF[r.diff] || V.DIFF.normal, dfHp = t.foe || D.foeHp, dfAtk = t.foe || D.foeAtk;
       const act = Math.max(1, Math.min(5, r.act)), f = r.round - 6 * (act - 1), ramp = Math.pow(F.ramp, Math.max(1, Math.min(6, f)) - 3.5);
       const role = d.boss ? 'boss' : (x && x.elite) || d.elite ? 'elite' : 'normal';
       const nk = [F.normal.hp[act], F.normal.atk[act]];
       const k = role === 'normal' ? nk : (F[role][d.id] || [nk[0] * (role === 'boss' ? 3 : 1.5), nk[1] * (role === 'boss' ? 1.4 : 1.25)]);
-      const hp = k[0] * ramp * df, atk = k[1] * ramp * df;
+      const hp = k[0] * ramp * dfHp, atk = k[1] * ramp * dfAtk;
       return { hp, atk, pow: atk };
     }
     function makeFoe(x) {
