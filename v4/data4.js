@@ -327,9 +327,9 @@
   };
 
   const DIFF = {
-    normal: { name: '보통', desc: '기본 난이도', foe: 2.0, phoenix: false, income: -1 },
-    hard: { name: '어려움', desc: '적이 더 강하다', foe: 3.0, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '적이 훨씬 강하다', foe: 4.0, phoenix: false, income: -1 },
+    normal: { name: '보통', desc: '기본 난이도', foe: 2.0, phoenix: false },
+    hard: { name: '어려움', desc: '적이 더 강하다', foe: 3.0, phoenix: false },
+    hell: { name: '지옥', desc: '적이 훨씬 강하다', foe: 4.0, phoenix: false },
   };
 
   // 적 강도: 일반 적 한 마리의 체력·공격이 1막 대비 2막 2배 · 3막 4배 · 4막 8배 · 5막 15배가 되도록 막마다 맞춘 배수.
