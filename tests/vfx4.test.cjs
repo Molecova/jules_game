@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const ROOT = path.resolve(__dirname, '..');
-const IDS = ['cross', 'pierce', 'fire', 'chain', 'meteor', 'light', 'barrier', 'shadowstep'];
+const IDS = ['cross', 'ice', 'blizzard', 'chain', 'meteor', 'aegis', 'wall', 'shadowstep'];
 const plain = value => JSON.parse(JSON.stringify(value));
 
 function fixture(id, star, enabled) {
@@ -17,7 +17,7 @@ function fixture(id, star, enabled) {
   if (enabled) fx.skill = (skill, data) => { events.push({ id: skill, data: plain(data) }); effects.emit(skill, data); };
   const api = c.BT4.create({ grid, PLAYER_ROW: 3, COLS: 5, ROWS: 6, getR: () => ({ relics: [], round: 1, act: 1, diff: 'normal' }), fx });
   const ally = (unitId, col, row, skills = []) => api.makeAlly({ id: unitId, uid: `${col}-${row}`, star: 1, skills, item: null, rot: 0 }, grid.idx(col, row), { ttiers: {} });
-  const caster = ally(id === 'cross' || id === 'shadowstep' ? 'squire' : id === 'pierce' ? 'archer' : 'apprentice', 2, id === 'cross' ? 3 : 4, [{ id, star }]);
+  const caster = ally(id === 'cross' || id === 'shadowstep' ? 'squire' : 'apprentice', 2, id === 'cross' ? 3 : 4, [{ id, star }]);
   const allies = [caster, ally('squire', 1, 4), ally('archer', 3, 4)];
   const foes = [[2,2], [2,1], [1,2], [3,2], [1,1], [3,1]].map(([col,row], i) => {
     const u = api.makeFoe({ uid: 'foe'+i, def: c.GD.MONSTERS.goblin, cell: grid.idx(col,row), scale: 1, rot: 0 });
@@ -54,8 +54,8 @@ for (const id of IDS) for (const star of [1, 3]) {
       assert.deepEqual(e.destination, { x: on.caster.px, y: on.caster.py });
       assert.equal(e.target.x, on.foes[0].px);
     }
-    if (id === 'light') assert.ok(on.allies[1].hp > on.before[1], 'Healing is applied');
-    if (id === 'barrier') assert.ok(on.allies[1].shield > 0, 'Shield is applied');
+    if (id === 'aegis') assert.ok(on.allies[1].hp > on.before[1], 'Healing is applied');
+    if (id === 'wall') assert.ok(on.allies[1].shield > 0, 'Shield is applied');
     if (id === 'revive') {
       assert.equal(on.allies[1].dead, false);
       assert.deepEqual(e.target, { x: on.allies[1].px, y: on.allies[1].py });
@@ -78,8 +78,8 @@ for (const id of IDS) for (const star of [1, 3]) {
 }
 
 test('burst traffic is bounded; skipped/reset combats leave no effects', () => {
-  const f = fixture('fire', 1, true);
-  for (let i = 0; i < 1000; i++) f.effects.emit('fire', f.events[0].data);
+  const f = fixture('blizzard', 1, true);
+  for (let i = 0; i < 1000; i++) f.effects.emit('blizzard', f.events[0].data);
   assert.ok(f.effects.count <= 48);
   f.effects.clear();
   assert.equal(f.effects.count, 0);

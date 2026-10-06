@@ -16,7 +16,7 @@ fs.mkdirSync(out, { recursive: true });
       __g.R.rng = 412; __g.R.lv = 9; __g.R.gold = 200;
       __g.R.board = ['squire', 'shieldman', 'warden', 'paladin', 'blademaster', 'ninja', 'archmage', 'warlock', 'bishop'].map((id, i) => ({
         kind: 'unit', id, uid: 'full' + i, star: 3,
-        skills: [{ kind: 'skill', id: i < 5 ? 'cross' : i === 5 ? 'pierce' : 'meteor', uid: 'sk' + i, star: 3 }],
+        skills: [{ kind: 'skill', id: i < 5 ? 'cross' : i === 5 ? 'ice' : 'meteor', uid: 'sk' + i, star: 3 }],
         item: null, x: i % 5, y: i < 5 ? 3 : 5,
       }));
       __g.showMap();

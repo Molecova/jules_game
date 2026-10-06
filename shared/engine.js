@@ -230,7 +230,8 @@
         if (g.dist(u.cell, tgt.cell) <= u.range) {
           // u.bars 가 있으면 스킬마다 따로 찬 마나로 시전(v4), 없으면 마나 하나
           const bi = u.bars ? u.bars.findIndex((b) => b.mana >= b.max) : -1;
-          if (u.ability && (u.bars ? bi >= 0 : u.maxMana > 0 && u.mana >= u.maxMana)) {
+          const silenced = this.hooks.silenced && this.hooks.silenced(u, this);
+          if (u.ability && !silenced && (u.bars ? bi >= 0 : u.maxMana > 0 && u.mana >= u.maxMana)) {
             if (u.bars) { u.bars[bi].mana = 0; u.castIdx = bi; } else u.mana = 0;
             this.cast(u, tgt);
             u.atkCd = Math.max(u.atkCd, 0.35);
@@ -241,7 +242,7 @@
         } else {
           const near = this.nearestEnemy(u);
           if (!forced && near && g.dist(u.cell, near.cell) <= u.range) { u.target = near; continue; }
-          if (u.immobile) { if (near) u.target = near; continue; }
+          if (u.immobile || (this.hooks.rooted && this.hooks.rooted(u, this))) { if (near) u.target = near; continue; }
           const fstep = forced ? this.bfs(u, forced) : null;
           const next = fstep !== null ? fstep : this.pathStep(u);
           if (next !== null) this.moveTo(u, next);
@@ -296,7 +297,7 @@
     attack(u, t) {
       if (this.hooks.preAttack && this.hooks.preAttack(u, t, this)) return; // 기본 공격을 다른 행동으로 바꾸는 훅(치유 등)
       this.gainMana(u, u.manaPerHit || 10);
-      const crit = this.random() < u.crit;
+      const crit = this.random() < u.crit || !!(this.hooks.forceCrit && this.hooks.forceCrit(u, t, this));
       const dmg = u.atk * (0.9 + this.random() * 0.2);
       if (u.range > 1) {
         this.projectiles.push({ x: u.px, y: u.py, tgt: t, src: u, dmg, crit, kind: 'atk', speed: 560, color: u.side ? this.hooks.enemyShot || '#e66' : this.hooks.playerShot || '#fd6' });
@@ -310,6 +311,8 @@
 
     damage(src, t, dmg, kind = 'atk', crit = false) {
       if (t.dead) return 0;
+      if (this.hooks.immune && this.hooks.immune(t, kind, this)) return 0;
+      if (kind === 'atk' && src && this.hooks.missChance) { const mc = this.hooks.missChance(src, t, this); if (mc > 0 && this.random() < mc) { this.float(t.px, t.py - 18, 'MISS', '#bbb'); return 0; } }
       if (kind === 'atk' && this.random() < t.dodge) {
         this.float(t.px, t.py - 18, 'MISS', '#bbb');
         if (this.hooks.onDodge) this.hooks.onDodge(t, src, this);
@@ -342,6 +345,7 @@
 
     heal(t, amt, src) {
       if (t.dead) return;
+      if (this.hooks.healMod) amt *= this.hooks.healMod(t, src, this);
       const h = Math.round(Math.min(t.maxHp - t.hp, amt));
       t.hp += h;
       if (src && h > 0) src.healDone = (src.healDone || 0) + h;

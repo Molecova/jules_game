@@ -312,7 +312,7 @@
     const H = (u) => (u && u.healMult) || 1;
     // 보호막은 쌓여도 최대 체력의 50%까지(같은 스킬을 자주 쓰면 끝없이 쌓이던 문제)
     const SHIELD_CAP = 0.5;
-    function giveShield(a, amt, src) { amt = Math.round(Math.min(amt, Math.max(0, a.maxHp * SHIELD_CAP - a.shield))); if (amt <= 0) return; a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
+    function giveShield(a, amt, src) { if (a.st && a.st.antiheal > 0) return; amt = Math.round(Math.min(amt, Math.max(0, a.maxHp * SHIELD_CAP - a.shield))); if (amt <= 0) return; a.shield += amt; if (src) src.shieldDone = (src.shieldDone || 0) + amt; }
     // 가속: 같은 스킬은 겹치지 않고 시간만 새로 고친다. 서로 다른 가속을 다 곱해도 최대 ×2
     function addHaste(a, key, dur, amt) {
       const L = (a.st.haste = a.st.haste || []), h = L.find((x) => x.key === key);
@@ -324,14 +324,23 @@
     function applySkillHit(cb, u, v, P, d) {
       let amt = P;
       if (d.execute && v.hp / v.maxHp <= 0.5) amt *= d.execute;
-      const dealt = cb.damage(u, v, amt, 'spell', !!d.crit);
+      const dealt = amt > 0 ? cb.damage(u, v, amt, 'spell', !!d.crit) : 0;
+      const kk = u.castK || 1, dot = (o) => (kk === 1 ? o : Object.assign({}, o, { dps: o.dps * kk })); // 지속 피해도 칩 별 배수
       if (d.stun) addStatus(cb, v, 'stun', d.stun, u);
       if (d.slow) addStatus(cb, v, 'slow', d.slow, u);
       if (d.weak) addStatus(cb, v, 'weak', d.weak, u);
-      if (d.burn) addStatus(cb, v, 'burn', d.burn, u);
-      if (d.poison) addStatus(cb, v, 'poison', d.poison, u);
-      if (d.bleed) addStatus(cb, v, 'bleed', d.bleed, u);
+      if (d.burn) addStatus(cb, v, 'burn', dot(d.burn), u);
+      if (d.poison) addStatus(cb, v, 'poison', dot(d.poison), u);
+      if (d.bleed) addStatus(cb, v, 'bleed', dot(d.bleed), u);
       if (d.vuln) addStatus(cb, v, 'vuln', d.vuln, u);
+      if (v.dead || v.object) return dealt;
+      const st = v.st;
+      if (d.root) { st.root = Math.max(st.root || 0, d.root); cb.float(v.px, v.py - 30, '속박', '#cfe8b0'); }
+      if (d.silence) { st.silence = Math.max(st.silence || 0, d.silence); cb.float(v.px, v.py - 30, '침묵', '#d6c8ff'); }
+      if (d.chill) st.chill = { t: Math.max(st.chill ? st.chill.t : 0, d.chill.dur), amt: d.chill.amt };
+      if (d.antiheal) { st.antiheal = Math.max(st.antiheal || 0, d.antiheal); cb.float(v.px, v.py - 30, '치유 차단', '#ff9a9a'); }
+      if (d.mark) { st.marked = { t: 8, n: d.mark }; cb.ring(v.px, v.py, '#f5c400', 26, 0.8); cb.float(v.px, v.py - 30, '표적', '#ffe08a'); }
+      if (d.blind) { const a = d.blind[(u.castStar || 1) - 1] || d.blind[0]; st.blind = { t: d.blindDur || 3, amt: a }; cb.float(v.px, v.py - 30, '연막', '#c9c9c9'); }
       return dealt;
     }
     function leapTo(cb, u, target) {
@@ -347,6 +356,7 @@
     function execSkill(cb, u, t, s, scale = 1) {
       const d = s.def, foe = 1 - u.side, k = SKSTAR[s.star || 1];
       const F = (u.pow || 1) * k * (u.spell || 1) * scale, P = (d.power || 0) * F;
+      u.castK = k; u.castStar = s.star || 1;
       const dir = facing(u, t);
       u.dir = dir;
       const col = u.side ? '#e8436b' : clsCol(d.cls);
@@ -363,6 +373,14 @@
       if (d.stackBurn) { u.burnAdd = (u.burnAdd || 0) + d.stackBurn * (u.pow || 1); cb.float(u.px, u.py - 46, `화상 +${Math.round(u.burnAdd)}`, '#ffb347'); } // 용의 숨결: 쓸 때마다 기본 공격 화상 피해 누적
       switch (d.effect) {
         case 'dmg': {
+          if (d.mode === 'boomerang') { // 대상까지 갔다 돌아오며 지나가는 적마다 두 번
+            const n = Math.max(1, grid.dist(u.cell, t.cell)), path = [];
+            for (let f = 1; f <= n; f++) { const i = rel(u.cell, f, 0, dir); if (i < 0) break; path.push(i); }
+            if (!path.includes(t.cell)) path.push(t.cell);
+            tiles(cb, path, col); cb.beam(u.px, u.py, t.px, t.py, col, 0.45);
+            for (let h = 0; h < 2; h++) for (const i of path) { const v = cb.occ[i]; if (v && v.side === foe && !v.dead) applySkillHit(cb, u, v, P, d); }
+            break;
+          }
           if (d.mode === 'front') { // 맨 앞(아군 쪽에 가까운) 적 n명, 맞으면 뒤로 push칸
             const fr = (v) => (foe === 1 ? grid.cells[v.cell].r : -grid.cells[v.cell].r);
             const vs = cb.alive(foe).filter((x) => !x.object).sort((a, b) => fr(b) - fr(a) || grid.dist(u.cell, a.cell) - grid.dist(u.cell, b.cell)).slice(0, d.n || 2);
@@ -448,7 +466,7 @@
           break;
         }
         case 'shield': {
-          const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
+          const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : d.mode === 'lowestAlly' ? [lowestAlly(cb, u.side)].filter(Boolean) : allies(cellsOf());
           visual(d.mode === 'all' ? list.map(a => a.cell) : cellsOf(), list);
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#6aa8ff');
           if (d.selfShield && !list.includes(u)) list.push(u);
@@ -519,6 +537,70 @@
           if (v) { cb.beam(u.px, u.py, v.px, v.py, '#f5c400', 0.4); tiles(cb, [v.cell], '#f5c400'); applySkillHit(cb, u, v, P, d); }
           const a = lowestAlly(cb, u.side);
           if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, P * (d.heal != null ? d.heal / (d.power || 1) : 1) * Hm, u); cb.ring(a.px, a.py, '#7dffa0', 24); }
+          break;
+        }
+        case 'zone': { // 장판: 칸 안의 적에게 0.5초마다 상태
+          const cells = cellsOf(); tiles(cb, cells, '#7fbf4a', 0.6);
+          (cb.zones = cb.zones || []).push({ cells, t: d.dur || 4, tick: 0, side: foe, src: u, poison: d.poison ? { dps: d.poison.dps * k, dur: 1.5 } : null, color: '#7fbf4a' });
+          break;
+        }
+        case 'blind': { const cells = cellsOf(); tiles(cb, cells, '#9a9a9a', 0.6); for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe && !v.dead) applySkillHit(cb, u, v, 0, d); } break; }
+        case 'windwalk': { // 바람 걸음: 회피 +, 공속 +
+          if (!(u.st.ww && u.st.ww.t > 0)) { u.dodge += d.dodge || 0.4; u.st.ww = { t: d.dur || 3, dodge: d.dodge || 0.4 }; } else u.st.ww.t = d.dur || 3;
+          addHaste(u, d.id, d.dur || 3, d.amt || 1.2); cb.ring(u.px, u.py, '#bfe8ff', 24); break;
+        }
+        case 'aim': { // 조준 저격: 2초 뒤 체력이 가장 높은 적
+          const v = cb.alive(foe).filter((x) => !x.object).sort((a, b) => b.hp - a.hp)[0]; if (!v) break;
+          cb.float(v.px, v.py - 34, '조준', '#ff6b6b'); cb.ring(v.px, v.py, '#ff6b6b', 28, d.delay || 2);
+          (cb.later = cb.later || []).push({ t: d.delay || 2, run: () => { if (v.dead || u.dead) return; cb.beam(u.px, u.py, v.px, v.py, '#ff6b6b', 0.4); applySkillHit(cb, u, v, P, d); fx.shake(3); } });
+          break;
+        }
+        case 'explosive': { // 폭발 화살: 맞히고 2초 뒤 주변 3×3 폭발
+          const v = t && !t.dead ? t : cb.nearestEnemy(u); if (!v) break;
+          cb.beam(u.px, u.py, v.px, v.py, col, 0.3); applySkillHit(cb, u, v, P, d);
+          const P2 = (d.blast || d.power) * F;
+          (cb.later = cb.later || []).push({ t: d.delay || 2, run: () => { const c0 = v.dead ? v.cell : v.cell, cells = [c0, ...grid.neighbors[c0]]; tiles(cb, cells, '#ff8a3b', 0.5); for (const i of cells) { const w = cb.occ[i]; if (w && w.side === foe && !w.dead) cb.damage(u, w, P2, 'spell'); } fx.shake(4); } });
+          break;
+        }
+        case 'bind': { // 결박 사슬: 대상과 가장 가까운 적을 묶는다
+          const a = t && !t.dead ? t : cb.nearestEnemy(u); if (!a) break;
+          const b = cb.alive(foe).filter((x) => x !== a && !x.object).sort((x, y) => grid.dist(a.cell, x.cell) - grid.dist(a.cell, y.cell))[0]; if (!b) break;
+          a.st.link = { t: d.dur || 6, other: b, amt: d.amt || 0.5 }; b.st.link = { t: d.dur || 6, other: a, amt: d.amt || 0.5 };
+          cb.beam(a.px, a.py, b.px, b.py, '#c3cbd6', 1); cb.float(a.px, a.py - 30, '결박', '#e8ecf2'); break;
+        }
+        case 'storm': addHaste(u, d.id, d.dur || 5, 2); u.st.storm = d.dur || 5; cb.ring(u.px, u.py, '#bfe8ff', 34, 0.6); cb.float(u.px, u.py - 40, '폭풍의 눈', '#e6f6ff'); break;
+        case 'sure': { // 신궁: 확정 치명 + 치명 피해
+          if (!(u.st.sure > 0)) { u.critDmg += d.critAdd || 1; u.st.sureAdd = d.critAdd || 1; }
+          u.st.sure = d.dur || 5; cb.ring(u.px, u.py, '#f5c400', 30, 0.6); cb.float(u.px, u.py - 40, '신궁', '#ffe08a'); break;
+        }
+        case 'lifelink': { // 생명 연결: 가장 낮은 아군과 가장 높은 아군 체력 비율을 평균으로
+          const al = cb.alive(u.side).filter((x) => !x.object && !x.summon).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp);
+          if (al.length < 2) break;
+          const lo = al[0], hi = al[al.length - 1], r = (lo.hp / lo.maxHp + hi.hp / hi.maxHp) / 2;
+          hi.hp = Math.max(1, r * hi.maxHp); cb.heal(lo, r * lo.maxHp - lo.hp, u);
+          cb.beam(lo.px, lo.py, hi.px, hi.py, '#7dffa0', 0.6); break;
+        }
+        case 'thornshield': { // 가시 보호막: 적과 가장 가까운 아군
+          const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => { const nx = cb.nearestEnemy(x), ny = cb.nearestEnemy(y); return (nx ? grid.dist(x.cell, nx.cell) : 99) - (ny ? grid.dist(y.cell, ny.cell) : 99); })[0];
+          if (!a) break;
+          giveShield(a, P * Hm, u); a.st.reflect = { t: d.dur || 4, amt: d.reflect || 0.3 };
+          cb.beam(u.px, u.py, a.px, a.py, '#e0c49a', 0.3); cb.ring(a.px, a.py, '#e0c49a', 26); break;
+        }
+        case 'polymorph': { // 변이: 체력이 가장 높은 일반 적(보스 제외)
+          const v = cb.alive(foe).filter((x) => !x.object && !x.boss).sort((a, b) => b.hp - a.hp)[0]; if (!v) break;
+          addStatus(cb, v, 'stun', d.dur || 3, u); addStatus(cb, v, 'vuln', { amt: d.vulnAmt || 0.2, dur: d.dur || 3 }, u);
+          cb.ring(v.px, v.py, '#f2f2f2', 28, 0.8); cb.float(v.px, v.py - 34, '양!', '#ffffff', true); break;
+        }
+        case 'surge': // 마력 폭주: 칩 대기시간 2배 속도, 마나 2배
+          if (!(u.st.surge > 0)) u.manaGain = (u.manaGain || 1) * 2;
+          u.st.surge = d.dur || 6; cb.ring(u.px, u.py, '#9b6bff', 30, 0.6); cb.float(u.px, u.py - 40, '마력 폭주', '#e2d0ff'); break;
+        case 'invuln': { // 얼음 축복: 체력 비율이 가장 낮은 아군 무적
+          const a = lowestAlly(cb, u.side); if (!a) break;
+          a.st.invuln = Math.max(a.st.invuln || 0, d.dur || 3); cb.ring(a.px, a.py, '#9fd8ff', 30, 0.8); cb.float(a.px, a.py - 34, '무적', '#cfefff', true); break;
+        }
+        case 'meteors': { // 운석 낙하: 무작위 적 위치에 차례로
+          const n = d.count || 6;
+          for (let j = 0; j < n; j++) { const pool = cb.alive(foe).filter((x) => !x.object); const v = pool[Math.floor(random() * pool.length)]; if (!v) break; const cells = [v.cell, ...grid.neighbors[v.cell]]; cb.tele.push({ cells, t: 0, delay: 0.5 + j * 0.5, dmg: P, side: foe, src: u, color: '#ff8a3b', skillId: 'meteor' }); }
           break;
         }
         case 'markRandom': {
@@ -717,9 +799,20 @@
           fx.burst(u.px, u.py, u.side ? '#e8436b' : clsCol(s.def.cls), 6);
           return true;
         },
+        silenced: (u) => !!(u.st && u.st.silence > 0),
+        rooted: (u) => !!(u.st && u.st.root > 0),
+        immune: (t) => !!(t.st && t.st.invuln > 0),
+        missChance: (src) => (src.st && src.st.blind ? src.st.blind.amt : 0),
+        healMod: (t) => (t.st && t.st.antiheal > 0 ? 0.2 : 1),
+        forceCrit: (u, t) => {
+          if (u.st && u.st.sure > 0) return true;
+          const m = t.st && t.st.marked; if (m && m.n > 0 && u.side !== t.side) { m.n--; return true; }
+          return false;
+        },
         asMod: (u, cb) => {
           let m = 1;
           if (u.st.slow > 0) m *= 0.6;
+          if (u.st.chill) m *= 1 - u.st.chill.amt;
           if (u.st.haste) { let hm = 1; for (const h of u.st.haste) hm *= h.amt; m *= Math.min(2, hm); }
           if (u.passive === 'frenzy') m *= 1 + 0.4 * Math.max(0, 1 - u.hp / u.maxHp);
           if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.25 * Math.min(1.6, u.ifxK);
@@ -748,7 +841,7 @@
           if (t.side === 0) for (const n of grid.neighbors[t.cell]) { const w = cb.occ[n]; if (w && w.side === 0 && w.passive === 'guardAura') { m *= 0.9; break; } }
           return m;
         },
-        floatColor: (kind) => ({ burn: '#ffb347', poison: '#a8f08a', bleed: '#ff8a8a', thorns: '#e0c49a', splash: '#fffdf7' })[kind] || null,
+        floatColor: (kind) => ({ burn: '#ffb347', poison: '#a8f08a', bleed: '#ff8a8a', thorns: '#e0c49a', splash: '#fffdf7', link: '#c3cbd6' })[kind] || null,
         onAttack: (u, t, cb) => {
           if (u.range > 1) fx.play('shoot', 0.06);
           if (u.firstStrike) { u.firstStrike = false; u.crit = u.crit0; }
@@ -757,6 +850,7 @@
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
           if (u.burnAdd && !t.dead) cb.damage(u, t, u.burnAdd, 'burn');
+          if (u.st.storm > 0) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== u.side && !v.dead && !v.object) cb.damage(u, v, u.atk * 0.5, 'splash'); }
           if (u.passive === 'doubleHit' && !u.dblNow && !t.dead && cb.random() < 0.25) { u.dblNow = true; cb.float(u.px, u.py - 40, '연타', '#fffdf7'); cb.attack(u, t); u.dblNow = false; }
           if (u.passive === 'stunHit' && u.atkN % 3 === 0 && !t.boss) { addStatus(cb, t, 'stun', 1, u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
           if (u.ifx === 'stunEvery' && u.atkN % 5 === 0 && !t.boss) { addStatus(cb, t, 'stun', 0.8 * Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
@@ -787,6 +881,8 @@
         onDodge: (t) => { if (t.ifx === 'evasive' && t.side === 0) { t.nextCrit = true; } },
         onHit: (t, dmg, src, kind, crit, cb) => {
           t.hitT = 0.22;
+          if (t.st && t.st.link && kind !== 'link' && dmg > 0) { const o = t.st.link.other; if (o && !o.dead) cb.damage(src && !src.dead ? src : null, o, dmg * t.st.link.amt, 'link'); }
+          if (t.st && t.st.reflect && src && !src.dead && src.side !== t.side && (kind === 'atk' || kind === 'spell' || kind === 'splash') && dmg > 0) cb.damage(t, src, dmg * t.st.reflect.amt, 'thorns');
           if (kind === 'atk' && global.SHOTS4) SHOTS4.impact(cb, src, t);
           if (kind === 'atk' || kind === 'spell' || kind === 'splash') {
             fx.play(crit ? 'crit' : 'hit', 0.04);
@@ -826,7 +922,11 @@
           for (const u of cb.units) {
             if (u.dead) continue;
             const st = u.st;
-            for (const k of ['slow', 'weak', 'fort', 'parry']) if (st[k] > 0) st[k] -= dt;
+            for (const k of ['slow', 'weak', 'fort', 'parry', 'root', 'silence', 'invuln', 'antiheal', 'storm']) if (st[k] > 0) st[k] -= dt;
+            for (const k of ['chill', 'blind', 'marked', 'link', 'reflect']) if (st[k]) { st[k].t -= dt; if (st[k].t <= 0 || (k === 'marked' && st[k].n <= 0)) delete st[k]; }
+            if (st.ww) { st.ww.t -= dt; if (st.ww.t <= 0) { u.dodge -= st.ww.dodge; delete st.ww; } }
+            if (st.sure > 0) { st.sure -= dt; if (st.sure <= 0) { u.critDmg -= st.sureAdd || 0; st.sureAdd = 0; } }
+            if (st.surge > 0) { st.surge -= dt; if (st.surge <= 0) u.manaGain = (u.manaGain || 2) / 2; }
             if (st.vuln) { st.vuln.t -= dt; if (st.vuln.t <= 0) delete st.vuln; }
             if (st.bless) { st.bless.t -= dt; if (st.bless.t <= 0) delete st.bless; }
             if (st.haste) st.haste = st.haste.filter((h) => (h.t -= dt) > 0);
@@ -843,7 +943,7 @@
             // 스킬 칩·아이템 액티브: 대기시간이 끝나면 저절로(기절 중에는 멈춤)
             for (const k of ['chip', 'act']) {
               const c = u[k]; if (!c || u.stun > 0) continue;
-              c.t -= dt;
+              c.t -= dt * (st.surge > 0 ? 2 : 1);
               if (c.t <= 0) { const tg = u.target && !u.target.dead ? u.target : cb.nearestEnemy(u); if (tg) { execSkill(cb, u, tg, c); c.t = c.cd; } else c.t = 0.3; }
             }
             if (u.ifx === 'sageStone' && u.ability) addMana(u, 5 * dt);
@@ -878,6 +978,14 @@
               if (u.regen > 0 && u.hp < u.maxHp) { const h = Math.min(u.maxHp - u.hp, u.maxHp * u.regen * 0.5); u.hp += h; u.healDone = (u.healDone || 0) + h; }
               if (u.passive === 'healAura') for (const a of cb.units) if (!a.dead && a.side === u.side && !a.object && grid.dist(a.cell, u.cell) <= 1) { const h = Math.min(a.maxHp - a.hp, a.maxHp * 0.005 * u.healMult); a.hp += h; u.healDone = (u.healDone || 0) + h; }
             }
+          }
+          if (cb.later && cb.later.length) { for (const l of cb.later) { l.t -= dt; if (l.t <= 0 && !l.done) { l.done = true; l.run(); } } cb.later = cb.later.filter((l) => !l.done); }
+          if (cb.zones && cb.zones.length) {
+            for (const z of cb.zones) {
+              z.t -= dt; z.tick -= dt;
+              if (z.tick <= 0) { z.tick += 0.5; tiles(cb, z.cells, z.color, 0.35); for (const i of z.cells) { const v = cb.occ[i]; if (v && v.side === z.side && !v.dead && !v.object && z.poison) addStatus(cb, v, 'poison', z.poison, z.src); } }
+            }
+            cb.zones = cb.zones.filter((z) => z.t > 0);
           }
           for (const tl of cb.tele) {
             tl.t += dt;

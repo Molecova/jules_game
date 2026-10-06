@@ -82,7 +82,7 @@
     if(e.a.action==='phase')u.dodge=u.enemyPhase>cb.t?.55:0;
     if(e.channel){const ch=e.channel;if(u.stun>0||cb.t>=ch.end||!ch.target||ch.target.dead){e.channel=null;u.immobile=!!u.def.immobile;}else if(cb.t>=ch.next){ch.next+=.5;cb.heal(ch.target,Math.min(ch.target.maxHp*.025,u.atk*.6),u);cb.beam(u.px,u.py,ch.target.px,ch.target.py,e.a.color,.4);}continue;}
     if(e.cast){if(u.stun>0){cancel(u);e.next=e.a.cd;continue;}if(cb.t>=e.cast.end){const c=e.cast;cancel(u);resolve(cb,c);}continue;}
-    if(e.a.passive||e.a.once&&e.uses||u.stun>0)continue;
+    if(e.a.passive||e.a.once&&e.uses||u.stun>0||u.st?.silence>0)continue;
     e.next-=dt;if(e.next>0)continue;
     let t=near(cb,u,1-u.side)[0];if(!t)continue;
     if(e.a.action==='execute')t=alive(cb,1-u.side).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];

@@ -185,6 +185,43 @@
   };
   for (const sk of SKILLS) { const f = WARFIX[sk.id]; if (!f) continue; for (const [k, v] of Object.entries(f)) { if (v === null) delete sk[k]; else sk[k] = v; } }
 
+  // 19차 사용자 패치: 궁수·마법사 스킬 칩 재구성(고유기와 겹치는 칩은 상점에서 뺀다)
+  const DROP_SK = ['pierce', 'poisonarrow', 'huntmark', 'snare', 'multishot', 'snipe', 'lightrain', 'judgment', 'railshot', 'arrowstorm', 'skyarrows',
+    'manaflow', 'light', 'fire', 'barrier', 'drainlife', 'purify', 'firestorm'];
+  for (let i = SKILLS.length - 1; i >= 0; i--) if (DROP_SK.includes(SKILLS[i].id)) SKILLS.splice(i, 1);
+  const KEEPFIX = { horn: { amt: 1.2, desc: '모든 아군 5초간 공격 속도 +20%(★마다 +8%p)' } };
+  for (const sk of SKILLS) if (KEEPFIX[sk.id]) Object.assign(sk, KEEPFIX[sk.id]);
+  const X5 = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
+  SKILLS.push(
+    // 궁수
+    N_('firearrow', '불화살', 'arc', 1, { mode: 'single', effect: 'dmg', cd: 5, power: 60, burn: { dps: 30, dur: 3 }, icon: 'fire', desc: '대상에게 불화살 + 3초 화상(초당 30)' }),
+    N_('anklearrow', '발목 화살', 'arc', 1, { mode: 'single', effect: 'dmg', cd: 5, power: 70, root: 2, icon: 'arrow', desc: '대상에게 화살 + 2초간 이동 불가' }),
+    N_('marktarget', '표적 지정', 'arc', 1, { mode: 'single', effect: 'dmg', cd: 6, power: 0, mark: 3, icon: 'target', desc: '대상을 표시. 그 적을 때리는 아군 기본 공격 3번이 확정 치명(8초)' }),
+    N_('poisoncloud', '독 구름 화살', 'arc', 2, { mode: 'target', effect: 'zone', cells: S3, cd: 9, power: 0, dur: 4, poison: { dps: 30, dur: 1.5 }, icon: 'skull', desc: '대상 중심 3×3에 4초 독 구름. 안에 있는 적 중독(초당 30)' }),
+    N_('boomerang', '부메랑 화살', 'arc', 2, { mode: 'boomerang', effect: 'dmg', cd: 5, power: 100, icon: 'wind', desc: '대상까지 갔다 돌아오며 지나가는 적마다 위력 100씩 두 번' }),
+    N_('smoke', '연막탄', 'arc', 2, { mode: 'target', effect: 'blind', cells: S3, cd: 10, power: 0, blind: [0.3, 0.5, 0.7], blindDur: 3, icon: 'eye', desc: '대상 중심 3×3 적 3초간 기본 공격이 빗나감(★1 30% · ★2 50% · ★3 70%)' }),
+    N_('windwalk', '바람 걸음', 'arc', 2, { mode: 'selfOnly', effect: 'windwalk', cd: 7, power: 0, dur: 3, dodge: 0.4, amt: 1.2, icon: 'wind', desc: '자신 3초간 회피 +40%, 공격 속도 +20%' }),
+    N_('antiheal', '치유 차단 화살', 'arc', 3, { mode: 'single', effect: 'dmg', cd: 9, power: 0, antiheal: 6, icon: 'skull', desc: '대상 6초간 받는 회복 −80%, 보호막을 받지 못함' }),
+    N_('net', '그물 화살', 'arc', 3, { mode: 'target', effect: 'dmg', cells: S3, cd: 8, power: 80, root: 2, icon: 'arrow', desc: '대상 중심 3×3 적 위력 80 + 2초간 이동 불가' }),
+    N_('aimedshot', '조준 저격', 'arc', 4, { mode: 'selfOnly', effect: 'aim', cd: 12, power: 900, delay: 2, icon: 'target', desc: '2초 조준 뒤 체력이 가장 높은 적에게 위력 900' }),
+    N_('explosive', '폭발 화살', 'arc', 4, { mode: 'single', effect: 'explosive', cd: 10, power: 250, blast: 250, delay: 2, icon: 'fire', desc: '대상에게 위력 250, 2초 뒤 대상 중심 3×3에 위력 250 폭발' }),
+    N_('bindchain', '결박 사슬', 'arc', 4, { mode: 'single', effect: 'bind', cd: 12, power: 0, dur: 6, amt: 0.5, icon: 'dagger', desc: '대상과 가장 가까운 적을 묶는다. 6초간 한쪽이 받는 피해의 50%를 다른 쪽도 받음' }),
+    N_('stormeye', '폭풍의 눈', 'arc', 5, { mode: 'selfOnly', effect: 'storm', cd: 16, power: 0, dur: 5, icon: 'wind', desc: '5초간 공격 속도 ×2, 기본 공격이 대상 주변 1칸 적에게도 50%' }),
+    N_('sureshot', '신궁', 'arc', 5, { mode: 'selfOnly', effect: 'sure', cd: 15, power: 0, dur: 5, critAdd: 1, icon: 'eye', desc: '5초간 기본 공격 전부 확정 치명 + 치명 피해 +100%' }),
+    // 마법사
+    N_('ignite', '점화', 'mag', 1, { mode: 'single', effect: 'dmg', cd: 4, power: 0, burn: { dps: 40, dur: 3 }, icon: 'fire', desc: '대상 3초 화상(초당 40)' }),
+    N_('manashield', '마나 방패', 'mag', 1, { mode: 'lowestAlly', effect: 'shield', cd: 5, power: 150, icon: 'shield', desc: '체력 비율이 가장 낮은 아군 보호막 150' }),
+    N_('frosttouch', '서리 손길', 'mag', 1, { mode: 'single', effect: 'dmg', cd: 5, power: 80, chill: { amt: 0.3, dur: 2 }, icon: 'ice', desc: '대상 위력 80 + 2초간 공격 속도 −30%' }),
+    N_('spark', '전류', 'mag', 1, { mode: 'chain', effect: 'dmg', cd: 5, power: 70, jumps: 2, icon: 'bolt', desc: '대상과 가장 가까운 적 1명에게 위력 70씩' }),
+    N_('silence', '침묵', 'mag', 2, { mode: 'single', effect: 'dmg', cd: 10, power: 100, silence: 2.5, icon: 'star', desc: '대상 위력 100 + 2.5초간 고유기·능력 사용 불가' }),
+    N_('lifelink', '생명 연결', 'mag', 2, { mode: 'selfOnly', effect: 'lifelink', cd: 10, power: 0, icon: 'heart', desc: '체력 비율이 가장 낮은 아군과 가장 높은 아군의 체력 비율을 평균으로 맞춘다' }),
+    N_('thornshield', '가시 보호막', 'mag', 2, { mode: 'selfOnly', effect: 'thornshield', cd: 8, power: 200, dur: 4, reflect: 0.3, icon: 'shield', desc: '적과 가장 가까운 아군 보호막 200 + 4초간 받는 피해 30% 반사' }),
+    N_('polymorph', '변이', 'mag', 3, { mode: 'selfOnly', effect: 'polymorph', cd: 12, power: 0, dur: 3, vulnAmt: 0.2, icon: 'star', desc: '체력이 가장 높은 적(보스 제외)을 3초간 양으로. 행동 불가, 받는 피해 +20%' }),
+    N_('manasurge', '마력 폭주', 'mag', 4, { mode: 'selfOnly', effect: 'surge', cd: 14, power: 0, dur: 6, icon: 'drop', desc: '6초간 자신 스킬 대기시간 2배 속도, 고유기 마나 2배로 참' }),
+    N_('iceblessing', '얼음 축복', 'mag', 4, { mode: 'selfOnly', effect: 'invuln', cd: 12, power: 0, dur: 3, icon: 'ice', desc: '체력 비율이 가장 낮은 아군 3초 무적' }),
+    N_('meteorshower', '운석 낙하', 'mag', 5, { mode: 'selfOnly', effect: 'meteors', cd: 18, power: 250, count: 6, icon: 'fire', desc: '3초 동안 무작위 적 위치에 운석 6개, 각각 3×3 위력 250' }),
+  );
+
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
   const I_ = (id, name, cls, t, shape, st, fx, desc, feel) => ({ kind: 'item', id, name, cls, t, shape, st, fx, desc, feel });
   const ITEMS = [
