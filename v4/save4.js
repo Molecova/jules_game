@@ -74,7 +74,7 @@
         if (s.stats[k] == null) s.stats[k] = 0;
         require(Number.isFinite(s.stats[k]) && s.stats[k] >= 0);
       }
-      if (!V.DIFF[s.diff]) s.diff = 'normal';
+      if (!V.DIFF[s.diff]) s.diff = 'easy';
       s.locked = Object.fromEntries(['unit', 'skill', 'item'].map(k => [k, !!s.locked?.[k]]));
       for (const k of ['freeRolls', 'oddsBonus']) { if (s[k] == null) s[k] = 0; require(int(s[k], 0)); }
       if (s.nextHp != null) require(Number.isFinite(s.nextHp) && s.nextHp > 0 && s.nextHp <= 1);

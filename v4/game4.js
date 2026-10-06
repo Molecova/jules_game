@@ -61,7 +61,7 @@
 
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
-    if (!DIFF[diff]) diff = 'normal';
+    if (!DIFF[diff]) diff = 'easy';
     const seed = globalThis.crypto?.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
     R = {
       rng: seed, saveVersion: SAVE4.VERSION, pending: null, result: null, encounters: { version: 1, seed, used: {}, history: [], nodes: {} },
@@ -296,7 +296,7 @@
   function income() {
     const intMax = 5 + (has('vault') ? 2 : 0);
     const interest = Math.min(intMax, Math.floor(R.gold / 10));
-    const base = 5 + (has('crown') ? 1 : 0) + ((DIFF[R.diff] || DIFF.normal).income || 0);
+    const base = 5 + (has('crown') ? 1 : 0) + ((DIFF[R.diff] || DIFF.easy).income || 0);
     return { base, interest, total: base + interest };
   }
   function enterNode(n, quiet) {
@@ -1876,7 +1876,7 @@
   }
   function bestText() {
     const b = loadBest(); if (!b || !b.runs) return '';
-    const cl = Object.entries(b.clears).filter(([, n]) => n).map(([k, n]) => `${DIFF[k] ? DIFF[k].name : k} ${n}번`).join(' · ');
+    const cl = Object.entries(b.clears).filter(([k, n]) => n && DIFF[k]).map(([k, n]) => `${DIFF[k].name} ${n}번`).join(' · ');
     return `원정 ${b.runs}번 · 최고 ${b.act}막 라운드 ${b.round}${cl ? ' · 완수 ' + cl : ''}`;
   }
   // ---------- 상점 확률 ----------
@@ -1922,7 +1922,7 @@
     }
   }
   function setupRun() {
-    let diff = 'normal';
+    let diff = 'easy';
     const render = () => {
       openSheet(`<span class="eyebrow">출정 준비</span><h2>난이도를 고르세요</h2>
         <p class="lead" style="margin:0;color:var(--muted);font-size:12px">부대 없이 ${START_GOLD}골드로 떠납니다. 첫 상점에 1골드 전사·궁수·마법사가 하나씩 나옵니다.</p>
@@ -1945,7 +1945,7 @@
     $('overStamp').textContent = win ? '원정 완수!' : '원정 실패';
     $('overStamp').className = 'bigstamp' + (win ? ' win' : '');
     $('overText').textContent = win ? `${boss ? boss.name : '화산의 주인'}이(가) 쓰러지고 심연의 문이 닫혔습니다. 원정대의 이름이 노래로 남을 것입니다.`
-      : `${R.act}막 ${ACTS[R.act].name}${n.k ? ', ' + NODE[n.k].name : ''}에서 쓰러졌습니다.${R.diff === 'normal' ? ' 불사조 깃털 유물이 있으면 한 번은 버틸 수 있습니다.' : ''}`;
+      : `${R.act}막 ${ACTS[R.act].name}${n.k ? ', ' + NODE[n.k].name : ''}에서 쓰러졌습니다.${(DIFF[R.diff] || {}).phoenix ? ' 불사조 깃털 유물이 있으면 한 번은 버틸 수 있습니다.' : ''}`;
     const m = Math.floor(R.stats.time / 60);
     $('overRec').innerHTML = [['도달', `${R.act}막 · ${n.f === 5 ? '보스' : (n.f || 0) + 1 + '층'}`], ['라운드', `${R.round} / ${LAST_ACT * 6}`], ['합성', `${R.stats.merges}번`], ['번 골드', R.stats.goldEarned], ['전투 승리', `${R.stats.wins} / ${R.stats.battles}`], ['플레이', `${m}분`]].map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
     $('overTeam').innerHTML = R.board.map((u) => `<img src="${imgOf(u, 80)}" alt="${def(u).name}">`).join('') + R.relics.map((k) => `<span class="rpill">${RELICS[k].name}</span>`).join('');

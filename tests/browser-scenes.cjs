@@ -7,7 +7,7 @@ for(const [width,height,dpr]of [[390,844,2],[360,640,3]]){
  // Existing game fonts are unrelated to scene rendering; serve an empty stylesheet for deterministic offline capture.
  await p.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));
  await p.route('**/v4/game4.js',r=>{let source=fs.readFileSync(path.join(root,'v4/game4.js'),'utf8');source=source.replace('  // 테스트·밸런스용 진입점', '  window.__sceneTest={choice,relicPick,EVENTS,openCamp,openForge,openTreasure,closeSheet};\n  // 테스트·밸런스용 진입점');return r.fulfill({status:200,contentType:'application/javascript',body:source});});
- await p.goto('http://127.0.0.1:8000/v4/index.html');await p.evaluate(()=>{__g.newRun('normal');__g.enterNode(__g.R.map.floors[0][0]);__g.R.gold=30;__g.R.bench[0]={kind:'item',id:V4.ITEMS[0].id,uid:'scene-item-1',star:1};__g.R.bench[1]={kind:'item',id:V4.ITEMS[1].id,uid:'scene-item-2',star:1};});
+ await p.goto('http://127.0.0.1:8000/v4/index.html');await p.evaluate(()=>{__g.newRun('easy');__g.enterNode(__g.R.map.floors[0][0]);__g.R.gold=30;__g.R.bench[0]={kind:'item',id:V4.ITEMS[0].id,uid:'scene-item-1',star:1};__g.R.bench[1]={kind:'item',id:V4.ITEMS[1].id,uid:'scene-item-2',star:1};});
  for(const [i,name]of names.entries()){
   await p.evaluate(name=>{const s=__sceneTest;s.closeSheet();__g.R.pending=null;document.getElementById('toast').classList.remove('show');
    if(name==='야영지')s.openCamp();else if(name==='대장간')s.openForge();else if(name==='보물')s.openTreasure();

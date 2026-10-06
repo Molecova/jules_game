@@ -23,7 +23,7 @@ const { chromium } = require('playwright');
     console.log('PASS landing page and v4 navigation');
     await page.locator('a.featured').click();
     await page.locator('#newBtn').click();
-    await page.locator('[data-df="normal"]').click();
+    await page.locator('[data-df="easy"]').click();
     await page.locator('[data-go]').click();
     await page.locator('#scr-map').waitFor({ state: 'visible' });
     assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem('card-expedition-v4')).map.floors.length === 6));
