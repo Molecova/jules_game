@@ -360,6 +360,7 @@
       const visualData = (cells, points, extra = {}) => ({ source: origin, target: pos(t), dir: { x: dir[0], y: dir[1] }, star: s.star || 1,
         cells: cells.map(i => ({ x: grid.cells[i].x, y: grid.cells[i].y })), points: points.map(pos), ...extra });
       const visual = (cells, points, extra) => { if (fx.skill) fx.skill(d.id, visualData(cells, points, extra)); };
+      if (d.stackBurn) { u.burnAdd = (u.burnAdd || 0) + d.stackBurn * (u.pow || 1); cb.float(u.px, u.py - 46, `화상 +${Math.round(u.burnAdd)}`, '#ffb347'); } // 용의 숨결: 쓸 때마다 기본 공격 화상 피해 누적
       switch (d.effect) {
         case 'dmg': {
           if (d.mode === 'lowest' || d.mode === 'leap' || d.mode === 'farthest' || d.mode === 'single') {
@@ -400,8 +401,8 @@
           }
           const cells = cellsOf();
           visual(cells, cells.map(i => cb.occ[i]).filter(v => v && v.side === foe && !v.dead));
-          if (SLASH.has(d.id) && d.mode === 'facing') slashFacing(cb, u, dir, s.cells || d.cells, cells);
-          else if (SLASH.has(d.id) && d.mode === 'self') slashRing(cb, u, cells);
+          if ((SLASH.has(d.id) || d.slash) && d.mode === 'facing') slashFacing(cb, u, dir, s.cells || d.cells, cells);
+          else if ((SLASH.has(d.id) || d.slash) && d.mode === 'self') slashRing(cb, u, cells);
           else tiles(cb, cells, col);
           let dealt = 0;
           for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe) dealt += applySkillHit(cb, u, v, P, d); }
@@ -411,8 +412,9 @@
         }
         case 'lightrain': {
           const cells = cellsOf();
-          tiles(cb, cells, '#f5c400');
-          for (const i of cells) { const v = cb.occ[i]; if (!v || v.dead) continue; if (v.side === foe) applySkillHit(cb, u, v, P, d); else if (!v.object) cb.heal(v, P * 0.6 * Hm, u); }
+          if (d.slash) slashRing(cb, u, cells.filter((i) => i !== u.cell)); else tiles(cb, cells, '#f5c400');
+          const healK = d.heal != null ? d.heal / (d.power || 1) : 0.6; // 아군 회복 = 위력 × 비율(별 배수 같이)
+          for (const i of cells) { const v = cb.occ[i]; if (!v || v.dead) continue; if (v.side === foe) applySkillHit(cb, u, v, P, d); else if (!v.object) cb.heal(v, P * healK * Hm, u); }
           break;
         }
         case 'tele': {
@@ -480,7 +482,8 @@
         case 'guard': { // 수호 진형: 범위 아군 받는 피해 감소
           const cells = cellsOf(); tiles(cb, cells, '#9aa3b2');
           const red = (d.red || 0.25) + 0.05 * (((u.card && u.card.star) || 1) - 1);
-          for (const a of allies(cells)) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, red); a.st.fort = Math.max(a.st.fort || 0, d.dur || 5); cb.ring(a.px, a.py, '#c3cbd6', 22); }
+          const list = d.only ? cb.alive(u.side).filter((a) => !a.object && !a.summon && a.def && a.def.cls === d.only) : allies(cells);
+          for (const a of list) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, red); a.st.fort = Math.max(a.st.fort || 0, d.dur || 5); cb.ring(a.px, a.py, '#c3cbd6', 22); }
           break;
         }
         case 'summon': { // 소환: 최대 수까지 부르고, 꽉 차 있으면 소환물 체력 회복
@@ -687,7 +690,7 @@
           let m = 1;
           if (u.st.slow > 0) m *= 0.6;
           if (u.st.haste) { let hm = 1; for (const h of u.st.haste) hm *= h.amt; m *= Math.min(2, hm); }
-          if (u.passive === 'frenzy') m *= 1 + 0.6 * Math.max(0, 1 - u.hp / u.maxHp);
+          if (u.passive === 'frenzy') m *= 1 + 0.4 * Math.max(0, 1 - u.hp / u.maxHp);
           if (u.ifx === 'bloodrage' && u.hp / u.maxHp <= 0.5) m *= 1 + 0.25 * Math.min(1.6, u.ifxK);
           if (u.side === 0 && has('drum') && cb.t < 4) m *= 1.25;
           return m;
@@ -722,6 +725,8 @@
           if (u.passive === 'focus' || u.ifx === 'hawkFocus') { u.focusN = u.lastT === t ? Math.min(5, (u.focusN || 0) + 1) : 0; u.lastT = t; }
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
+          if (u.burnAdd && !t.dead) cb.damage(u, t, u.burnAdd, 'burn');
+          if (u.passive === 'doubleHit' && !u.dblNow && !t.dead && cb.random() < 0.25) { u.dblNow = true; cb.float(u.px, u.py - 40, '연타', '#fffdf7'); cb.attack(u, t); u.dblNow = false; }
           if (u.passive === 'stunHit' && u.atkN % 3 === 0 && !t.boss) { addStatus(cb, t, 'stun', 1, u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
           if (u.ifx === 'stunEvery' && u.atkN % 5 === 0 && !t.boss) { addStatus(cb, t, 'stun', 0.8 * Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
           if (u.passive === 'tripleShot' && u.atkN % 3 === 0) {
