@@ -47,7 +47,7 @@
    const candidates=rows.flatMap(row=>cols.map(col=>grid.idx(col,row))).filter(c=>c>=0&&!taken.has(c));
    let cell=d.boss?grid.idx(2,1):candidates[(i===0?0:Math.floor(rand()*Math.min(3,candidates.length)))];
    if(cell===undefined||taken.has(cell))cell=candidates[0];if(cell===undefined)continue;taken.add(cell);
-   enemies.push({uid:'enc-'+key+'-'+i,id,cell,scale:1,rot:(rand()-.5)*.12});
+   enemies.push({uid:'enc-'+key+'-'+i,id,cell,scale:1,rot:(rand()-.5)*.12,...(kind==='elite'&&i===0?{elite:true}:{})});
   }
   state.history.push(t.tag);state.history=state.history.slice(-6);state.nodes[key]={info,enemies};r.encounter=info;
   return enemies.map(x=>({...x}));

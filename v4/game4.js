@@ -360,7 +360,7 @@
     const syn = api.synergyCounts(R.board);
     const ents = R.board.map((c) => api.makeAlly(c, grid.idx(c.x, c.y), syn));
     if (R.nextHp) for (const e of ents) e.hp = Math.round(e.maxHp * R.nextHp); // 이벤트 대가: 다음 전투 시작 체력
-    for (const x of R.enemies) ents.push(api.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot }));
+    for (const x of R.enemies) ents.push(api.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot, elite: !!x.elite }));
     const cb = new AC.Combat(grid, ents, { random, hooks: api.hooks(), maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
     cb.tele = cb.tele || [];
     return cb;

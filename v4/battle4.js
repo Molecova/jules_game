@@ -249,21 +249,22 @@
       return e;
     }
 
-    /** 라운드별 적 강화(원정대가 별·레벨·장비로 강해지는 만큼) */
-    function foeMul(d) {
-      const r = R(), n = r.round, t = global.__tune || {}, df = t.foe || (V.DIFF[r.diff] || V.DIFF.normal).foe;
-      const role = d.boss ? 'boss' : d.elite ? 'elite' : 'normal';
-      const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.58, t.boss4 || 1, t.boss5 || 1.3][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1, t.a4 || 1, t.a5 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.75 : 1);
-      const hp = ((t.hp0 || 1.2) + (t.hpK || 0.2) * n + (t.hpQ || 0.009) * n * n) * ({ normal: t.normHp || 0.82, elite: t.eliteHp || 0.78, boss: t.bossHp || 0.95 }[role]) * bossK * df;
-      const atk = ((t.atk0 || 1) + (t.atkK || 0.1) * n + (t.atkQ || 0.0035) * n * n) * ({ normal: t.normAtk || 0.85, elite: t.eliteAtk || 0.9, boss: t.bossAtk || 0.95 }[role]) * Math.sqrt(bossK) * df;
+    /** 막·라운드별 적 강화(V4.FOE). x.elite: 정예전의 핵심 적 */
+    function foeMul(d, x) {
+      const r = R(), F = V.FOE, t = global.__tune || {}, df = t.foe || (V.DIFF[r.diff] || V.DIFF.normal).foe;
+      const act = Math.max(1, Math.min(5, r.act)), f = r.round - 6 * (act - 1), ramp = Math.pow(F.ramp, Math.max(1, Math.min(6, f)) - 3.5);
+      const role = d.boss ? 'boss' : (x && x.elite) || d.elite ? 'elite' : 'normal';
+      const nk = [F.normal.hp[act], F.normal.atk[act]];
+      const k = role === 'normal' ? nk : (F[role][d.id] || [nk[0] * (role === 'boss' ? 3 : 1.5), nk[1] * (role === 'boss' ? 1.4 : 1.25)]);
+      const hp = k[0] * ramp * df, atk = k[1] * ramp * df;
       return { hp, atk, pow: atk };
     }
     function makeFoe(x) {
-      const d = x.def, m = d.object ? { hp: 1, atk: 1, pow: 1 } : foeMul(d), k = x.scale || 1;
+      const d = x.def, m = d.object ? { hp: 1, atk: 1, pow: 1 } : foeMul(d, x), k = x.scale || 1;
       const e = baseEntity({ hp: d.hp * k * m.hp, atk: d.atk * k * m.atk, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, 1, x.cell, {
         def: d, uidRef: x.uid, artId: d.id, cls: monsterCls(d), rot: x.rot, dodge: d.dodge || 0, lifesteal: d.lifesteal || 0,
         skills: (d.skills || []).map((id) => { const sd = global.GD.SKILLS.find((s) => s.id === id); return { def: sd, star: 1, mana: d.mana, cells: sd.cells }; }),
-        pow: m.pow * k, immobile: !!d.immobile, boss: d.boss || null, big: !!d.boss, elite: !!d.elite, manaPerHit: 10, v: d.v,
+        pow: m.pow * k, immobile: !!d.immobile, boss: d.boss || null, big: !!d.boss, elite: !!(d.elite || x.elite), manaPerHit: 10, v: d.v,
         procs: new Set(d.proc ? [d.proc] : []), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, spell: 1,
       });
       if (e.skills.length) { e.ability = { type: 'skill' }; e.skillIdx = 0; e.maxMana = d.mana || 70; e.mana = 0; } else { e.ability = null; e.maxMana = 0; }
