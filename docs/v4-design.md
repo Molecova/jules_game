@@ -355,3 +355,4 @@ T5는 6장뿐이라 ★2가 최대입니다(★3은 9장 필요).
 
 - 난이도별 라운드 수입 −1골드를 없앴다. 난이도는 적 강도 계수(보통 2.0 · 어려움 3.0 · 지옥 4.0)만 다르다.
 - 밸런스 패치용 목록 `docs/balance-list.md`(유닛 능력치·고유기, 상점 스킬 칩 54종)를 `node scripts/balance-list.cjs` 로 만든다.
+- **밸런스 시트**: `node scripts/balance-sheet.cjs export` 가 유닛 27종(능력치·고유기)과 스킬 칩 54종을 표 한 장(`docs/balance-sheet.csv`)으로 내보낸다. 엑셀·구글 시트에서 고친 표(CSV, 또는 시트에서 복사한 탭 구분 텍스트)를 `node scripts/balance-sheet.cjs apply <파일>` 로 적용하면 `data4.js` 원본과 다른 값만 `v4/balance4.js` 에 담기고, 페이지는 `data4.js` 다음에 이 파일을 읽어 덮어쓴다. 빈 칸은 그대로, 효과를 없애려면 0.
