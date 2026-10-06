@@ -191,6 +191,15 @@
   for (let i = SKILLS.length - 1; i >= 0; i--) if (DROP_SK.includes(SKILLS[i].id)) SKILLS.splice(i, 1);
   const KEEPFIX = { horn: { amt: 1.2, desc: '모든 아군 5초간 공격 속도 +20%(★마다 +8%p)' } };
   for (const sk of SKILLS) if (KEEPFIX[sk.id]) Object.assign(sk, KEEPFIX[sk.id]);
+  // 20차 사용자 패치: 공용 칩 약화
+  const ANYFIX = {
+    aid: { cd: 10, power: 220, desc: '자신 체력 220 회복' },
+    warcry: { cd: 8, mode: 'selfOnly', cells: null, n: 1, dur: 6, amt: 1.15, desc: '자신과 가장 가까운 아군 1명 6초간 공격 속도 +15%' },
+    adrenaline: { cd: 12, amt: 1.6, desc: '자신 5초간 공격 속도 +60%' },
+    secondwind: { cd: 12, power: 300, desc: '자신 보호막 300 + 해로운 효과 제거' },
+    resolve: { effect: 'berserk', cd: 11, power: 0, dur: 6, red: null, desc: '자신 체력을 20%로 낮추고 6초간 공격 속도 +100%' },
+  };
+  for (const sk of SKILLS) { const f = ANYFIX[sk.id]; if (!f) continue; for (const [k, v] of Object.entries(f)) { if (v === null) delete sk[k]; else sk[k] = v; } }
   const X5 = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
   SKILLS.push(
     // 궁수
@@ -219,6 +228,7 @@
     N_('polymorph', '변이', 'mag', 3, { mode: 'selfOnly', effect: 'polymorph', cd: 12, power: 0, dur: 3, vulnAmt: 0.2, icon: 'star', desc: '체력이 가장 높은 적(보스 제외)을 3초간 양으로. 행동 불가, 받는 피해 +20%' }),
     N_('manasurge', '마력 폭주', 'mag', 4, { mode: 'selfOnly', effect: 'surge', cd: 14, power: 0, dur: 6, icon: 'drop', desc: '6초간 자신 스킬 대기시간 2배 속도, 고유기 마나 2배로 참' }),
     N_('iceblessing', '얼음 축복', 'mag', 4, { mode: 'selfOnly', effect: 'invuln', cd: 12, power: 0, dur: 3, icon: 'ice', desc: '체력 비율이 가장 낮은 아군 3초 무적' }),
+    N_('vampire', '흡혈귀', 'war', 3, { mode: 'selfOnly', effect: 'passive', passive: true, power: 0, ls: [0.05, 0.1, 0.15], icon: 'drop', desc: '패시브: 기본 공격으로 준 피해의 5%만큼 회복(★2 10% · ★3 15%)' }),
     N_('meteorshower', '운석 낙하', 'mag', 5, { mode: 'selfOnly', effect: 'meteors', cd: 18, power: 250, count: 6, icon: 'fire', desc: '3초 동안 무작위 적 위치에 운석 6개, 각각 3×3 위력 250' }),
   );
 
@@ -226,45 +236,42 @@
   const I_ = (id, name, cls, t, shape, st, fx, desc, feel) => ({ kind: 'item', id, name, cls, t, shape, st, fx, desc, feel });
   const ITEMS = [
     I_('longsword', '장검', 'war', 1, 'sword', { atk: 0.2 }, null, '공격력 +20%', '정석 검사'),
-    I_('buckler', '둥근 방패', 'war', 1, 'shield', { hp: 0.14, armor: 0.05 }, null, '체력 +14%, 받는 피해 −5%', '탱커'),
-    I_('twinblades', '쌍단검', 'war', 2, 'twin', { as: 0.15, crit: 0.1 }, 'ambush', '공격 속도 +15%, 치명 +10%. 첫 3번 공격은 확정 치명(기습)', '도적'),
-    I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.08 }, 'healMace', '체력 +8%. 공격할 때마다 가장 다친 아군을 공격력의 25%만큼 회복', '성기사'),
-    I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.06 }, 'bloodrage', '공격력 +20%, 흡혈 6%, 주변 적에게 25% 튐. 체력 50% 이하에서 공격 속도 +25%', '광전사'),
-    I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.1, hp: 0.1 }, 'stunEvery', '공격력·체력 +10%. 5번째 공격마다 대상 0.8초 기절', '제압'),
-    I_('thornmail', '독 단도', 'war', 3, 'dagger', { as: 0.12, crit: 0.05 }, 'poisonHit', '공격 속도 +12%, 치명 +5%. 공격 시 3초 중독(초당 15)', '암살자'),
-    I_('dragonslayer', '그림자 검', 'war', 4, 'sword', { atk: 0.24, crit: 0.12 }, 'execute', '공격력 +24%, 치명 +12%. 체력 50% 이하 적에게 주는 피해 +25%', '암살자'),
-    I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.18, armor: 0.12 }, 'towerGuard', '체력 +18%, 받는 피해 −12%. 4초마다 주변 적을 도발하고, 맞으면 주변 아군에게 보호막', '탱커'),
+    I_('buckler', '둥근 방패', 'war', 1, 'shield', { hp: 0.14, armor: 0.1 }, null, '체력 +14%, 받는 피해 −10%', '탱커'),
+    I_('twinblades', '쌍단검', 'war', 2, 'twin', { as: 0.2, crit: 0.15, critDmg: 0.25 }, 'ambush', '공격 속도 +20%, 치명 +15%, 치명 피해 +25%. 첫 3번 공격은 확정 치명(기습)', '도적'),
+    I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.1 }, 'healMace', '체력 +10%. 공격할 때마다 가장 다친 아군을 공격력의 25%만큼 회복', '성기사'),
+    I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.15 }, 'bloodthirst', '공격력 +20%, 흡혈 15%. 체력 50% 이하에서는 흡혈 25%', '광전사'),
+    I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.1, hp: 0.1 }, 'cleave', '공격력·체력 +10%. 공격하면 대상 주변 적에게도 피해 25%', '제압'),
+    I_('thornmail', '독 단도', 'war', 3, 'dagger', { as: 0.3, crit: 0.05 }, 'venomStack', '공격 속도 +30%, 치명 +5%. 공격할 때 5초 중독(초당 20), 끝없이 겹침', '암살자'),
+    I_('dragonslayer', '그림자 검', 'war', 4, 'sword', { atk: 0.25, crit: 0.1 }, 'multiHit', '공격력 +25%, 치명 +10%. 기본 공격이 30% 확률로 2번, 10% 확률로 3번', '암살자'),
+    I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.3, armor: 0.15 }, 'guardHeal', '체력 +30%, 받는 피해 −15%. 받은 피해의 10%만큼 체력 비율이 가장 낮은 아군 회복', '수호자'),
     I_('shortbow', '단궁', 'arc', 1, 'bow', { as: 0.14 }, null, '공격 속도 +14%', '정석 궁수'),
-    I_('longbow', '장궁', 'arc', 1, 'bow', { range: 1, atk: 0.12 }, null, '사거리 +1, 공격력 +12%', '저격수'),
-    I_('venombow', '독궁', 'arc', 2, 'bow', { atk: 0.05 }, 'poisonHit', '공격력 +5%. 공격 시 3초 중독(초당 15)', '독 사냥꾼'),
+    I_('longbow', '장궁', 'arc', 1, 'bow', { range: 1, atk: 0.12 }, 'longshot', '사거리 +1, 공격력 +12%. 3칸 이상 떨어진 적에게 주는 피해 +25%', '저격수'),
+    I_('venombow', '독궁', 'arc', 2, 'bow', { atk: 0.05 }, 'venomBonus', '공격력 +5%. 공격 시 3초 중독(초당 15). 중독된 적에게 주는 피해 +15%', '독 사냥꾼'),
     I_('quiver', '도적의 단검', 'arc', 2, 'dagger', { atk: 0.25, as: 0.2, hp: 0.15, melee: true }, null, '근접 공격(사거리 1), 공격력 +25%, 공격 속도 +20%, 체력 +15%', '도적'),
     I_('whistle', '사냥매 호루라기', 'arc', 3, 'tooth', {}, 'hawkFocus', '전투 시작 시 사냥매 소환, 같은 적 연속 공격 피해 증가', '사냥꾼'),
-    I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.12 }, 'burnHit', '공격력 +12%. 공격 시 3초 화상', '화상 궁수'),
+    I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.12 }, 'burnCrit', '공격력 +12%. 공격 시 3초 화상. 화상 걸린 적에게 치명 확률 +25%', '화상 궁수'),
     I_('windcloak', '그림자 망토', 'arc', 3, 'cloak', { as: 0.2, dodge: 0.2, hp: 0.1, melee: true }, 'evasive', '근접 공격(사거리 1), 공격 속도 +20%, 회피 +20%, 체력 +10%. 회피하면 다음 공격 치명타', '도적'),
     I_('eagleeye', '매의 눈 반지', 'arc', 4, 'ring', { range: 1, crit: 0.25 }, 'headshot', '사거리 +1, 치명 +25%, 치명 피해 +40%', '저격수'),
-    I_('hornbow', '갈고리 쌍검', 'arc', 4, 'twin', { atk: 0.2, crit: 0.15, hp: 0.1, melee: true }, 'ambush', '근접 공격(사거리 1), 공격력 +20%, 치명 +15%, 체력 +10%. 첫 3번 공격은 확정 치명', '도적'),
+    I_('hornbow', '갈고리 쌍검', 'arc', 4, 'twin', { atk: 0.2, crit: 0.15, hp: 0.1, melee: true }, 'hookRoot', '근접 공격(사거리 1), 공격력 +20%, 치명 +15%, 체력 +10%. 4번째 공격마다 대상 2초 이동 불가', '도적'),
     I_('wand', '견습 지팡이', 'mag', 1, 'wand', { manaPerHit: 4, spell: 0.03 }, null, '공격할 때마다 마나 +4, 스킬 위력 +3%', '정석 마법사'),
     I_('frostorb', '서리 오브', 'mag', 1, 'orb', { spell: 0.12 }, 'spellSlow', '스킬 위력 +12%. 스킬에 맞은 적 둔화', '제어'),
     I_('firestaff', '화염 지팡이', 'mag', 2, 'staff', { spell: 0.3 }, 'spellBurn', '스킬 위력 +30%. 스킬에 맞은 적 화상', '공격'),
     I_('prayerbook', '성서', 'mag', 2, 'book', { heal: 0.1 }, 'healer', '치유 +10%. 다친 아군이 있으면 기본 공격 대신 그 아군을 공격력의 45%만큼 치유', '힐러'),
-    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 25 }, 'hourglass', '마나 25로 시작. 고유기를 쓰면 주변 1칸 아군 마나 +15', '지원'),
-    I_('manaring', '마나 반지', 'mag', 2, 'ring', { mana: 10 }, 'manaRegen', '마나 10으로 시작. 초당 마나 +3', '빠른 시전'),
+    I_('hourglass', '시간의 모래시계', 'mag', 3, 'grail', { mana: 25 }, 'hourglass', '마나 25로 시작. 고유기를 쓰면 주변 1칸 아군 마나 +15, 자신 스킬 대기시간 2초 감소', '지원'),
+    I_('manaring', '마나 반지', 'mag', 2, 'ring', { mana: 10 }, 'manaRegen', '마나 10으로 시작. 초당 마나 +3. 장착 스킬 대기시간 −15%', '빠른 시전'),
     I_('lifeorb', '생명의 수정', 'mag', 3, 'orb', { spell: 0.3, heal: 0.14, hp: 0.15 }, 'spellLeech', '스킬 위력 +30%, 치유 +14%, 체력 +15%. 스킬 피해의 25% 회복', '흡혈 마법사'),
     I_('stormstaff', '폭풍의 지팡이', 'mag', 4, 'staff', { spell: 0.18, manaPerHit: 3 }, 'stormHit', '스킬 위력 +18%. 기본 공격이 가까운 적 둘에게 번개(공격력 35%)', '연쇄 공격'),
+    I_('vampsword', '흡혈귀의 검', 'war', 5, 'sword', { as: 1 }, 'vampire', '공격 속도 +100%. 전투를 체력 50%로 시작. 공격할 때마다 흡혈 +1%(전투 동안 누적)', '흡혈귀'),
     I_('archstaff', '대마법사의 지팡이', 'mag', 4, 'staff', { spell: 0.4, mana: 20 }, 'echo', '스킬 위력 +40%, 마나 20으로 시작. 고유기 3번마다 한 번 더(60%)', '폭딜'),
   ];
   // 아이템 액티브: 재사용 대기시간마다 저절로 쓰는 기술(스킬과 같은 형식). 나머지 아이템 효과는 패시브
   const ITEM_ACT = {
     longsword: [{ name: '베어 넘기기', cd: 8, mode: 'facing', effect: 'dmg', cells: [[1, -1], [1, 0], [1, 1]], power: 170, icon: 'slash' }, '8초마다 앞쪽 3칸 베기'],
     buckler: [{ name: '방패 막기', cd: 10, mode: 'selfOnly', effect: 'shield', power: 160, icon: 'shield' }, '10초마다 자신 보호막'],
-    shortbow: [{ name: '속사', cd: 7, mode: 'volley', effect: 'dmg', focus: true, count: 2, power: 90, icon: 'arrow' }, '7초마다 대상에게 화살 2발'],
-    longbow: [{ name: '관통 사격', cd: 10, mode: 'line', effect: 'dmg', power: 200, icon: 'arrow' }, '10초마다 끝까지 관통하는 화살'],
+    shortbow: [{ name: '쌍발', cd: 7, mode: 'volley', effect: 'dmg', focus: true, count: 2, power: 90, icon: 'arrow' }, '7초마다 대상에게 화살 2발'],
     quiver: [{ name: '그림자 찌르기', cd: 9, mode: 'leap', effect: 'dmg', power: 220, icon: 'dagger' }, '9초마다 체력이 가장 낮은 적 옆으로 뛰어들어 찌르기'],
     wand: [{ name: '마력 화살', cd: 6, mode: 'single', effect: 'dmg', power: 130, icon: 'star' }, '6초마다 대상에게 마력 화살'],
-    flamebow: [{ name: '불화살', cd: 9, mode: 'target', effect: 'dmg', cells: [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]], power: 140, burn: { dps: 30, dur: 3 }, icon: 'fire' }, '9초마다 대상 중심 십자 불화살'],
-    dragonslayer: [{ name: '그림자 일격', cd: 10, mode: 'lowest', effect: 'dmg', power: 300, icon: 'dagger' }, '10초마다 체력 비율이 가장 낮은 적 일격'],
-    eagleeye: [{ name: '매의 눈 저격', cd: 10, mode: 'farthest', effect: 'dmg', power: 340, icon: 'target' }, '10초마다 가장 먼 적 저격'],
-    warhammer: [{ name: '땅 울리기', cd: 11, mode: 'self', effect: 'dmg', cells: [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]], power: 150, slow: 2, icon: 'quake' }, '11초마다 주변 1칸 적 피해 + 2초 둔화'],
+    eagleeye: [{ name: '매의 눈 저격', cd: 10, mode: 'farthest', effect: 'dmg', power: 340, vuln: { amt: 0.2, dur: 3 }, icon: 'target' }, '10초마다 가장 먼 적 저격, 맞은 적 3초간 받는 피해 +20%'],
   };
   for (const it of ITEMS) { const a = ITEM_ACT[it.id]; if (!a) continue; it.act = Object.assign({ kind: 'act', id: 'a_' + it.id, cls: it.cls, t: it.t }, a[0]); it.desc += '. ' + a[1]; }
 
@@ -308,7 +315,7 @@
       desc: ['기사 무기를 쥔 딱지 받는 피해 −15%', '받는 피해 −25%, 체력 +10%'] },
     j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer'],
       desc: ['용병 공격력 +15%, 승리하면 골드 +1', '용병 공격력 +30%, 승리하면 골드 +2'] },
-    j_assassin: { name: '암살자', short: '암', col: '#4a3f6b', kind: 'job', cls: 'war', th: [2, 3], members: ['twinblades', 'thornmail', 'dragonslayer'],
+    j_assassin: { name: '암살자', short: '암', col: '#4a3f6b', kind: 'job', cls: 'war', th: [2, 3], members: ['twinblades', 'thornmail', 'dragonslayer', 'vampsword'],
       desc: ['암살자 치명 +15%, 치명 피해 +30%', '암살자 치명 +30%, 치명 피해 +60%'] },
     j_hunter: { name: '사냥꾼', short: '냥', col: '#5f7a2a', kind: 'job', cls: 'arc', th: [2, 3], members: ['shortbow', 'venombow', 'whistle'],
       desc: ['사냥꾼 공격 속도 +15%', '사냥꾼 공격 속도 +30%, 공격력 +10%'] },
@@ -333,7 +340,7 @@
   const XPNEED = { 3: 6, 4: 10, 5: 16, 6: 24, 7: 32, 8: 44 };
   const MAXLV = 9, LAST_ACT = 5;
   const POOL_N = [0, 30, 25, 20, 15, 10]; // 공용 풀: 카드 한 종류당 등급별 장수
-  const MAXT = { unit: 5, skill: 5, item: 4 };
+  const MAXT = { unit: 5, skill: 5, item: 5 };
   const BENCH = 8;
 
   const RELICS = {

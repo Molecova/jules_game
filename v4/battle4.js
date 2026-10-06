@@ -44,6 +44,7 @@
       if (st.range) s.range += st.range;
       if (st.melee) s.range = 1; // 도적 무기: 근접 공격
       if (st.crit) s.crit += st.crit * k;
+      if (st.critDmg) s.critDmg += st.critDmg * k;
       if (st.dodge) s.dodge += st.dodge * Math.min(k, 1.6);
       if (st.lifesteal) s.lifesteal += st.lifesteal * k;
       if (st.spell) s.spell *= 1 + st.spell * k;
@@ -189,14 +190,21 @@
       });
       // 스킬 칩 1칸(재사용 대기시간)과 아이템 액티브
       const c0 = card.skills[0];
-      if (c0) { const sd = def('skill', c0.id), cd = chipCd(sd, c0.star); e.chip = { def: sd, star: c0.star, cells: expandCells(sd, c0.star), cd, t: Math.min(3, cd * 0.5) }; }
+      if (c0) {
+        const sd = def('skill', c0.id);
+        if (sd.passive) { if (sd.ls) e.atkLs = sd.ls[c0.star - 1] || sd.ls[0]; } // 패시브 칩(흡혈귀): 대기시간 없음
+        else { const cd = chipCd(sd, c0.star) * (s.fx === 'manaRegen' ? 0.85 : 1); e.chip = { def: sd, star: c0.star, cells: expandCells(sd, c0.star), cd, t: Math.min(3, cd * 0.5) }; }
+      }
       const act = card.item && def('item', card.item.id).act;
       if (act) { const cd = chipCd(act, card.item.star); e.act = { def: act, star: card.item.star, cells: expandCells(act, card.item.star), cd, t: cd * 0.6 }; }
       e.star = 1; // 엔진 STAR_MULT 를 쓰지 않도록(능력치는 이미 반영됨)
       let mana = s.mana;
       const p = d.passive;
       if (p === 'pierceArmor') e.pierce = true;
-      if (s.fx === 'poisonHit') e.procs.add('poisonHit');
+      if (s.fx === 'poisonHit' || s.fx === 'venomBonus') e.procs.add('poisonHit');
+      if (s.fx === 'venomStack') e.procs.add('venomStack');
+      if (s.fx === 'burnCrit') e.procs.add('burnHit');
+
       if (s.fx === 'spellSlow') e.procs.add('spellSlow');
       if (s.fx === 'spellBurn') e.procs.add('spellBurn');
       if (s.fx === 'bloodrage' || s.fx === 'cleave') e.procs.add('cleaveHit');
@@ -244,6 +252,8 @@
       if (has('victoryhorn') && R().node && ['elite', 'boss'].includes(R().node.k)) e.atk *= 1.08;
       e.armor = Math.min(0.7, e.armor);
       e.maxHp = Math.round(e.maxHp); e.hp = e.maxHp;
+      if (s.fx === 'vampire') e.hp = Math.round(e.maxHp * 0.5); // 흡혈귀의 검: 체력 50%로 시작
+      e.lsBase = e.lifesteal;
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
       setupSkills(e, mana);
       return e;
@@ -300,7 +310,7 @@
       const st = t.st, pw = src ? src.pow || 1 : 1;
       switch (key) {
         case 'burn': st.burn = { t: val.dur, dps: val.dps * pw * dotMult(src, 'burn'), src }; break;
-        case 'poison': { const p = st.poison; const stacks = p && p.t > 0 ? Math.min(3, p.stacks + 1) : 1; st.poison = { t: val.dur, dps: val.dps * pw * dotMult(src, 'poison'), stacks, src }; break; }
+        case 'poison': { const p = st.poison; const stacks = p && p.t > 0 ? (val.inf ? p.stacks + 1 : Math.min(3, p.stacks + 1)) : 1; st.poison = { t: val.dur, dps: val.dps * pw * dotMult(src, 'poison'), stacks, src }; break; }
         case 'bleed': st.bleed = { t: val.dur, dps: val.dps * pw * dotMult(src, 'bleed'), src }; break;
         case 'slow': st.slow = Math.max(st.slow || 0, val); break;
         case 'weak': st.weak = Math.max(st.weak || 0, val); break;
@@ -489,6 +499,10 @@
           for (const a of list) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, d.red || 0.3); a.st.fort = Math.max(a.st.fort || 0, d.dur || 4); a.st.hot = { t: d.dur || 4, hps: (d.hot || 0) * F * Hm, src: u }; cb.ring(a.px, a.py, '#ffe08a', 22); }
           break;
         }
+        case 'berserk': { // 결의: 체력을 20%로 낮추고 공격 속도 +100%
+          const floor = Math.round(u.maxHp * 0.2); if (u.hp > floor) { u.hp = floor; cb.float(u.px, u.py - 46, '결의!', '#ff8a8a', true); }
+          addHaste(u, d.id, d.dur || 6, 2); cb.ring(u.px, u.py, '#e8436b', 30, 0.6); break;
+        }
         case 'bladeAura': u.st.blades = { t: d.dur || 5, dps: (d.power || 50) * k, dur: d.bleedDur || 10 }; cb.ring(u.px, u.py, '#c3cbd6', 34, 0.6); cb.float(u.px, u.py - 40, '칼날', '#e8ecf2'); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
@@ -497,7 +511,7 @@
           break;
         }
         case 'haste': case 'timewarp': {
-          const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
+          const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : d.n ? [u, ...cb.alive(u.side).filter((x) => x !== u && !x.object).sort((a, b) => grid.dist(u.cell, a.cell) - grid.dist(u.cell, b.cell)).slice(0, d.n)] : allies(cellsOf());
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#f5c400');
           const amt = (d.amt || 1.25) + 0.08 * ((s.star || 1) - 1);
           for (const a of list) { addHaste(a, d.id, d.dur || 6, amt); cb.ring(a.px, a.py, '#f5c400', 18); }
@@ -791,6 +805,7 @@
           if (u.side === 0) {
             if (u.passive === 'scholar' && u.bars) { const b = u.bars[u.castIdx || 0]; b.mana = Math.min(b.max, 15); }
             if (u.passive === 'sage') for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.08 * u.healMult, u);
+            if (u.ifx === 'hourglass' && u.chip) u.chip.t = Math.max(0, u.chip.t - 2);
             if (u.ifx === 'hourglass') for (const n of grid.neighbors[u.cell]) { const a = cb.occ[n]; if (a && a.side === 0 && a.ability) { addMana(a, 15 * u.ifxK); cb.ring(a.px, a.py, '#6ab0e8', 16); } }
             if (u.ifx === 'echo') { u.casts = (u.casts || 0) + 1; if (u.casts % 3 === 0) { const tt = t.dead ? cb.nearestEnemy(u) : t; if (tt) { cb.float(u.px, u.py - 54, '메아리!', '#e2d0ff', true); execSkill(cb, u, tt, s, 0.6); } } }
           }
@@ -804,8 +819,9 @@
         immune: (t) => !!(t.st && t.st.invuln > 0),
         missChance: (src) => (src.st && src.st.blind ? src.st.blind.amt : 0),
         healMod: (t) => (t.st && t.st.antiheal > 0 ? 0.2 : 1),
-        forceCrit: (u, t) => {
+        forceCrit: (u, t, cb) => {
           if (u.st && u.st.sure > 0) return true;
+          if (u.ifx === 'burnCrit' && t.st && t.st.burn && cb.random() < 0.25 * Math.min(1.6, u.ifxK)) return true;
           const m = t.st && t.st.marked; if (m && m.n > 0 && u.side !== t.side) { m.n--; return true; }
           return false;
         },
@@ -828,6 +844,8 @@
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'deadeye' && t && t.hp < t.maxHp * 0.5) m *= 1.25;
+          if (src.ifx === 'longshot' && t && grid.dist(src.cell, t.cell) >= 3) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
+          if (src.ifx === 'venomBonus' && t && t.st && t.st.poison) m *= 1 + 0.15 * Math.min(1.6, src.ifxK);
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
           if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') m *= 1 + (src.passive === 'focus' ? 0.08 : 0.05) * (src.focusN || 0);
           return m;
@@ -851,6 +869,9 @@
           u.atkN = (u.atkN || 0) + 1;
           if (u.burnAdd && !t.dead) cb.damage(u, t, u.burnAdd, 'burn');
           if (u.st.storm > 0) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== u.side && !v.dead && !v.object) cb.damage(u, v, u.atk * 0.5, 'splash'); }
+          if (u.ifx === 'multiHit' && !u.dblNow && !t.dead) { const r = cb.random(), n = r < 0.1 ? 2 : r < 0.4 ? 1 : 0; if (n) { u.dblNow = true; cb.float(u.px, u.py - 40, n === 2 ? '3연타' : '연타', '#e2d0ff'); for (let i = 0; i < n && !t.dead; i++) cb.attack(u, t); u.dblNow = false; } }
+          if (u.ifx === 'hookRoot' && u.atkN % 4 === 0 && !t.dead && !t.boss) { t.st.root = Math.max(t.st.root || 0, 2); cb.float(t.px, t.py - 28, '속박', '#cfe8b0'); }
+          if (u.ifx === 'vampire') u.lifesteal += 0.01 * Math.min(1.6, u.ifxK);
           if (u.passive === 'doubleHit' && !u.dblNow && !t.dead && cb.random() < 0.25) { u.dblNow = true; cb.float(u.px, u.py - 40, '연타', '#fffdf7'); cb.attack(u, t); u.dblNow = false; }
           if (u.passive === 'stunHit' && u.atkN % 3 === 0 && !t.boss) { addStatus(cb, t, 'stun', 1, u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
           if (u.ifx === 'stunEvery' && u.atkN % 5 === 0 && !t.boss) { addStatus(cb, t, 'stun', 0.8 * Math.min(1.6, u.ifxK), u); cb.float(t.px, t.py - 28, '기절', '#f5c400'); }
@@ -882,6 +903,7 @@
         onHit: (t, dmg, src, kind, crit, cb) => {
           t.hitT = 0.22;
           if (t.st && t.st.link && kind !== 'link' && dmg > 0) { const o = t.st.link.other; if (o && !o.dead) cb.damage(src && !src.dead ? src : null, o, dmg * t.st.link.amt, 'link'); }
+          if (t.ifx === 'guardHeal' && t.side === 0 && dmg > 0 && !t.dead) { const a = lowestAlly(cb, 0); if (a) cb.heal(a, dmg * 0.1 * Math.min(1.6, t.ifxK), t); }
           if (t.st && t.st.reflect && src && !src.dead && src.side !== t.side && (kind === 'atk' || kind === 'spell' || kind === 'splash') && dmg > 0) cb.damage(t, src, dmg * t.st.reflect.amt, 'thorns');
           if (kind === 'atk' && global.SHOTS4) SHOTS4.impact(cb, src, t);
           if (kind === 'atk' || kind === 'spell' || kind === 'splash') {
@@ -898,7 +920,9 @@
           if (kind === 'atk') {
             const pr = src.procs || new Set();
             if (pr.has('burnHit')) addStatus(cb, t, 'burn', { dps: 25, dur: 3 }, src);
-            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 15 * (src.ifx === 'poisonHit' ? src.ifxK : 1), dur: 3 }, src);
+            if (pr.has('poisonHit')) addStatus(cb, t, 'poison', { dps: 15 * (src.ifx === 'poisonHit' || src.ifx === 'venomBonus' ? src.ifxK : 1), dur: 3 }, src);
+            if (pr.has('venomStack')) addStatus(cb, t, 'poison', { dps: 20 * src.ifxK, dur: 5, inf: true }, src);
+            if (src.atkLs && !src.dead && dmg > 0) cb.heal(src, dmg * src.atkLs, src); // 흡혈귀 칩
             if (pr.has('cleaveHit')) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== src.side && v !== t) cb.damage(src, v, dmg * 0.25, 'splash'); }
             if (src.ifx === 'markAura') addStatus(cb, t, 'vuln', { dur: 3, amt: 0.1 * Math.min(2, src.ifxK) }, src);
             if (src.passive === 'heavyBolt' && src.side === 0) {
@@ -940,6 +964,7 @@
               if (u.auraT <= 0) { u.auraT = 4; for (const a of cb.alive(0)) if (!a.object && grid.dist(a.cell, u.cell) <= 1 && a.hp < a.maxHp) cb.heal(a, a.maxHp * 0.05 * u.healMult, u); cb.ring(u.px, u.py, '#fff2b0', 34, 0.5); }
             }
             if (u.ifx === 'manaRegen' && u.ability) addMana(u, 3 * Math.min(1.6, u.ifxK) * dt);
+            if (u.ifx === 'bloodthirst') u.lifesteal = (u.lsBase || 0) + (u.hp / u.maxHp <= 0.5 ? 0.1 * Math.min(1.6, u.ifxK) : 0);
             // 스킬 칩·아이템 액티브: 대기시간이 끝나면 저절로(기절 중에는 멈춤)
             for (const k of ['chip', 'act']) {
               const c = u[k]; if (!c || u.stun > 0) continue;

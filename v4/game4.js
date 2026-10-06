@@ -746,7 +746,7 @@
       const eq = shop ? '' : [...c.skills.map((x) => def(x).name + starTxt(x.star)), c.item ? def(c.item).name + starTxt(c.item.star) : null].filter(Boolean).join(' · ');
       body = `<p>${hl(d.trait)}<br><span class="meta">사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span>${unitLadder(d, c.star)}</p>${sl}`;
     } else if (c.kind === 'skill') {
-      body = `<p>${hl(d.desc)}<br><span class="meta">재사용 ${secTxt(BT4.chipCd(d, c.star))}초마다 저절로${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
+      body = `<p>${hl(d.desc)}<br><span class="meta">${d.passive ? '패시브(늘 켜짐)' : `재사용 ${secTxt(BT4.chipCd(d, c.star))}초마다 저절로`}${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
     } else {
       body = `<p>${hl(d.desc)}<br><span class="meta">끼우면 ${d.feel}</span>${itemLadder(d, c.star, BASE_E)}</p>`;
     }
@@ -852,6 +852,8 @@
       case 'explosive': main = `피해 <em>${P}</em> · ${sd.delay || 2}초 뒤 폭발 <em>${Math.round((sd.blast || sd.power) * e.pow * k * e.spell)}</em>`; break;
       case 'meteors': main = `운석 ${sd.count || 6}개 · 각 피해 <em>${P}</em>`; break;
       case 'thornshield': main = `보호막 <em>${Math.round(P * H)}</em> · 반사 ${pct(sd.reflect || 0.3)}% ${sd.dur || 4}초`; break;
+      case 'passive': main = sd.ls ? `기본 공격 피해의 <em>${pct(sd.ls[star - 1] || sd.ls[0])}%</em> 회복` : sd.desc; break;
+      case 'berserk': main = `체력 20%로 · 공속 <em>+100%</em> ${sd.dur || 6}초`; break;
       case 'markRandom': main = `적 ${sd.n || 2}명 ${sd.stun ? `빙결 <em>${sd.stun}초</em> · ` : ''}받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
       case 'summon': main = sd.summon === 'hawk' ? `매 소환(최대 ${sd.max || 1})` : '골렘 소환'; break;
       case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · ${sd.hot ? `초당 회복 <em>${Math.round(sd.hot * e.pow * k * e.spell * H)}</em>` : `회복 <em>${Math.round(P * H)}</em>`}`; break;
@@ -929,7 +931,7 @@
       const x = c.skills[k];
       if (!x) { socks += `<div class="sk empty">빈 스킬 칸</div>`; continue; }
       const sd = def(x);
-      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span class="skw"><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${cdTxt(BT4.chipCd(sd, x.star))}</span><button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
+      socks += `<div class="sk" data-info="s${k}" role="button" tabindex="0" style="--kc:${CLS[sd.cls].col}"><img src="${imgOf(x, 60)}" alt=""><span class="skw"><span><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${skillMain(sd, x.star, e)}</span>${sd.passive ? '<span class="cast">패시브</span>' : cdTxt(BT4.chipCd(sd, x.star))}</span><button class="unq" data-un="${k}" aria-label="${sd.name} 해제">해제</button></div>`;
     }
     const rg = manaRegenOf(e), st0 = e.bars && e.bars[0] ? Math.round(e.bars[0].mana) : 0;
     const manaRow = d.ult ? `<div class="tc-mana">${DROP}<span>고유기 마나: 공격 1번 <em>+${Math.round((e.manaPerHit || 12) * (e.manaGain || 1))}</em> · 맞으면 최대 +10${rg ? ` · 초당 <em>+${secTxt(rg)}</em>` : ''}${st0 ? ` · 시작 <em>${st0}</em>` : ''}</span></div>` : '';
@@ -959,8 +961,8 @@
         const head = isItem ? `<small>${CLS[sd.cls].name} 아이템 · ${sd.t}등급 · 끼우면 ${sd.feel}</small>` : `<small>${CLS[sd.cls].name} 스킬 · ${sd.t}등급 · ${d.name}에 장착</small>`;
         sub = `<button class="scbg" data-act="subclose" aria-label="칩 카드 닫기"></button>
           <div class="scard ${isItem ? 'k-item' : 'k-skill'}" style="--cc:${CLS[sd.cls].col};--tc:var(--t${sd.t})" role="dialog" aria-label="${sd.name}">
-            <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : `<span class="drop cdb">${secTxt(BT4.chipCd(sd, x.star))}초</span>`}</div>
-            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem ? '<br>' + cdTxt(BT4.chipCd(sd, x.star), '재사용 ') : ''}</p>
+            <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : sd.passive ? '<span class="drop cdb">패시브</span>' : `<span class="drop cdb">${secTxt(BT4.chipCd(sd, x.star))}초</span>`}</div>
+            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem && !sd.passive ? '<br>' + cdTxt(BT4.chipCd(sd, x.star), '재사용 ') : ''}</p>
             <div class="sc-r">${isItem ? '' : patternGrid(sd, x.star)}<div class="sc-l">${lad}</div></div>
             <div class="sc-b"><button class="wbtn" data-un="${isItem ? 'item' : k}">${isItem ? '아이템' : '칩'} 빼기</button><button class="wbtn" data-act="subclose">돌아가기</button></div>
           </div>`;
@@ -2015,7 +2017,7 @@
       else if (tab === 'syn') list = synList(null);
       else list = POOL[tab].slice().sort((a, b) => (CORDER.indexOf(a.cls) - CORDER.indexOf(b.cls)) || a.t - b.t).map((d) => {
         const c = mk(tab, d.id);
-        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.ult ? '고유기 · ' : '패시브 · '}${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? `${d.desc}<br>재사용 ${BT4.chipCd(d, 1)}초` : `${d.desc}<br><i>${d.feel}</i>`;
+        const extra = tab === 'unit' ? `체력 ${d.hp} · 공격 ${d.atk} · 사거리 ${d.range}<br>${d.ult ? '고유기 · ' : '패시브 · '}${d.trait}<br>시너지: ${d.traits.map((k) => TRAITS[k].name).join(' · ')}` : tab === 'skill' ? `${d.desc}<br>${d.passive ? '패시브' : `재사용 ${BT4.chipCd(d, 1)}초`}` : `${d.desc}<br><i>${d.feel}</i>`;
         return `<div class="cx k-${tab} tier${d.t}" style="--tc:var(--t${d.t});--cc:${CLS[d.cls].col}"><img src="${imgOf(c, 64)}" alt=""><div><b>${d.name}</b> <small class="tg" style="--cc:${CLS[d.cls].col}">${CLS[d.cls].name} · ${d.t}등급</small><small>${extra}</small></div>${tab === 'skill' ? patternGrid(d) : ''}</div>`;
       }).join('');
       $('codexList').innerHTML = list;
