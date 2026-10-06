@@ -8,5 +8,5 @@ await p.goto('http://127.0.0.1:8000/concepts/v4-skill-effects.html');await p.wai
 await p.goto('http://127.0.0.1:8000/v4/');await p.evaluate(()=>{__g.newRun('normal');__g.enterNode(__g.R.map.floors[0][0]);});await p.waitForTimeout(100);await p.screenshot({path:path.join(output,'game-new-enemies.png'),fullPage:true});const stored=await p.evaluate(()=>JSON.stringify({enemies:__g.R.enemies,encounters:__g.R.encounters,round:__g.R.round}));
 await p.reload();await p.locator('#contBtn').click();await p.locator('#scr-play').waitFor({state:'visible'});assert.equal(await p.evaluate(()=>JSON.stringify({enemies:__g.R.enemies,encounters:__g.R.encounters,round:__g.R.round})),stored);
 await p.evaluate(()=>{const r=__g.R;r.board=[{kind:'unit',id:'archer',uid:'check-archer',star:2,skills:[],item:null,x:1,y:4},{kind:'unit',id:'pyro',uid:'check-pyro',star:2,skills:[],item:null,x:3,y:4}];__g.renderPlay();__g.startCombat();});
-await p.locator('#skipBtn').click();await p.locator('#resBtn').waitFor({state:'visible',timeout:20000});
+await p.evaluate(()=>__g.skipCombat());await p.locator('#resBtn').waitFor({state:'visible',timeout:20000});
 console.log(JSON.stringify({errors,shots:18,encounters:30,prepSaveResume:true,skip:true}));assert.deepEqual(errors,[]);await b.close();})().catch(e=>{console.error(e);process.exit(1)});

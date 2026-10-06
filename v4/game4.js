@@ -1013,7 +1013,6 @@
     ro.style.setProperty('--n', al.length);
     ro.innerHTML = al.map((u) => `<div class="ring${u.dead ? ' dead' : ''}" aria-label="${u.def.name} 체력 ${Math.max(0, Math.round(u.hp))}/${Math.round(u.maxHp)}"><span class="rw">${ringSVG(u.dead ? 0 : Math.max(0, u.hp / u.maxHp), (u.bars || []).map((b) => Math.min(1, b.mana / b.max)))}<img src="${imgOf(u.card, 60)}" alt="">${u.card.star > 1 ? `<span class="st">${starTxt(u.card.star)}</span>` : ''}</span><small>${u.def.name.replace(/^견습 /, '')}</small></div>`).join('');
     const res = B.phase === 'result';
-    $('skipBtn').hidden = res;
     $('resBtn').hidden = !res;
     if (res) $('resBtn').textContent = B.won ? `승리 +${B.reward}골드 · 계속` : B.phoenix ? '불사조 깃털로 버티기' : '원정 기록 보기';
     $('resBtn').className = 'btn ' + (B.won || B.phoenix ? 'pri' : 'warn');
@@ -1093,7 +1092,8 @@
   $('eLvBox').onclick = () => { if (R && !B) openOdds(); };
   $('goBtn').onclick = () => { if (R.mode === 'fight') startCombat(); else { ui.sel = null; finishNode(); } };
   $('spdSeg').onclick = (e) => { const b = e.target.closest('[data-spd]'); if (!b || !B) return; B.speed = ui.speed = +b.dataset.spd; SFX.play('click'); renderBattlePanel(); };
-  $('skipBtn').onclick = () => {
+  // 전투 빨리 끝내기(화면 버튼은 없앴고 테스트에서만 쓴다)
+  function skipCombat() {
     if (!B || B.phase !== 'combat' || B.skipping) return;
     const battle = B; battle.skipping = true;
     const advance = () => {
@@ -1106,7 +1106,7 @@
       requestAnimationFrame(advance);
     };
     requestAnimationFrame(advance);
-  };
+  }
   $('resBtn').onclick = () => { if (B && B.phase === 'result') afterCombat(); };
   // ---------- 전투 기록: 입힌 피해 · 받은 피해 · 회복/보호막 ----------
   let statSort = 'dmg';
@@ -2062,6 +2062,6 @@
   // 테스트·밸런스용 진입점
   window.__g = {
     get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
-    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, eliteChoices, lootChoices, bossLoot,
+    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, skipCombat, eliteChoices, lootChoices, bossLoot,
   };
 })();

@@ -42,7 +42,7 @@ fs.mkdirSync(out, { recursive: true });
             assert.ok(await pick.count(), 'unhandled selection'); await pick.first().click();
           }
         } else if (state.fight) {
-          await p.locator('#goBtn').click(); await p.locator('#skipBtn').click();
+          await p.locator('#goBtn').click(); await p.evaluate(() => __g.skipCombat());
           await p.locator('#resBtn').waitFor({ state: 'visible' });
           const fight = await p.evaluate(() => ({ act: __g.R.act, round: __g.R.round, kind: __g.R.node.k, won: __g.B.won }));
           assert.equal(fight.won, true); fights.push(fight);
