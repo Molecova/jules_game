@@ -832,20 +832,21 @@
     const k = BT4.SKSTAR[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult;
     let main = '';
     switch (sd.effect) {
-      case 'dmg': main = `피해 <em>${P}</em>${sd.mode === 'volley' ? ` × ${(sd.count || 3) + (star >= 3 ? 2 : 0)}발` : sd.mode === 'chain' ? ` · ${(sd.jumps || 4) + (star >= 3 ? 2 : 0)}번 튐` : ''}`; break;
+      case 'dmg': main = `피해 <em>${P}</em>${sd.mode === 'front' ? ` · 맨 앞 ${sd.n || 2}명` : ''}${sd.mode === 'volley' ? ` × ${(sd.count || 3) + (star >= 3 ? 2 : 0)}발` : sd.mode === 'chain' ? ` · ${(sd.jumps || 4) + (star >= 3 ? 2 : 0)}번 튐` : ''}`; break;
       case 'tele': main = `${sd.delay || 1.2}초 뒤 피해 <em>${P}</em>`; break;
-      case 'lightrain': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * 0.6 * H)}</em>`; break;
+      case 'lightrain': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * (sd.heal != null ? sd.heal / (sd.power || 1) : 0.6) * H)}</em>`; break;
+      case 'smite': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * (sd.heal != null ? sd.heal / (sd.power || 1) : 1) * H)}</em>`; break;
       case 'heal': main = `회복 <em>${Math.round(P * H)}</em>`; break;
       case 'shield': main = `보호막 <em>${Math.round(P * H)}</em>`; break;
       case 'taunt': main = `3초 도발 · 보호막 <em>${P}</em>`; break;
       case 'buff': main = `6초간 피해 <em>+${30 + 10 * (star - 1)}%</em> · 공속 +20%`; break;
       case 'haste': case 'timewarp': main = `공속 <em>+${Math.round(((sd.amt || 1.25) + 0.08 * (star - 1) - 1) * 100)}%</em> ${sd.dur || 6}초${sd.effect === 'timewarp' ? ` · 적 둔화 ${3 + star - 1}초` : ''}`; break;
       case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
-      case 'mana': main = `주변 아군 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
+      case 'mana': main = `${sd.n ? `가까운 아군 ${sd.n}명` : '주변 아군'} 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
       case 'heavy': main = `피해 ${atkAmt(e, sd.power * k)}`; break;
-      case 'guard': main = `받는 피해 <em>−${pct((sd.red || 0.25) + 0.05 * (star - 1))}%</em> ${sd.dur || 5}초`; break;
+      case 'guard': main = `${sd.only ? '전사 아군 ' : ''}받는 피해 <em>−${pct((sd.red || 0.25) + 0.05 * (star - 1))}%</em> ${sd.dur || 5}초`; break;
       case 'curse': main = `피해 <em>${P}</em> · 약화 ${sd.weak || 6}초`; break;
-      case 'markRandom': main = `적 ${sd.n || 2}명 받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
+      case 'markRandom': main = `적 ${sd.n || 2}명 ${sd.stun ? `빙결 <em>${sd.stun}초</em> · ` : ''}받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
       case 'summon': main = sd.summon === 'hawk' ? `매 소환(최대 ${sd.max || 1})` : '골렘 소환'; break;
       case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · 회복 <em>${Math.round(P * H)}</em>`; break;
       default: main = sd.desc;

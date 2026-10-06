@@ -363,6 +363,17 @@
       if (d.stackBurn) { u.burnAdd = (u.burnAdd || 0) + d.stackBurn * (u.pow || 1); cb.float(u.px, u.py - 46, `화상 +${Math.round(u.burnAdd)}`, '#ffb347'); } // 용의 숨결: 쓸 때마다 기본 공격 화상 피해 누적
       switch (d.effect) {
         case 'dmg': {
+          if (d.mode === 'front') { // 맨 앞(아군 쪽에 가까운) 적 n명, 맞으면 뒤로 push칸
+            const fr = (v) => (foe === 1 ? grid.cells[v.cell].r : -grid.cells[v.cell].r);
+            const vs = cb.alive(foe).filter((x) => !x.object).sort((a, b) => fr(b) - fr(a) || grid.dist(u.cell, a.cell) - grid.dist(u.cell, b.cell)).slice(0, d.n || 2);
+            visual(vs.map((v) => v.cell), vs);
+            for (const v of vs) {
+              cb.beam(u.px, u.py, v.px, v.py, col, 0.35); tiles(cb, [v.cell], col);
+              applySkillHit(cb, u, v, P, d);
+              if (d.push && !v.dead && !v.boss && !v.immobile) for (let i = 0; i < d.push; i++) { const to = abs(v.cell, 0, foe === 1 ? -1 : 1); if (to < 0 || cb.occ[to]) break; cb.teleport(v, to); }
+            }
+            break;
+          }
           if (d.mode === 'lowest' || d.mode === 'leap' || d.mode === 'farthest' || d.mode === 'single') {
             const pool = cb.alive(foe).filter((x) => !x.object);
             const v = d.mode === 'single' ? (t && !t.dead ? t : pool[0]) : d.mode === 'farthest' ? pool.sort((a, b) => grid.dist(u.cell, b.cell) - grid.dist(u.cell, a.cell))[0] : pool.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
@@ -476,7 +487,8 @@
         case 'mana': {
           const cells = cellsOf();
           tiles(cb, cells, '#6ab0e8');
-          for (const a of allies(cells)) if (a !== u && a.ability) addMana(a, (d.power || 30) * k);
+          const list = d.n ? cb.alive(u.side).filter((a) => a !== u && a.ability && !a.object).sort((a, b) => grid.dist(u.cell, a.cell) - grid.dist(u.cell, b.cell)).slice(0, d.n) : allies(cells).filter((a) => a !== u && a.ability);
+          for (const a of list) { addMana(a, (d.power || 30) * k); if (d.n) cb.beam(u.px, u.py, a.px, a.py, '#6ab0e8', 0.3); }
           break;
         }
         case 'guard': { // 수호 진형: 범위 아군 받는 피해 감소
@@ -494,8 +506,19 @@
           } else for (const m of mine) { cb.heal(m, m.maxHp * 0.4, u); cb.ring(m.px, m.py, '#9bff8a', 20); }
           break;
         }
+        case 'smite': { // 무작위 적 하나에 피해, 체력 비율이 가장 낮은 아군 회복(회복도 위력과 같은 배수)
+          const v = shuffle(cb.alive(foe).filter((x) => !x.object))[0];
+          if (v) { cb.beam(u.px, u.py, v.px, v.py, '#f5c400', 0.4); tiles(cb, [v.cell], '#f5c400'); applySkillHit(cb, u, v, P, d); }
+          const a = lowestAlly(cb, u.side);
+          if (a) { cb.beam(u.px, u.py, a.px, a.py, '#7dffa0', 0.3); cb.heal(a, P * (d.heal != null ? d.heal / (d.power || 1) : 1) * Hm, u); cb.ring(a.px, a.py, '#7dffa0', 24); }
+          break;
+        }
         case 'markRandom': {
-          for (const v of shuffle(cb.alive(foe).filter((x) => !x.object)).slice(0, d.n || 2)) { addStatus(cb, v, 'vuln', d.vuln, u); cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '표식', '#e2d0ff'); }
+          for (const v of shuffle(cb.alive(foe).filter((x) => !x.object)).slice(0, d.n || 2)) {
+            if (d.vuln) addStatus(cb, v, 'vuln', d.vuln, u);
+            if (d.stun) { addStatus(cb, v, 'stun', d.stun, u); cb.ring(v.px, v.py, '#9fd8ff', 26, 0.8); cb.float(v.px, v.py - 30, '빙결', '#cfefff'); }
+            else { cb.ring(v.px, v.py, '#7a4fd0', 26, 0.8); cb.float(v.px, v.py - 30, '표식', '#e2d0ff'); }
+          }
           break;
         }
         case 'curse': {
