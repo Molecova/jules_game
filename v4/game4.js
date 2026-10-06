@@ -61,7 +61,7 @@
 
   // 새 원정: 부대 없이 시작해 첫 상점에서 산다(첫 유닛 줄에 1골드 전사·궁수·마법사가 하나씩)
   function newRun(diff) {
-    if (!DIFF[diff]) diff = 'easy';
+    if (!DIFF[diff]) diff = 'normal';
     const seed = globalThis.crypto?.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
     R = {
       rng: seed, saveVersion: SAVE4.VERSION, pending: null, result: null, encounters: { version: 1, seed, used: {}, history: [], nodes: {} },
@@ -296,7 +296,7 @@
   function income() {
     const intMax = 5 + (has('vault') ? 2 : 0);
     const interest = Math.min(intMax, Math.floor(R.gold / 10));
-    const base = 5 + (has('crown') ? 1 : 0) + ((DIFF[R.diff] || DIFF.easy).income || 0);
+    const base = 5 + (has('crown') ? 1 : 0) + ((DIFF[R.diff] || DIFF.normal).income || 0);
     return { base, interest, total: base + interest };
   }
   function enterNode(n, quiet) {
@@ -1922,7 +1922,7 @@
     }
   }
   function setupRun() {
-    let diff = 'easy';
+    let diff = 'normal';
     const render = () => {
       openSheet(`<span class="eyebrow">출정 준비</span><h2>난이도를 고르세요</h2>
         <p class="lead" style="margin:0;color:var(--muted);font-size:12px">부대 없이 ${START_GOLD}골드로 떠납니다. 첫 상점에 1골드 전사·궁수·마법사가 하나씩 나옵니다.</p>

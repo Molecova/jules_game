@@ -12,7 +12,7 @@ fs.mkdirSync(out, { recursive: true });
   try {
     await p.goto('http://127.0.0.1:8000/v4/');
     await p.evaluate(() => {
-      localStorage.clear(); SFX.setMuted(true); __g.newRun('easy');
+      localStorage.clear(); SFX.setMuted(true); __g.newRun('normal');
       __g.R.rng = 412; __g.R.lv = 9; __g.R.gold = 200;
       __g.R.board = ['squire', 'shieldman', 'warden', 'paladin', 'blademaster', 'ninja', 'archmage', 'warlock', 'bishop'].map((id, i) => ({
         kind: 'unit', id, uid: 'full' + i, star: 3,

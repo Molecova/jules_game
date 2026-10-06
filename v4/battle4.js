@@ -251,7 +251,7 @@
 
     /** 라운드별 적 강화(원정대가 별·레벨·장비로 강해지는 만큼) */
     function foeMul(d) {
-      const r = R(), n = r.round, t = global.__tune || {}, df = t.foe || (V.DIFF[r.diff] || V.DIFF.easy).foe;
+      const r = R(), n = r.round, t = global.__tune || {}, df = t.foe || (V.DIFF[r.diff] || V.DIFF.normal).foe;
       const role = d.boss ? 'boss' : d.elite ? 'elite' : 'normal';
       const bossK = (role === 'boss' ? [1, t.boss1 || 1.15, t.boss2 || 1, t.boss3 || 0.58, t.boss4 || 1, t.boss5 || 1.3][r.act] : 1) * [1, 1, t.a2 || 1.12, t.a3 || 1, t.a4 || 1, t.a5 || 1][r.act] * (role === 'elite' && n <= 5 ? t.earlyElite || 0.75 : 1);
       const hp = ((t.hp0 || 1.2) + (t.hpK || 0.2) * n + (t.hpQ || 0.009) * n * n) * ({ normal: t.normHp || 0.82, elite: t.eliteHp || 0.78, boss: t.bossHp || 0.95 }[role]) * bossK * df;

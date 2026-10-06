@@ -327,9 +327,9 @@
   };
 
   const DIFF = {
-    easy: { name: '쉬움', desc: '기본 난이도. 라운드 수입 −1골드', foe: 1.1, phoenix: false, income: -1 },
-    hard: { name: '어려움', desc: '적이 더 강하고 라운드 수입 −1골드', foe: 1.4, phoenix: false, income: -1 },
-    hell: { name: '지옥', desc: '적이 훨씬 강하고 라운드 수입 −1골드', foe: 1.7, phoenix: false, income: -1 },
+    normal: { name: '보통', desc: '기본 난이도', foe: 2.0, phoenix: false, income: -1 },
+    hard: { name: '어려움', desc: '적이 더 강하다', foe: 3.0, phoenix: false, income: -1 },
+    hell: { name: '지옥', desc: '적이 훨씬 강하다', foe: 4.0, phoenix: false, income: -1 },
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
