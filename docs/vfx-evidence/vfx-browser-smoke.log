@@ -1,0 +1,7 @@
+PASS landing page and v4 navigation
+PASS v4 expedition, map, shop purchases and gold accounting
+PASS v4 combat engine completed: 승리 +1골드 · 계속
+PASS v4 localStorage save and resume
+PASS v3 expedition start and reachable map nodes
+PASS no JavaScript exceptions or failed local resources
+Optional font request failures: fonts.googleapis.com

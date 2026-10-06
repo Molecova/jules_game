@@ -9,7 +9,11 @@
  for(const [id,name,shape,color,size,trail]of rows)P[id]={id,name,shape,color,size,trail};
  const enemy={fire:{name:'불꽃',shape:'flame',color:'#e87436',size:10,trail:'embers'},mage:{name:'마력',shape:'orb',color:'#b976c4',size:9,trail:'dots'},bow:{name:'화살',shape:'arrow',color:'#c86b58',size:24,trail:'dash'}};
  const custom={thornroot:['needle','#749448'],acornlobber:['stone','#b68955'],bellkeeper:['holy','#99ba86'],chainwraith:['rune','#a294cb'],powderimp:['stone','#c17d42'],lavaborer:['flame','#ff8a3c'],crystalmage:['star','#8acde7'],contractpriest:['shadow','#b479ca'],snowarcher:['arrow','#7da8c2'],icesprite:['needle','#88d1ee'],shroom:['leaf','#a3b849'],necro:['rune','#95b49b'],darkpriest:['shadow','#9670bc']};
- function profile(src){const id=src?.artId||src?.def?.id;if(P[id])return P[id];if(custom[id]){const [shape,color]=custom[id];return{shape,color,size:shape==='arrow'?26:10,trail:'dots'};}return enemy[src?.cls]||enemy.bow;}
+ const weapons={};
+ const weaponShapes={sword:'blade',greatsword:'blade',twin:'blade',dagger:'needle',mace:'hammer',hammer:'hammer',shield:'hex',tower:'hex',bow:'arrow',wand:'rune',staff:'arcane',orb:'orb',book:'book',grail:'grail',ring:'ring',tooth:'tooth',cloak:'shadow'};
+ const accents={venombow:'#7fbf4a',flamebow:'#ef6b38',frostorb:'#7dcfff',firestaff:'#ef6b38',prayerbook:'#7dffa0',lifeorb:'#7dffa0',stormstaff:'#ac91ff',vampsword:'#c85f83',abysstome:'#a282d4',dragoneye:'#f5c400',eagleeye:'#d6bd68',philostone:'#f5c400'};
+ for(const [i,d] of (g.V4?.ITEMS||[]).entries())weapons[d.id]={id:d.id,name:d.name,weaponShape:d.shape,shape:weaponShapes[d.shape]||'orb',color:accents[d.id]||({war:'#79d4ed',arc:'#37896a',mag:'#a282d4'})[d.cls],size:d.shape==='bow'?23+i%5:d.shape==='dagger'?22:9+i%3,trail:d.shape==='bow'?'feather':d.shape==='book'?'runes':'stars',variant:i};
+ function profile(src){const item=src?.side===0&&src.card?.item;if(item&&weapons[item.id])return weapons[item.id];const id=src?.artId||src?.def?.id;if(P[id])return P[id];if(custom[id]){const [shape,color]=custom[id];return{shape,color,size:shape==='arrow'?26:10,trail:'dots'};}return enemy[src?.cls]||enemy.bow;}
  function poly(c,points){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();c.stroke();}
  function star(c,r,n=4){poly(c,Array.from({length:n*2},(_,i)=>{const a=i*Math.PI/n,rr=i%2?r*.35:r;return[Math.cos(a)*rr,Math.sin(a)*rr];}));}
  function body(c,p,time){
@@ -21,6 +25,15 @@
    if(p.shape!=='needle')poly(c,[[-r*.55,0],[-r*.82,-5],[-r*.4,-2],[-r*.25,0],[-r*.4,2],[-r*.82,5]]);
    if(p.shape==='wind'||p.shape==='feather'){c.strokeStyle=p.color;for(const y of [-7,7]){c.beginPath();c.moveTo(-r,y);c.quadraticCurveTo(-r*.3,y*1.8,1,y);c.stroke();}}
    if(p.shape==='stararrow'){c.save();c.translate(r*.3,0);star(c,6);c.restore();}
+   if(p.weaponShape==='bow'){c.strokeStyle='#fff7df';c.lineWidth=1;c.beginPath();c.moveTo(-r*.55,-3-(p.variant%3));c.lineTo(-r*.3,0);c.lineTo(-r*.55,3+(p.variant%3));c.stroke();}
+  }else if(['book','grail','ring','tooth','hex','blade','hammer'].includes(p.shape)){
+   if(p.shape==='book'){poly(c,[[-r,-r*.7],[0,-r*.45],[r,-r*.7],[r,r*.6],[0,r*.8],[-r,r*.6]]);c.strokeStyle='#fff7df';c.beginPath();c.moveTo(0,-r*.4);c.lineTo(0,r*.7);c.stroke();}
+   else if(p.shape==='grail'){poly(c,[[-r,-r*.7],[r,-r*.7],[r*.5,r*.1],[0,r*.4],[-r*.5,r*.1]]);c.beginPath();c.moveTo(0,r*.3);c.lineTo(0,r);c.moveTo(-r*.5,r);c.lineTo(r*.5,r);c.stroke();}
+   else if(p.shape==='ring'){c.beginPath();c.arc(0,0,r*.8,0,7);c.lineWidth=3;c.stroke();c.fillStyle='#fff7df';star(c,r*.4,4);}
+   else if(p.shape==='tooth'){poly(c,[[r,-r*.25],[-r,-r*.6],[-r*.4,r*.7],[r*.2,r*.2]]);}
+   else if(p.shape==='hex'){poly(c,Array.from({length:6},(_,i)=>[Math.cos(i*Math.PI/3)*r,Math.sin(i*Math.PI/3)*r]));}
+   else if(p.shape==='blade'){poly(c,[[r*1.4,0],[-r,-r*.35],[-r*1.2,0],[-r,r*.35]]);}
+   else{poly(c,[[r*.8,-r*.65],[r*.8,r*.65],[-r*.2,r*.65],[-r*.2,-r*.65]]);c.beginPath();c.moveTo(-r*.2,0);c.lineTo(-r*1.4,0);c.stroke();}
   }else if(p.shape==='leaf'){
    c.beginPath();c.moveTo(r,0);c.quadraticCurveTo(0,-r*1.3,-r,0);c.quadraticCurveTo(0,r*1.3,r,0);c.fill();c.stroke();c.beginPath();c.moveTo(-r,0);c.lineTo(r,0);c.stroke();
   }else if(p.shape==='rune'){c.rotate(time*3);poly(c,[[r,0],[0,-r],[-r,0],[0,r]]);c.strokeStyle='#fff6db';c.beginPath();c.moveTo(-4,0);c.lineTo(0,-4);c.lineTo(4,2);c.lineTo(-2,4);c.stroke();
@@ -46,5 +59,5 @@
  function drawImpacts(c,cb){for(const f of cb.fx){if(f.kind!=='unitImpact')continue;const p=f.t/f.life;c.save();c.translate(f.x,f.y);c.globalAlpha=1-p;c.strokeStyle=f.profile.color;c.fillStyle=f.profile.color;c.lineWidth=2;
   for(let i=0;i<6;i++){const a=i*Math.PI/3,r=5+p*19;c.save();c.translate(Math.cos(a)*r,Math.sin(a)*r);c.rotate(a);if(['star','holy','stararrow'].includes(f.profile.shape))star(c,3);else if(f.profile.shape==='leaf'){c.beginPath();c.ellipse(0,0,4,2,.5,0,7);c.fill();}else{c.beginPath();c.moveTo(0,0);c.lineTo(5*(1-p),0);c.stroke();}c.restore();}
   c.restore();}}
- g.SHOTS4={profiles:P,profile,draw,impact,drawImpacts,body};
+ g.SHOTS4={profiles:P,weapons,profile,draw,impact,drawImpacts,body};
 })(window);

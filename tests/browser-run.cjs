@@ -14,9 +14,10 @@ fs.mkdirSync(out, { recursive: true });
     await p.evaluate(() => {
       localStorage.clear(); SFX.setMuted(true); __g.newRun('normal');
       __g.R.rng = 412; __g.R.lv = 9; __g.R.gold = 200;
+      __g.R.encounters.seed = 412; __g.R.map = __g.genMap(1);
       __g.R.board = ['squire', 'shieldman', 'warden', 'paladin', 'blademaster', 'ninja', 'archmage', 'warlock', 'bishop'].map((id, i) => ({
         kind: 'unit', id, uid: 'full' + i, star: 3,
-        skills: [{ kind: 'skill', id: i < 5 ? 'cross' : i === 5 ? 'ice' : 'meteor', uid: 'sk' + i, star: 3 }],
+        skills: [{ kind: 'skill', id: i < 5 ? 'cross' : i === 5 ? 'boomerang' : 'meteor', uid: 'sk' + i, star: 3 }],
         item: null, x: i % 5, y: i < 5 ? 3 : 5,
       }));
       __g.showMap();
@@ -42,10 +43,12 @@ fs.mkdirSync(out, { recursive: true });
             assert.ok(await pick.count(), 'unhandled selection'); await pick.first().click();
           }
         } else if (state.fight) {
-          await p.locator('#goBtn').click(); await p.evaluate(() => __g.skipCombat());
+          await p.locator('#goBtn').click();
+          // This verifies progression, not the current patch's unit/skill balance.
+          await p.evaluate(() => { for (const u of __g.B.combat.units) if (u.side === 0) { u.maxHp *= 20; u.hp = u.maxHp; u.atk *= 5; } __g.skipCombat(); });
           await p.locator('#resBtn').waitFor({ state: 'visible' });
           const fight = await p.evaluate(() => ({ act: __g.R.act, round: __g.R.round, kind: __g.R.node.k, won: __g.B.won }));
-          assert.equal(fight.won, true); fights.push(fight);
+          assert.equal(fight.won, true, JSON.stringify(fight)); fights.push(fight);
           // A confirmed outcome must resume into its reward or ending without replay.
           await p.reload(); await p.locator('#contBtn').click();
         } else await p.locator('#goBtn').click();

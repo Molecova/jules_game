@@ -351,7 +351,9 @@
     grid, PLAYER_ROW, COLS, ROWS, getR: () => R,
     phase: (t) => { if (B) B.phaseText = t; },
     fx: { play: (n, g) => { if (B && !B.sim && !B.skipping) SFX.play(n, g); }, shake: (n) => shake(n), burst: (x, y, c, n) => burst(x, y, c, n), death: (t) => onTokenDeath(t),
-      skill: (id, data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit(id, data); } },
+      skill: (id, data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit(id, data); },
+      proc: (kind, data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit('p_' + kind, data); },
+      attack: (data) => { if (B && !B.sim && !B.skipping) B.vfx.skills.emit('weapon', data); } },
   });
   const battleApi = createBattleApi();
   function buildCombat() {
@@ -1360,7 +1362,6 @@
   const kindOf = (e) => (e.boss ? 'boss' : e.elite ? 'elite' : '');
   const clsOfArt = (id) => (DEF['unit:' + id] ? DEF['unit:' + id].cls : '');
   const sprite = (artId, side, kind) => ART.token(artId, side, tokenR(kind), 2, kind || (side === 0 ? clsOfArt(artId) : ''));
-  const STATUS_MARK = { burn: ['#e8643b', 'fire'], poison: ['#5fa043', 'skull'], bleed: ['#c0392b', 'drop'], slow: ['#6aa8ff', 'ice'], weak: ['#8a7a9a', 'fist'], vuln: ['#e8436b', 'target'] };
 
   function starPips(x, y, r, star) {
     if (star < 2) return;
@@ -1393,17 +1394,17 @@
       ctx.fillStyle = col; ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(mx, my, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.save(); ctx.translate(mx, my); ART.icon(ctx, ic, 3.6); ctx.restore();
     });
+    if (o.entity) VFX4.drawStatus(ctx, o.entity, B.combat.t, r, { reducedMotion: motionPreference.matches, polymorph: B.vfx.skills.hasForm(o.entity.id) });
     if (o.stun) {
-      const t = performance.now() / 300;
+      const t = motionPreference.matches ? 0 : performance.now() / 300;
       for (let k = 0; k < 3; k++) { const a = t + (k * Math.PI * 2) / 3; ART.star(ctx, x + Math.cos(a) * r * 0.8, ty - r - 4 + Math.sin(a) * 4, 4); ctx.fillStyle = '#f5c400'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.stroke(); }
     }
     if (o.taunt) { ctx.fillStyle = '#f5c400'; ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x + r * 0.85, ty - r * 0.85, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = INK; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', x + r * 0.85, ty - r * 0.85 + 1); }
   }
   function unitOpts(e) {
     const kind = kindOf(e), hop = e.moving ? Math.sin(Math.min(1, e.moving.t) * Math.PI) : 0;
-    const marks = [];
-    for (const k of ['burn', 'poison', 'bleed', 'slow', 'weak', 'vuln']) { const v = e.st && e.st[k]; if (v && (typeof v === 'number' ? v > 0 : true)) marks.push(STATUS_MARK[k]); }
-    return { artId: e.artId, side: e.side, kind, flash: e.flash, hitT: e.hitT, popT: e.popT, rot: (e.rot || 0) + hop * 0.12, lift: hop * 5, stun: e.stun > 0, taunt: e.forcedT > 0, lo: e.lo, star: e.card ? e.card.star : 0, marks };
+    // Status icons and persistent overlays are drawn by VFX4 from the live entity.
+    return { artId: e.artId, side: e.side, kind, flash: e.flash, hitT: e.hitT, popT: e.popT, rot: (e.rot || 0) + hop * 0.12, lift: hop * 5, stun: e.stun > 0, taunt: e.forcedT > 0, lo: e.lo, star: e.card ? e.card.star : 0, entity: e };
   }
   function roundRect(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
   function drawBar(e) {
@@ -1506,7 +1507,7 @@
     ctx.fillRect(c.x - CS / 2 + inset, c.y - CS / 2 + inset, CS - inset * 2, CS - inset * 2);
     ctx.globalAlpha = 1;
   }
-  const newVfx = () => ({ debris: [], parts: [], pieces: [], shake: 0, skills: VFX4.create({ cellSize: CS }) });
+  const newVfx = () => ({ debris: [], parts: [], pieces: [], shake: 0, skills: VFX4.create({ cellSize: CS, reducedMotion: () => motionPreference.matches }) });
   function burst(x, y, col, n) {
     if (!B || B.sim || B.skipping || motionPreference.matches) return;
     for (let k = 0; k < n; k++) {
@@ -1583,6 +1584,7 @@
       drawTele(cb);
       ENEMYCOMBAT4.draw(ctx, cb, grid, 'under');
       for (const f of cb.fx) if (f.kind === 'tile') fillCell(f.cell, f.color, 0.6 * (1 - f.t / f.life), 2); else if (f.kind === 'scar') drawScar(f);
+      VFX4.drawFields(ctx, cb, grid, { reducedMotion: motionPreference.matches });
       B.vfx.skills.draw(ctx, 'under');
       const alive = cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py);
       for (const e of alive) { const o = AC.lungeOffset ? AC.lungeOffset(e) : { x: 0, y: 0 }; drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }

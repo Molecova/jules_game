@@ -1,0 +1,182 @@
+{
+  "catalog": {
+    "skills": 93,
+    "weapons": 34,
+    "procs": 33
+  },
+  "war": {
+    "emits": [
+      {
+        "id": "u_squire"
+      },
+      {
+        "id": "u_blademaster"
+      },
+      {
+        "id": "u_warden"
+      },
+      {
+        "id": "cross"
+      },
+      {
+        "id": "bladestorm"
+      },
+      {
+        "id": "fortify"
+      }
+    ],
+    "active": 6,
+    "statuses": [
+      [
+        "fortRed",
+        "fort"
+      ],
+      [
+        "fortRed",
+        "fort",
+        "blades"
+      ],
+      [
+        "fortRed",
+        "fort",
+        "hot"
+      ],
+      [],
+      [
+        "burn"
+      ],
+      [
+        "burn"
+      ],
+      [
+        "burn"
+      ],
+      []
+    ],
+    "weapons": [
+      "twinblades",
+      "greatsword",
+      "warhammer"
+    ],
+    "completed": true
+  },
+  "arc": {
+    "emits": [
+      {
+        "id": "u_crossbow"
+      },
+      {
+        "id": "u_scout"
+      },
+      {
+        "id": "u_hunter"
+      },
+      {
+        "id": "poisoncloud"
+      },
+      {
+        "id": "net"
+      },
+      {
+        "id": "stormeye"
+      }
+    ],
+    "active": 6,
+    "statuses": [
+      [],
+      [
+        "haste"
+      ],
+      [
+        "haste",
+        "storm"
+      ],
+      [
+        "root",
+        "poison"
+      ],
+      [
+        "root",
+        "poison"
+      ],
+      [
+        "root"
+      ],
+      [],
+      [],
+      []
+    ],
+    "weapons": [
+      "venombow",
+      "hornbow",
+      "shortbow"
+    ],
+    "completed": true
+  },
+  "mag": {
+    "emits": [
+      {
+        "id": "u_bishop"
+      },
+      {
+        "id": "u_archmage"
+      },
+      {
+        "id": "u_warlock"
+      },
+      {
+        "id": "p_spellLeech"
+      },
+      {
+        "id": "p_spellLeech"
+      },
+      {
+        "id": "meteor",
+        "phase": "warn"
+      },
+      {
+        "id": "polymorph"
+      },
+      {
+        "id": "silence"
+      },
+      {
+        "id": "p_spellLeech"
+      }
+    ],
+    "active": 9,
+    "statuses": [
+      [],
+      [],
+      [],
+      [
+        "vuln"
+      ],
+      [
+        "weak"
+      ],
+      [
+        "weak"
+      ],
+      [
+        "silence"
+      ],
+      [
+        "vuln"
+      ]
+    ],
+    "weapons": [
+      "stormstaff",
+      "frostorb",
+      "lifeorb"
+    ],
+    "completed": true
+  },
+  "render": {
+    "effects": 48,
+    "medianMs": 2.5,
+    "p95Ms": 5.100000001490116,
+    "maxMs": 5.799999997019768
+  },
+  "errors": []
+}

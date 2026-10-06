@@ -90,7 +90,7 @@ concepts/*.html       시안별 유닛 데이터, 시너지, 고유 규칙(hooks
 
 ## 스킬 이펙트 시안
 
-`concepts/v4-skill-effects.html`에서 십자 베기·관통 사격·화염 폭발·연쇄 번개·메테오·치유의 빛·마나 방벽·그림자 걸음·현자의 성스러운 빛을 선택해 재생합니다. ★1~★3, 0.5×/1×/2× 속도, 일시정지와 타임라인, 범위·이펙트 표시를 조작할 수 있습니다. 같은 `v4/vfx4.js` 모듈을 v4 실제 전투에서도 사용합니다.
+`concepts/v4-skill-effects.html`에서 현재 고유기 25개·스킬 칩 62개·아이템 액티브 6개, 무기 기본 공격 34개와 패시브 연출을 선택해 재생합니다. ★1~★3, 일시정지·타임라인, 연출·지속 상태 표시를 조작할 수 있습니다. 같은 `v4/vfx4.js`와 `v4/projectiles4.js`를 실제 전투에서도 사용합니다. [전체 id별 변경·검증 기록](docs/vfx-implementation-2026-10-06.md)을 참고하세요.
 
 - 단일 HTML로 내보내기: `python3 scripts/build-skill-preview.py /tmp/card-expedition-preview` → `skill-effects.html`, `game-with-effects.html`, `enemy-encounters.html`
 - 전투 결과·난수·이펙트 이벤트 회귀 검사: `node --test tests/vfx4.test.cjs`
@@ -112,6 +112,7 @@ node tests/browser-enemies.cjs
 node tests/browser-bugfixes.cjs
 node tests/browser-scenes.cjs
 node tests/browser-run.cjs
+node tests/browser-vfx.cjs
 ```
 
 저장 데이터 검증·백업은 `v4/save4.js`, 전투 전용 RNG는 `AC.rng`와 전투별 `BT4.create({ random })`에 있습니다. 대장간은 별에 해당하는 실제 사본 수로 풀을 정산하며, 재료/결과 카드가 부족하면 비용을 지불하거나 재료를 소모하지 않습니다. 다음 전투 체력 페널티가 겹치면 더 낮은 시작 체력을 유지합니다.

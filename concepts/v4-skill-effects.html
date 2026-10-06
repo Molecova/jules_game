@@ -1,195 +1,50 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>카드 원정대 · 스킬 이펙트 시안</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paper Token Forces · 전체 이펙트</title>
 <style>
-:root{--paper:#f5f2e9;--card:#fffdf6;--ink:#292d29;--muted:#77796e;--line:#dcdccf;--orange:#e75b35;--green:#30483d;--mono:ui-monospace,monospace;--font:system-ui,-apple-system,"Noto Sans CJK KR","Malgun Gothic",sans-serif;color-scheme:light}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.55 var(--font)}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:4px}button{touch-action:manipulation}button:disabled{opacity:.5;cursor:default}[hidden]{display:none!important}
-.wrap{max-width:1360px;padding:28px 40px 40px;margin:auto}.mast{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;letter-spacing:-.4px}.mark{width:25px;height:25px;display:grid;place-items:center;background:var(--orange);color:var(--paper);transform:rotate(-8deg);border-radius:5px;font-size:18px}.edition{font:10px var(--mono);letter-spacing:1.2px;color:var(--muted)}.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:28px 0 24px}.eyebrow{font:10px var(--mono);letter-spacing:2px;color:var(--orange);margin-bottom:9px}.intro h1{font-size:clamp(26px,3vw,37px);letter-spacing:-1.8px;line-height:1.25;margin:0;font-weight:800}.intro p{color:var(--muted);margin:9px 0 0;font-size:13px}.edition-pill{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:6px 12px;white-space:nowrap;background:var(--card)}.edition-pill b{color:var(--orange)}
-.studio{display:grid;grid-template-columns:224px minmax(360px,1fr) 244px;gap:20px;align-items:stretch}.section-label{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;margin:0 0 12px}.section-label span{font:10px var(--mono)}.library{padding-top:3px}.skill-list{display:grid;gap:6px}.skill-btn{display:flex;align-items:center;gap:11px;width:100%;background:transparent;border:1px solid transparent;padding:10px 11px;text-align:left;border-radius:8px;transition:background .15s,border-color .15s}.skill-btn:hover{background:#eaeade}.skill-btn[aria-pressed=true]{background:var(--card);border-color:var(--line);box-shadow:0 2px 3px #18272006}.skill-btn[aria-pressed=true] .skill-num{color:var(--orange)}.skill-btn[aria-pressed=true]::after{content:'↗';margin-left:auto;color:var(--orange);font-size:17px}.skill-num{font:11px var(--mono);color:#8a8d7f}.skill-icon{width:32px;height:32px;background:var(--tint);display:grid;place-items:center;border-radius:8px;border:1px solid #00000009;color:var(--accent);font-size:19px;font-weight:bold}.skill-label b{display:block;font-size:12px}.skill-label small{display:block;font-size:10px;color:var(--muted);margin-top:1px}.library-note{font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin:18px 10px 0;line-height:1.8}
-.preview{overflow:hidden;border:1px solid #253b30;border-radius:13px;background:var(--green);box-shadow:0 12px 35px #203a2717;min-width:0}.preview-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:15px 19px;color:#dce5d9;border-bottom:1px solid #ffffff13;font-size:11px}.live{display:flex;gap:6px;align-items:center}.live i{width:5px;height:5px;background:#bdce95;border-radius:50%;box-shadow:0 0 10px #bdce9560}.preview-head small{font:10px var(--mono);color:#a3b4a4}.canvas-box{position:relative;background:radial-gradient(ellipse at 50% 35%,#486451,#2d4438 75%);height:424px;display:grid;place-items:center;overflow:hidden}.canvas-box:before{content:'';position:absolute;inset:0;opacity:.05;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:5px 5px;pointer-events:none}#stage{display:block;height:100%;width:auto;max-width:100%;position:relative;aspect-ratio:440/492}.stage-tag{position:absolute;left:16px;bottom:13px;color:#b8c6b5;font:9px var(--mono);letter-spacing:1px}.stage-rank{position:absolute;right:16px;bottom:11px;color:#ead387;font:12px var(--mono);letter-spacing:2px}.transport{padding:17px 18px 16px;background:var(--card);border-top:1px solid #233827}.scrub-line{display:flex;align-items:center;gap:10px;margin-bottom:11px}.scrub-line output{font:10px var(--mono);white-space:nowrap;min-width:71px;color:var(--muted)}input[type=range]{accent-color:var(--orange);width:100%;height:4px;cursor:pointer}.transport-actions{display:flex;gap:7px;align-items:center}.btn{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:11px;min-height:34px}.btn:hover{background:#f1f0e7}.primary{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:700}.primary:hover{background:#cf4a25}.icon-btn{font-size:16px;min-width:35px;padding:4px 8px}.transport-actions select{margin-left:auto;border:1px solid var(--line);background:var(--card);border-radius:6px;padding:6px;font-size:11px;min-height:34px}.btn[aria-pressed=true]:not(.primary){border-color:#a5b2a0;background:#e8ede1}.keyhint{font-size:10px;color:var(--muted);text-align:center;margin:10px 0 0}.keyhint kbd{border:1px solid var(--line);padding:0 4px;border-radius:3px;font:10px var(--mono)}
-.detail{display:flex;flex-direction:column;padding:4px 0 0 4px}.detail-kicker{font:10px var(--mono);color:var(--muted);letter-spacing:1px}.detail-icon{width:50px;height:50px;display:grid;place-items:center;font-size:29px;background:var(--tint);color:var(--accent);border:1px solid #0000000b;border-radius:12px;margin-top:22px}.detail h2{font-size:25px;letter-spacing:-1px;line-height:1.25;margin:14px 0 6px}.detail .eng{font:10px var(--mono);letter-spacing:1.1px;color:var(--muted);margin:0}.detail-desc{font-size:12px;color:#686e60;margin:19px 0;line-height:1.85;min-height:45px}.pills{display:flex;flex-wrap:wrap;gap:6px}.pill{font-size:10px;padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:var(--card)}.divider{border:0;border-top:1px solid var(--line);width:100%;margin:21px 0 17px}.control-label{font-size:11px;font-weight:600;margin-bottom:10px;display:block}.rank-group{display:flex;gap:5px}.rank-group button{flex:1;font-size:12px;letter-spacing:1px}.rank-help{color:var(--muted);font-size:10px;line-height:1.7;margin:10px 0 15px;min-height:33px}.toggle{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:10px}.toggle input{accent-color:var(--orange);width:15px;height:15px;cursor:pointer}.phase-card{margin-top:auto;background:#ebece1;border:1px solid #dedfcf;border-radius:8px;padding:13px 14px}.phase-card small{font:9px var(--mono);letter-spacing:1px;color:var(--muted)}.phase-card strong{display:block;margin-top:5px;font-size:13px}.phase-card p{font-size:10px;line-height:1.75;color:var(--muted);margin:5px 0 0}.dot-sequence{display:flex;gap:5px;margin-top:10px}.dot-sequence i{height:3px;flex:1;background:#d0d4c3;border-radius:2px}.dot-sequence i.on{background:var(--orange)}
-.gallery-section{margin-top:36px}.gallery-heading{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:13px;border-bottom:1px solid var(--line);margin-bottom:16px}.gallery-heading h2{font-size:16px;letter-spacing:-.5px;margin:0}.gallery-heading p{font-size:10px;color:var(--muted);margin:0}.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.study-card{display:block;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card);text-align:left;padding:0;transition:transform .15s,box-shadow .15s}.study-card:hover{transform:translateY(-3px);box-shadow:0 8px 15px #1d321b10}.study-card[aria-pressed=true]{border-color:var(--orange)}.study-card canvas{display:block;width:100%;height:auto;aspect-ratio:360/215;background:#344d40}.study-info{padding:12px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px}.study-info b{font-size:12px}.study-info span{font-size:10px;color:var(--muted)}.study-info small{font:10px var(--mono);color:var(--orange)}footer{margin-top:28px;border-top:1px solid var(--line);padding-top:15px;display:flex;justify-content:space-between;gap:15px;font-size:10px;color:var(--muted)}
-@media(min-width:1500px){.canvas-box{height:480px}}
-@media(max-width:1120px){.wrap{padding:22px}.studio{grid-template-columns:190px minmax(320px,1fr)}.detail{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0 30px;padding:20px;border:1px solid var(--line);border-radius:10px}.detail-top{grid-row:1/4}.detail-icon{margin-top:10px}.detail .divider{display:none}.detail-controls{grid-column:2}.phase-card{grid-column:2;margin-top:10px}.detail-desc{margin:12px 0}.gallery-section{margin-top:24px}}
-@media(max-width:640px){.wrap{padding:18px 14px 24px}.mast{padding-bottom:13px}.edition{font-size:8px;letter-spacing:.5px}.intro{padding:23px 0 20px}.intro p{font-size:11px}.edition-pill{display:none}.studio{display:flex;flex-direction:column;gap:13px}.library .section-label,.library-note{display:none}.skill-list{display:flex;overflow-x:auto;gap:6px;padding:0 0 7px;scrollbar-width:thin}.skill-btn{flex:none;width:auto;min-width:115px;gap:7px;padding:8px;background:#edece3;border:1px solid var(--line)}.skill-btn .skill-num,.skill-btn[aria-pressed=true]::after{display:none}.skill-icon{width:26px;height:26px;font-size:16px}.skill-label b{font-size:11px}.skill-label small{font-size:9px}.canvas-box{height:395px}.preview-head{padding:12px 15px}.keyhint{display:none}.detail{padding:17px;grid-template-columns:1fr 1fr;gap:0 18px}.detail h2{font-size:21px}.detail .eng{font-size:8px}.detail-desc{font-size:11px}.detail-kicker{font-size:8px}.detail-icon{width:35px;height:35px;font-size:22px}.rank-group .btn{padding:4px;font-size:10px}.rank-help{font-size:9px}.phase-card{padding:10px}.gallery{gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}.gallery-heading p{font-size:9px;max-width:130px;text-align:right}.study-info{padding:10px;flex-wrap:wrap}.study-info b{font-size:11px}.study-info span{font-size:9px}.study-info small{display:none}.gallery-section{margin-top:23px}footer{font-size:9px}.transport{padding:14px}.transport-actions{gap:5px}.transport-actions .btn{padding:6px 9px}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-.preview{display:flex;flex-direction:column}.preview-head,.transport{flex:none}.canvas-box{flex:1;min-height:424px;display:block}#stage{position:absolute;inset:0;width:100%;height:100%;max-height:100%;min-width:0;min-height:0;object-fit:contain}
-@media(max-width:640px){.canvas-box{flex:none;min-height:395px}}
-</style>
-</head>
-<body>
-<main class="wrap">
-  <header class="mast"><div class="brand"><span class="mark">✦</span> 카드 원정대 <span style="font-weight:400;color:var(--muted)">/</span> 스킬 연구실</div><span class="edition">EFFECT STUDY — VOL. 01</span></header>
-  <section class="intro"><div><div class="eyebrow">PAPER, INK & A LITTLE MAGIC</div><h1>스킬이, 눈에 보이도록.</h1><p>종이 딱지 위에 더한 아홉 가지 마법. 고르고, 재생하고, 한 장면씩 살펴보세요.</p></div><span class="edition-pill"><b>09</b> SKILLS · INTERACTIVE</span></section>
-  <section class="studio" aria-label="스킬 이펙트 미리보기">
-    <nav class="library" aria-label="스킬 선택"><div class="section-label">스킬 컬렉션 <span>01 — 09</span></div><div class="skill-list" id="skillList"></div><p class="library-note">같은 보드, 서로 다른 흔적.<br>선의 방향과 빛의 모양으로<br>스킬의 성격을 표현했습니다.</p></nav>
-    <div class="preview"><div class="preview-head"><span class="live"><i></i> <span id="sceneTitle">십자 베기</span></span><small id="sceneStatus">PLAYING</small></div><div class="canvas-box"><canvas id="stage" width="880" height="984" aria-label="선택한 스킬의 이펙트 애니메이션"></canvas><span class="stage-tag">EXPEDITION / FIELD NOTES</span><span class="stage-rank" id="stageRank">★</span></div><div class="transport"><div class="scrub-line"><input id="timeline" type="range" min="0" max="2800" value="0" aria-label="재생 시점"><output id="timeLabel">0.00 / 2.80</output></div><div class="transport-actions"><button class="btn primary" id="play" aria-label="일시정지">Ⅱ 일시정지</button><button class="btn icon-btn" id="replay" aria-label="처음부터 재생" title="처음부터 재생">↺</button><button class="btn" id="loop" aria-pressed="true">반복</button><select id="speed" aria-label="재생 속도"><option value="0.5">0.5× 느리게</option><option value="1" selected>1× 보통</option><option value="2">2× 빠르게</option></select></div><p class="keyhint"><kbd>Space</kbd> 재생 / 정지 &nbsp; <kbd>←</kbd> <kbd>→</kbd> 스킬 이동</p></div></div>
-    <aside class="detail"><div class="detail-top"><div class="detail-kicker" id="detailKicker">01 / WARRIOR</div><div class="detail-icon" id="detailIcon">╳</div><h2 id="detailName">십자 베기</h2><p class="eng" id="detailEnglish">CROSS SLASH</p><p class="detail-desc" id="detailDesc"></p><div class="pills" id="detailPills"></div></div><hr class="divider"><div class="detail-controls"><label class="control-label">스킬 칩 합성 단계</label><div class="rank-group" role="group" aria-label="스킬 별 등급"><button class="btn" data-rank="1" aria-pressed="true">★</button><button class="btn" data-rank="2" aria-pressed="false">★★</button><button class="btn" data-rank="3" aria-pressed="false">★★★</button></div><p class="rank-help" id="rankHelp"></p><label class="toggle">영향 범위 표시<input id="showRange" type="checkbox" checked></label><label class="toggle">새 이펙트 표시<input id="showEffects" type="checkbox" checked></label><label class="toggle">효과음<input id="sound" type="checkbox"></label></div><div class="phase-card"><small>THE MOMENT</small><strong id="phaseName">시전 준비</strong><p id="phaseDesc">스킬 칩에 마력이 모입니다.</p><div class="dot-sequence"><i></i><i></i><i></i></div></div></aside>
-  </section>
-  <section class="gallery-section"><div class="gallery-heading"><h2>아홉 가지 타격감</h2><p>장면을 누르면 크게 재생됩니다.</p></div><div class="gallery" id="gallery"></div></section>
-  <footer><span>카드 원정대 v4 · 종이와 잉크로 만든 작은 전장</span><span>9종 이펙트 시안 · 합성 단계별 비교</span></footer>
-</main>
-<script src="../shared/engine.js"></script>
-<script src="../game/data.js"></script>
-<script src="../game/art.js"></script>
-<script src="../game/sfx.js"></script>
-<script src="../v4/data4.js"></script>
-<script src="../v4/battle4.js"></script>
-<script src="../v4/vfx4.js"></script>
+:root{--ink:#232a3b;--paper:#f4eddf;--line:#cdc4b5;--accent:#37896a}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 system-ui,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit;border:1px solid var(--line);background:#fff7df;border-radius:6px;padding:7px 12px;touch-action:manipulation}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ef6b38;outline-offset:3px}button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}a{color:var(--accent)}main{max-width:1160px;margin:auto;padding:24px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:16px}h1{font-size:clamp(22px,4vw,32px);line-height:1.25;margin:4px 0}header small{letter-spacing:2px}header p{margin:8px 0 0;color:#636777;font-size:12px}.filters{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}.library{max-height:690px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#eee5d6;padding:8px}.library button{display:block;width:100%;text-align:left;margin-bottom:5px;padding:8px 10px}.library small{display:block;font-size:10px;opacity:.72}.viewer{min-width:0;border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:#30483d}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff7df;padding:14px 18px;border-bottom:1px solid #ffffff25}.top h2{margin:0;font-size:19px}.top small{color:#cbd1c4}canvas{display:block;width:100%;max-height:470px;aspect-ratio:440/440;object-fit:contain;background:#30483d}.controls{background:#fff7df;padding:16px}.controls .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}#timeline{flex:1;min-width:100px;accent-color:var(--accent)}output{font-variant-numeric:tabular-nums;min-width:46px}#desc{margin:12px 0;font-size:13px;min-height:42px}.meta{color:#777b84;font-size:11px}.foot{display:flex;justify-content:space-between;gap:12px;margin-top:16px;font-size:12px}.tag{color:#f5c400}#search{width:100%;margin-bottom:8px;border:1px solid var(--line);border-radius:5px;padding:8px;background:#fff7df;color:var(--ink)}@media(max-width:650px){main{padding:14px}.layout{grid-template-columns:1fr;gap:10px}.library{max-height:165px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.library button{margin:0;font-size:12px}.library small{font-size:9px}.viewer canvas{max-height:350px}.top{padding:10px 12px}.controls{padding:12px}.filters{gap:4px}.filters button{padding:6px 8px;font-size:12px}header{align-items:flex-start}header a{font-size:12px;white-space:nowrap}.foot{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head><body><main>
+<header><div><small>PAPER TOKEN FORCES / EFFECTS</small><h1>작은 전장, 모든 기술</h1><p id="summary"></p></div><a href="../v4/index.html">게임 플레이 ↗</a></header>
+<div class="filters" aria-label="분류"><button data-group="all" aria-pressed="true">전체 기술</button><button data-group="war">전사</button><button data-group="arc">궁수</button><button data-group="mag">마법사</button><button data-group="any">공용</button><button data-group="weapon">무기 공격</button><button data-group="proc">패시브 발동</button></div>
+<div class="layout"><aside><input id="search" type="search" placeholder="기술 이름 검색" aria-label="기술 검색"><div class="library" id="library"></div></aside>
+<section class="viewer"><div class="top"><div><h2 id="name"></h2><small id="identity"></small></div><span class="tag" id="rank">★</span></div><canvas id="stage" aria-label="선택한 기술의 전투 연출"></canvas>
+<div class="controls"><div class="row"><button id="play">일시정지</button><button id="replay">다시 보기</button><input id="timeline" type="range" min="0" max="4" step="0.01" value="0" aria-label="재생 위치"><output id="time">0.00초</output></div><p id="desc"></p><div class="row" role="group" aria-label="별 등급"><button data-star="1" aria-pressed="true">★</button><button data-star="2">★★</button><button data-star="3">★★★</button><label><input type="checkbox" id="effects" checked> 연출</label><label><input type="checkbox" id="statuses" checked> 지속 상태</label></div><p class="meta">시간 막대를 움직여 예고·타격·상태를 확인하세요. 실제 전투 규칙이 결정한 대상에 연출을 표시합니다.</p></div></section></div>
+<div class="foot"><span>굵은 잉크 · 종이 조각 · 발밑 도장</span><span>Space 재생/정지 · ← → 기술 이동</span></div></main>
+<script src="../shared/engine.js"></script><script src="../game/data.js"></script><script src="../game/art.js"></script><script src="../v4/data4.js"></script><script src="../v4/projectiles4.js"></script><script src="../v4/battle4.js"></script><script src="../v4/vfx4.js"></script>
 <script>
-(() => {
-  'use strict';
-  const $ = id => document.getElementById(id), W = 440, H = 492, CS = 64, CAST = 0.38;
-  const grid = AC.squareGrid(5, 6, CS, { ox: 60, oy: 44, diag: true });
-  const rules = BT4.create({ grid, PLAYER_ROW: 3, COLS: 5, ROWS: 6, getR: () => ({ relics: [] }), fx: {} });
-  const specs = [
-    { id:'cross', icon:'╳', en:'CROSS SLASH', group:'WARRIOR', tag:'전사 · 근접', color:'#3e7489', tint:'#e1edf0', desc:'두 개의 검격이 교차하며 전방을 가릅니다. 날카로운 흰 선 뒤로 종이 파편이 흩어집니다.', badges:['전방 십자','즉시 타격'], sound:'skill', peak:0.52, moment:'교차하는 두 검격' },
-    { id:'pierce', icon:'➶', en:'PIERCING SHOT', group:'ARCHER', tag:'궁수 · 관통', color:'#967627', tint:'#f0ead6', desc:'한 줄로 뻗은 화살이 적들을 꿰뚫습니다. 가늘고 긴 궤적에 선명한 타격점을 남깁니다.', badges:['직선 관통','일렬 타격'], sound:'shoot', peak:0.52, moment:'한 줄을 꿰뚫는 섬광' },
-    { id:'fire', icon:'♨', en:'FIRE BURST', group:'MAGE', tag:'마법사 · 화염', color:'#c2663b', tint:'#f6e4d7', desc:'십자 모양의 칸에서 불꽃이 솟아오릅니다. 종이를 태운 듯한 자국과 작은 불씨가 남습니다.', badges:['십자 범위','화상'], sound:'boom', peak:0.58, moment:'다섯 칸에서 솟는 불꽃' },
-    { id:'chain', icon:'ϟ', en:'CHAIN LIGHTNING', group:'MAGE', tag:'마법사 · 번개', color:'#7b67b4', tint:'#eae5f5', desc:'꺾인 번개가 실제 공격 대상을 이어줍니다. 밝은 중심선과 불규칙한 잔광으로 전기를 표현합니다.', badges:['연쇄 4대상','★3 최대 6대상'], sound:'magic', peak:0.54, moment:'적과 적을 연결하는 번개' },
-    { id:'meteor', icon:'☄', en:'METEOR FALL', group:'MAGE', tag:'마법사 · 운석', color:'#b36236', tint:'#f3e1d0', desc:'커지는 그림자 위로 불붙은 운석이 떨어집니다. 1.2초 예고가 끝나는 순간 충격파가 퍼집니다.', badges:['3×3 범위','1.2초 예고'], sound:'boom', peak:1.74, moment:'운석과 전장이 맞닿는 순간' },
-    { id:'light', icon:'✧', en:'HEALING LIGHT', group:'MAGE', tag:'마법사 · 치유', color:'#4e8264', tint:'#e0ebdf', desc:'아군 발밑에 치유 문양이 열립니다. 부드러운 초록빛과 떠오르는 십자가 회복을 알려줍니다.', badges:['주변 아군','체력 회복'], sound:'heal', peak:0.76, moment:'아군을 감싸는 초록빛' },
-    { id:'barrier', icon:'⬡', en:'MANA BARRIER', group:'MAGE', tag:'마법사 · 보호막', color:'#477d9b', tint:'#e0edf2', desc:'육각형 조각이 딱지 둘레에 맞물립니다. 투명한 푸른 막으로 보호받는 대상을 구별합니다.', badges:['상하좌우 아군','보호막'], sound:'attach', peak:0.78, moment:'딱지 둘레에 조립되는 방벽' },
-    { id:'shadowstep', icon:'◈', en:'SHADOW STEP', group:'WARRIOR', tag:'전사 · 암습', color:'#846197', tint:'#ece3ef', desc:'먹물 같은 연기가 출발점과 도착점에서 터집니다. 보랏빛 검격이 적의 위치에 찍힙니다.', badges:['순간이동','출혈'], sound:'magic', peak:0.52, moment:'그림자에서 나타나는 검격' },
-    { id:'u_bishop', icon:'✚', en:'HOLY LIGHT', group:'MAGE', tag:'현자 · 고유기', color:'#9d7d32', tint:'#f2ead1', desc:'현자의 금빛이 아군에게 퍼집니다. 보호막과 회복을 함께 전하는 성스러운 빛입니다.', badges:['전체 아군','보호막 · 회복'], sound:'heal', peak:0.95, moment:'금빛으로 보호받는 동료' },
-  ];
-  const skillDef = id => V4.SKILLS.find(d => d.id === id) || V4.UNITS.find(u => u.ult?.id === id)?.ult;
-  for (const s of specs) s.name = skillDef(s.id).name;
-  const state = { index:4, rank:1, time:0, paused:matchMedia('(prefers-reduced-motion: reduce)').matches, loop:true, speed:1, range:true, effects:true, sound:false };
-  const at = (col, row) => ({ ...grid.cells[grid.idx(col, row)] });
-  const entity = (id, col, row, side = 1, cls = '') => ({ id, ...at(col,row), cell:grid.idx(col,row), side, cls, hp:side ? 0.76 : 0.55 });
-  function scene(spec, rank) {
-    const supportive = ['light','barrier','u_bishop'].includes(spec.id), melee = spec.id === 'cross';
-    const caster = entity(spec.id === 'cross' ? 'squire' : spec.id === 'pierce' ? 'archer' : spec.id === 'shadowstep' ? 'assassin' : 'apprentice', 2, melee ? 3 : 4, 0, melee || spec.id === 'shadowstep' ? 'war' : spec.id === 'pierce' ? 'arc' : 'mag');
-    const target = entity('goblin', 2, melee ? 2 : spec.id === 'pierce' ? 2 : 1);
-    let foes = [target, entity('orc',1,melee ? 2 : 1), entity('skeleton',3,melee ? 2 : 1), entity('goblin',3,0)];
-    if (spec.id === 'chain') foes = [target,entity('orc',3,1),entity('skeleton',3,2),entity('goblin',1,1),entity('slime',1,2),entity('skeleton',2,0)];
-    if (spec.id === 'pierce') foes = [target,entity('skeleton',2,1),entity('orc',2,0),entity('slime',4,1)];
-    const allies = [caster,entity('squire',1,4,0,'war'),entity('archer',3,4,0,'arc')];
-    if (supportive) allies.push(entity('shieldman',2,3,0,'war'));
-    const dead = entity('squire',1,3,0,'war');
-    if (spec.id === 'revive') { dead.dead = true; allies.push(dead); }
-    const d = skillDef(spec.id), dir = rules.facing(caster, target);
-    let cells = spec.id === 'u_bishop' ? allies.map(a => a.cell) : rules.skillCells(caster, target, d, dir, BT4.expandCells(d,rank)), points = [];
-    if (spec.id === 'chain') {
-      let cur = target; const rest = foes.filter(v => v !== target); points = [cur];
-      while (rest.length && points.length < (rank === 3 ? 6 : 4)) { rest.sort((a,b) => grid.dist(cur.cell,a.cell) - grid.dist(cur.cell,b.cell)); cur = rest.shift(); points.push(cur); }
-      cells = points.map(p => p.cell);
-    } else if (supportive) { points = allies.filter(v => !v.dead && cells.includes(v.cell)); }
-    else points = foes.filter(v => cells.includes(v.cell));
-    const payload = { source:caster, target, points, cells:cells.map(i=>grid.cells[i]), star:rank, dir:{x:dir[0],y:dir[1]}, size:CS };
-    if (spec.id === 'shadowstep') { payload.destination=at(2,2); payload.points=[target]; payload.cells=[target]; }
-    if (spec.id === 'revive') { payload.target=dead; payload.points=[dead]; payload.cells=[dead]; }
-    const events = spec.id === 'meteor' ? [
-      { e:VFX4.event(spec.id,{...payload,phase:'warn',delay:1.2},11),start:CAST },
-      { e:VFX4.event(spec.id,{...payload,phase:'impact'},12),start:CAST+1.2 },
-    ] : [{ e:VFX4.event(spec.id,payload,11),start:CAST }];
-    return { caster, target, allies, foes, dead, payload, events, supportive };
-  }
-  const sceneCache = new Map();
-  function getScene(spec,rank) { const key=spec.id+rank; if(!sceneCache.has(key)) sceneCache.set(key,scene(spec,rank));return sceneCache.get(key); }
-  const total = () => specs[state.index].id === 'meteor' ? 3.3 : 2.5;
-  const board = document.createElement('canvas');board.width=W*2;board.height=H*2;
-  const bg=board.getContext('2d');bg.scale(2,2);
-  function rounded(c,x,y,w,h,r,fill,border) { c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=fill;c.fill();if(border){c.strokeStyle=border;c.lineWidth=1;c.stroke();} }
-  rounded(bg,43,36,354,405,11,'#1b2c25');rounded(bg,41,28,358,406,10,'#936b45','#1b2c25');rounded(bg,47,33,346,394,7,'#c59a64','#d0ad79');rounded(bg,54,39,332,385,4,'#6d543b');
-  for (const cell of grid.cells) {
-    const foe=cell.r<3, fill=foe ? ((cell.c+cell.r)%2?'#d7c9b0':'#e2d5bc') : ((cell.c+cell.r)%2?'#c6d0b6':'#d2dabe');
-    rounded(bg,cell.x-CS/2+2,cell.y-CS/2+2,CS-4,CS-4,4,'#817f65');rounded(bg,cell.x-CS/2+2,cell.y-CS/2,CS-4,CS-5,4,fill,'#aaad8e');
-    bg.strokeStyle='#fff8e335';bg.beginPath();bg.moveTo(cell.x-26,cell.y-28);bg.lineTo(cell.x+26,cell.y-28);bg.stroke();
-    bg.fillStyle='#4f624220';for(let j=0;j<7;j++)bg.fillRect(cell.x-25+(j*17+cell.i*13)%49,cell.y-25+(j*11+cell.i*7)%48,1,1);
-  }
-  bg.strokeStyle='#93634c';bg.lineWidth=3;bg.setLineDash([6,5]);bg.beginPath();bg.moveTo(59,236);bg.lineTo(381,236);bg.stroke();bg.setLineDash([]);
-  bg.fillStyle='#513e2b';bg.font='9px monospace';bg.textAlign='center';for(let c=0;c<5;c++)bg.fillText('ABCDE'[c],92+c*64,25);for(let r=0;r<6;r++)bg.fillText(String(r+1),31,80+r*64);
-  for(const [x,y] of [[48,35],[392,35],[48,427],[392,427]]){bg.fillStyle='#654a31';bg.beginPath();bg.arc(x,y,2,0,Math.PI*2);bg.fill();}
-  const spriteCache=new Map();
-  function sprite(e) {const key=e.id+e.side+e.cls;if(!spriteCache.has(key))spriteCache.set(key,ART.token(e.id,e.side,25,2,e.cls));return spriteCache.get(key);}
-  function drawPiece(c,e,pos,hp,alpha=1,flash=0) {
-    ART.drawToken(c,sprite(e),pos.x,pos.y,25,{rot:(e.cell%3-1)*.06,alpha,flash});
-    c.save();c.globalAlpha=alpha;
-    rounded(c,pos.x-20,pos.y+27,40,5,2,'#243629');rounded(c,pos.x-19,pos.y+28,38*Math.min(1,hp),3,1,e.side?'#cb634e':'#73ae81');c.restore();
-  }
-  function drawBroken(c,e,progress) {
-    const gap=(1-progress)*12;
-    for(let side=0;side<2;side++){
-      c.save();c.translate(e.x+(side?gap:-gap),e.y+gap*.25);c.rotate((side?1:-1)*gap*.012);
-      c.beginPath();c.rect(side?0:-27,-28,27,58);c.clip();c.globalAlpha=.45+progress*.55;c.drawImage(sprite(e),-25,-25,50,50);c.restore();
-    }
-  }
-  function paint(c,spec,rank,time,opts={}) {
-    c.clearRect(0,0,W,H);c.drawImage(board,0,0,W,H);
-    const sc=getScene(spec,rank),age=time-CAST;
-    if(opts.range){
-      c.save();c.globalAlpha=.32;c.strokeStyle=sc.supportive?'#39875b':'#b95635';c.lineWidth=1.5;c.setLineDash([3,5]);
-      for(const p of sc.payload.cells){c.beginPath();c.roundRect(p.x-28,p.y-28,56,56,4);c.stroke();}c.restore();
-    }
-    if(opts.effects)for(const {e,start} of sc.events)VFX4.render(c,e,time-start,'under');
-    const impact=spec.id==='meteor'?CAST+1.2:CAST;
-    for(const e of [...sc.foes,...sc.allies].sort((a,b)=>a.y-b.y)){
-      let pos=e,hp=e.hp;
-      if(e===sc.caster&&spec.id==='shadowstep'&&age>=0)pos=sc.payload.destination;
-      if(e.dead){if(age<.55){drawBroken(c,e,age<0?0:Math.min(1,age/.55));continue;}hp=.5;}
-      const hit=sc.payload.points.includes(e)&&time>=impact;
-      if(hit)hp=sc.supportive?(spec.id==='barrier'?hp:.95):.33;
-      const flash=hit&&time-impact<.14?.12:0;
-      drawPiece(c,e,pos,hp,1,flash);
-      if(e===sc.caster&&time<CAST){c.save();c.strokeStyle='#e7d182';c.lineWidth=2;c.globalAlpha=.6;c.beginPath();c.arc(pos.x,pos.y,30,-Math.PI/2,-Math.PI/2+Math.PI*2*(time/CAST));c.stroke();c.restore();}
-      if(hit&&spec.id==='barrier'){rounded(c,pos.x+2,pos.y+28,17,3,1,'#a7d5f3');}
-    }
-    if(opts.effects)for(const {e,start} of sc.events)VFX4.render(c,e,time-start,'over');
-    c.save();c.textAlign='center';c.font='bold 10px system-ui';
-    if(time>=impact&&time<impact+.85){
-      const progress=(time-impact)/.85;c.globalAlpha=1-progress;
-      for(const q of sc.payload.points){const text=sc.supportive?(spec.id==='barrier'?'방벽':spec.id==='revive'?'부활':'+회복'):'명중';c.lineWidth=3;c.strokeStyle='#283629';c.strokeText(text,q.x,q.y-32-progress*12);c.fillStyle=sc.supportive?'#b6f2c2':'#fff0d8';c.fillText(text,q.x,q.y-32-progress*12);}
-    }
-    c.restore();
-  }
-  specs.forEach((s,i)=>{
-    const b=document.createElement('button');b.className='skill-btn';b.dataset.skill=s.id;b.setAttribute('aria-pressed',i===state.index);b.style.setProperty('--tint',s.tint);b.style.setProperty('--accent',s.color);
-    b.innerHTML=`<span class="skill-num">${String(i+1).padStart(2,'0')}</span><span class="skill-icon">${s.icon}</span><span class="skill-label"><b>${s.name}</b><small>${s.tag}</small></span>`;b.onclick=()=>select(i);$('skillList').appendChild(b);
-    const card=document.createElement('button');card.className='study-card';card.dataset.gallery=s.id;card.setAttribute('aria-pressed',i===state.index);card.setAttribute('aria-label',s.name+' 크게 재생');
-    card.innerHTML=`<canvas width="720" height="430" aria-hidden="true"></canvas><div class="study-info"><div><b>${s.name}</b><br><span>${s.tag}</span></div><small>${String(i+1).padStart(2,'0')} ↗</small></div>`;
-    card.onclick=()=>{select(i);document.querySelector('.preview').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});};$('gallery').appendChild(card);
-  });
-  const stage=$('stage'),ctx=stage.getContext('2d');
-  function thumbs(){document.querySelectorAll('.study-card canvas').forEach((cv,i)=>{const c=cv.getContext('2d');c.setTransform(2,0,0,2,0,0);c.fillStyle='#344d40';c.fillRect(0,0,360,215);c.save();c.translate(86,0);c.scale(.42,.42);paint(c,specs[i],state.rank,specs[i].peak,{effects:true,range:false});c.restore();const s=specs[i];c.fillStyle='#ffffff15';c.font='bold 66px Georgia';c.fillText(String(i+1).padStart(2,'0'),15,82);c.fillStyle='#bdcbbc';c.font='8px monospace';c.fillText(s.en,16,203);});}
-  function select(i){state.index=(i+specs.length)%specs.length;state.time=0;state.paused=matchMedia('(prefers-reduced-motion: reduce)').matches;update();draw();}
-  function update(){
-    const s=specs[state.index];$('detailKicker').textContent=`${String(state.index+1).padStart(2,'0')} / ${s.group}`;$('detailName').textContent=s.name;$('sceneTitle').textContent=s.name;$('detailEnglish').textContent=s.en;$('detailDesc').textContent=s.desc;$('detailIcon').textContent=s.icon;
-    $('detailIcon').style.setProperty('--tint',s.tint);$('detailIcon').style.setProperty('--accent',s.color);
-    $('detailPills').innerHTML=s.badges.map(t=>`<span class="pill">${t}</span>`).join('');
-    $('stageRank').textContent='★'.repeat(state.rank);
-    $('rankHelp').textContent=state.rank===3?(skillDef(s.id).cells?'★3에서는 실제로 넓어진 공격 범위까지 표시합니다.':s.id==='chain'?'★3에서는 최대 6개 대상을 연결합니다.':'★3의 강해진 효과를 더 선명하게 표현합니다.'):'별이 높아질수록 타격의 선과 빛이 강해집니다.';
-    document.querySelectorAll('[data-skill]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.skill===s.id));document.querySelectorAll('[data-gallery]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.gallery===s.id));document.querySelectorAll('[data-rank]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.rank===state.rank));
-    $('timeline').max=Math.round(total()*1000);buttons();
-  }
-  function buttons(){$('play').textContent=state.paused?'▶ 재생':'Ⅱ 일시정지';$('play').setAttribute('aria-label',state.paused?'재생':'일시정지');$('sceneStatus').textContent=state.paused?'PAUSED':'PLAYING';}
-  function draw(){
-    ctx.setTransform(2,0,0,2,0,0);paint(ctx,specs[state.index],state.rank,state.time,{range:state.range,effects:state.effects});
-    $('timeline').value=Math.round(state.time*1000);$('timeLabel').textContent=state.time.toFixed(2)+' / '+total().toFixed(2);
-    const s=specs[state.index],impact=CAST+(s.id==='meteor'?1.2:0),phase=state.time<CAST?0:state.time<impact+.35?1:2;
-    $('phaseName').textContent=phase===0?'시전 준비':phase===1?(s.id==='meteor'&&state.time<impact?'낙하지점 예고':s.moment):'남겨진 흔적';
-    $('phaseDesc').textContent=phase===0?'시전자를 중심으로 장면이 시작됩니다.':phase===1?(s.id==='meteor'?'그림자가 차오른 뒤, 운석이 떨어집니다.':'실제 영향 범위 위에 스킬의 모양이 드러납니다.'):'빛과 파편은 사라지고 전장이 다시 또렷해집니다.';
-    document.querySelectorAll('.dot-sequence i').forEach((e,i)=>e.classList.toggle('on',i===phase));
-  }
-  $('play').onclick=()=>{if(state.time>=total())state.time=0;state.paused=!state.paused;buttons();};
-  $('replay').onclick=()=>{state.time=0;state.paused=false;buttons();draw();};
-  $('loop').onclick=()=>{state.loop=!state.loop;$('loop').setAttribute('aria-pressed',state.loop);};
-  $('timeline').oninput=()=>{state.time=+$('timeline').value/1000;state.paused=true;buttons();draw();};
-  $('speed').onchange=()=>state.speed=+$('speed').value;
-  document.querySelectorAll('[data-rank]').forEach(b=>b.onclick=()=>{state.rank=+b.dataset.rank;state.time=0;update();thumbs();draw();});
-  $('showRange').onchange=()=>{state.range=$('showRange').checked;draw();};$('showEffects').onchange=()=>{state.effects=$('showEffects').checked;draw();};
-  $('sound').onchange=()=>{state.sound=$('sound').checked;SFX.setMuted(!state.sound);};
-  document.addEventListener('keydown',e=>{if(/INPUT|SELECT|BUTTON/.test(e.target.tagName)||e.altKey||e.ctrlKey||e.metaKey)return;if(e.code==='Space'){e.preventDefault();$('play').click();}if(e.code==='ArrowRight'){e.preventDefault();select(state.index+1);}if(e.code==='ArrowLeft'){e.preventDefault();select(state.index-1);}});
-  let last=performance.now();
-  function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!state.paused&&!document.hidden){const prev=state.time;state.time+=dt*state.speed;const s=specs[state.index],cue=CAST+(s.id==='meteor'?1.2:0);if(state.sound&&prev<cue&&state.time>=cue)SFX.play(s.sound);if(state.time>total()){if(state.loop)state.time%=total();else{state.time=total();state.paused=true;buttons();}}draw();}requestAnimationFrame(loop);}
-  window.SkillStudy={ids:specs.map(s=>s.id),select:id=>select(specs.findIndex(s=>s.id===id)),seek:t=>{state.time=clampTime(t);state.paused=true;buttons();draw();},getState:()=>({...state,id:specs[state.index].id}),paint:(c,id,rank,t)=>paint(c,specs.find(s=>s.id===id),rank,t,{range:false,effects:true}),peaks:Object.fromEntries(specs.map(s=>[s.id,s.peak])),size:{width:W,height:H}};
-  function clampTime(t){return Math.max(0,Math.min(total(),t));}
-  update();thumbs();draw();requestAnimationFrame(loop);
+(()=>{'use strict';const $=id=>document.getElementById(id),W=440,H=440,grid=AC.squareGrid(5,6,58,{ox:75,oy:48}),ctx=$('stage').getContext('2d');
+const defs=[...V4.UNITS.flatMap(u=>u.ult?[u.ult]:[]),...V4.SKILLS,...V4.ITEMS.flatMap(i=>i.act?[i.act]:[])];
+const entries=[...defs,...V4.ITEMS.map(d=>({id:'w_'+d.id,name:d.name,cls:'weapon',kind:'weapon',item:d,desc:d.desc})),...Object.keys(VFX4.profiles).filter(id=>id.startsWith('p_')).map(id=>({id,name:({cleave:'주변 베기',venomStack:'독 중첩',multiHit:'잔상 연타',hookRoot:'갈고리 속박',vampire:'흡혈',vampireStack:'흡혈 누적',bloodthirst:'피의 대검 흡혈',guardHeal:'방패 회복',longshot:'장거리 명중',venomBonus:'독 대상 추가 피해',burnCrit:'화상 치명',poisonHit:'독 명중',burnHit:'불꽃 명중',stormHit:'번개 갈래',multiShot:'추가 화살',ambush:'기습',healMace:'철퇴 회복',healer:'성서 회복',echo:'메아리',hourglass:'모래시계',lastStand:'불멸의 방패',deadeye:'용의 눈',spellBurn:'마법 화상',spellSlow:'마법 둔화',spellLeech:'마법 흡혈',abyss:'심연의 불꽃',doubleHit:'용병 연타',burnAdd:'용의 숨결 누적',hawkFocus:'사냥매 소환',focus:'연속 공격 집중',headshot:'매의 눈 치명',evasive:'그림자 회피',storm:'폭풍 연쇄'})[id.slice(2)]||id,cls:'proc',kind:'proc',desc:'실제로 발동한 순간의 작은 연출입니다.'}))];
+$('summary').textContent=`고유기 ${V4.UNITS.filter(u=>u.ult).length} · 스킬 칩 ${V4.SKILLS.length} · 아이템 액티브 ${V4.ITEMS.filter(i=>i.act).length} · 무기 ${V4.ITEMS.length}`;
+let selected=entries.find(d=>d.id==='u_bishop'),star=1,group='all',time=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,scene,last=performance.now();
+const labels={ult:'유닛 고유기',skill:'스킬 칩',act:'아이템 액티브',weapon:'무기 기본 공격',proc:'패시브'};
+function listing(){const q=$('search').value;const list=entries.filter(d=>(group==='all'?defs.includes(d):d.cls===group)&&(!q||d.name.includes(q)||d.id.includes(q)));$('library').replaceChildren(...list.map(d=>{const b=document.createElement('button');b.dataset.id=d.id;b.setAttribute('aria-pressed',String(d===selected));b.textContent=d.name;const s=document.createElement('small');s.textContent=`${labels[d.kind]||'기술'} · ${V4.CLS[d.cls]?.name||''}`;b.append(s);return b;}));}
+function build(){let cb;const effects=VFX4.create(),events=[];const fx={play(){},burst(){},shake(){},death(){},skill(id,data){events.push({id,data,start:cb?.t||0});effects.emit(id,data);},proc(kind,data){effects.emit('p_'+kind,data);},attack(data){effects.emit('weapon',data);}};
+const api=BT4.create({grid,PLAYER_ROW:3,COLS:5,ROWS:6,getR:()=>({relics:[],act:1,round:1,diff:'normal'}),random:AC.rng(31),fx});
+const id=selected.id.startsWith('u_')?selected.id.slice(2):({war:'squire',arc:'archer',mag:'apprentice'})[selected.item?.cls||selected.cls]||'apprentice';
+const ally=(id,c,r,item=null)=>api.makeAlly({kind:'unit',id,uid:c+'-'+r,star,skills:selected.id==='vampire'?[{id:'vampire',star}]:[],item,rot:0},grid.idx(c,r),{ttiers:{}});
+const caster=ally(id,2,3,selected.item?{id:selected.item.id,star}:null),allies=[caster,ally('squire',1,4),ally('archer',3,4),ally('apprentice',0,4)];
+const foes=[[2,2],[2,1],[1,2],[3,2],[1,1],[3,1]].map(([c,r],i)=>{const e=api.makeFoe({def:GD.MONSTERS[['goblin','bandit','skel'][i%3]],cell:grid.idx(c,r),scale:1,rot:0});e.hp=e.maxHp=100000;return e;});
+const hooks=api.hooks();cb=new AC.Combat(grid,[...allies,...foes],{hooks,random:AC.rng(21)});for(const u of allies){u.chip=null;u.act=null;u.hp=u.maxHp*.5;}allies[1].hp=allies[1].maxHp*.2;allies[2].hp=allies[2].maxHp*.8;
+const target=foes[0];if(selected.kind==='weapon'){if(caster.range<=1)fx.attack({source:{x:caster.px,y:caster.py},target:{x:target.px,y:target.py},weapon:SHOTS4.profile(caster),star});}
+else if(selected.kind==='proc'){const pos=u=>({x:u.px,y:u.py});effects.emit(selected.id,{source:pos(caster),target:pos(target),points:[pos(target)],cells:[pos(target)],star,stacks:3,healPoints:[pos(allies[1])],summon:'hawk'});}
+else if(selected.effect==='passive')hooks.onHit(target,50,caster,'atk',false,cb);
+else {caster.skills=[{def:selected,star:selected.kind==='ult'?1:star,cells:BT4.expandCells(selected,star)}];hooks.onCast(caster,target,cb);}
+scene={cb,effects,events,caster,target,hooks};time=0;}
+function tick(dt){scene.cb.t+=dt;scene.hooks.onTick(scene.cb,dt);scene.effects.step(dt);time+=dt;}
+function seek(t){build();for(let n=0;n<Math.floor(t*60);n++)tick(1/60);draw();}
+function select(id){const d=entries.find(d=>d.id===id);if(!d)return;selected=d;$('name').textContent=d.name;$('identity').textContent=`${labels[d.kind]} · ${V4.CLS[d.cls]?.name||''}`;$('desc').textContent=d.desc||'';build();listing();draw();}
+function draw(){const dpr=Math.min(2,devicePixelRatio||1);if($('stage').width!==W*dpr){$('stage').width=W*dpr;$('stage').height=H*dpr;}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle='#30483d';ctx.fillRect(0,0,W,H);
+for(const p of grid.cells){ctx.fillStyle=p.r<3?'#536455':'#4a675b';ctx.strokeStyle='#243a32';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(p.x-27,p.y-27,54,54,5);ctx.fill();ctx.stroke();}
+if($('effects').checked){VFX4.drawFields(ctx,scene.cb,grid);scene.effects.draw(ctx,'under');}
+for(const u of scene.cb.units.filter(u=>!u.dead)){ART.drawToken(ctx,ART.token(u.artId,u.side,24,2,u.side?'':V4.CLS[u.cls]?.art||''),u.px,u.py,24,{rot:0});if(u.lo)ART.drawLoadout(ctx,u.px,u.py,24,u.lo);if($('statuses').checked)VFX4.drawStatus(ctx,u,time,24,{polymorph:scene.effects.hasForm(u.id)});}
+if(selected.kind==='weapon'&&scene.caster.range>1){for(let i=0;i<3;i++){const t=(time*2+i*.33)%1,a=scene.caster,b=scene.target;SHOTS4.draw(ctx,{src:a,tgt:b,x:a.px+(b.px-a.px)*t,y:a.py+(b.py-a.py)*t},time);}}
+if($('effects').checked)scene.effects.draw(ctx,'over');$('time').textContent=time.toFixed(2)+'초';$('timeline').value=time;$('play').textContent=paused?'재생':'일시정지';}
+$('library').onclick=e=>{const b=e.target.closest('[data-id]');if(b)select(b.dataset.id);};document.querySelector('.filters').onclick=e=>{const b=e.target.closest('[data-group]');if(b){group=b.dataset.group;document.querySelectorAll('[data-group]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));listing();}};$('search').oninput=listing;
+document.querySelectorAll('[data-star]').forEach(b=>b.onclick=()=>{star=+b.dataset.star;document.querySelectorAll('[data-star]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('rank').textContent='★'.repeat(star);seek(time);});
+$('timeline').oninput=()=>{paused=true;seek(+$('timeline').value);};$('play').onclick=()=>{paused=!paused;draw();};$('replay').onclick=()=>{paused=false;seek(0);};$('effects').onchange=draw;$('statuses').onchange=draw;
+document.addEventListener('keydown',e=>{if(['INPUT','BUTTON'].includes(e.target.tagName))return;if(e.code==='Space'){e.preventDefault();paused=!paused;draw();}if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const i=entries.indexOf(selected);select(entries[(i+(e.key==='ArrowRight'?1:entries.length-1))%entries.length].id);}});
+window.SkillStudy={ids:defs.map(d=>d.id),select,seek, pause(){paused=true;},get events(){return scene.events;}};
+select(selected.id);function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused){for(let n=0;n<Math.max(1,Math.round(dt*60));n++)tick(1/60);if(time>=4)build();}draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);
 })();
-</script>
-</body>
-</html>
+</script></body></html>
