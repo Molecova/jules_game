@@ -168,6 +168,23 @@
     N_('cataclysm', '종말의 불꽃', 'mag', 5, { mode: 'target', effect: 'tele', cells: SQ5, power: 340, mana: 140, delay: 1, burn: { dps: 70, dur: 4 }, icon: 'fire', desc: '1초 뒤 대상 중심 5×5에 불벼락 + 4초 화상(초당 70)' }),
   );
 
+  // 18차 사용자 패치: 전사 스킬 칩(cd 를 적은 것은 대기시간 고정)
+  const WARFIX = {
+    bleedcut: { name: '기력 베기', bleed: null, drain: 0.5, desc: '앞쪽 3칸을 베고 준 피해의 절반만큼 회복' },
+    shadowstep: { cd: 7, power: 100 },
+    charge: { cd: 7 },
+    wall: { power: 150, selfShield: 300, desc: '자신 보호막 300, 같은 줄 좌우 2칸 아군 보호막 150' },
+    fortify: { power: 0, dur: 4, hot: 40, desc: '4초간 받는 피해 −30%, 초당 체력 40 회복' },
+    whirl: { power: 150, hits: 2, desc: '주변 8칸을 두 번 벤다(한 번에 위력 150)' },
+    bladestorm: { effect: 'bladeAura', mode: 'selfOnly', cells: null, power: 50, dur: 5, bleedDur: 10, desc: '5초간 자신 주변 8칸에 칼날. 닿은 적은 10초 출혈(초당 50)' },
+    earth: { power: 400 },
+    bulwark: { effect: 'rally', power: 0, dur: 4, red: 0.3, hot: 60, desc: '자신과 주변 2칸 아군 4초간 받는 피해 −30%, 0.5초마다 체력 30 회복' },
+    assassinate: { name: '핵펀치', stun: 3, desc: '체력 비율이 가장 낮은 적에게 확정 치명 + 3초 기절' },
+    execution: { mode: 'leap', desc: '체력 비율이 가장 낮은 적 옆으로 순간이동해 벤다. 체력 절반 이하면 피해 ×2' },
+    quakeking: { mode: 'all', cells: null, cd: 15, stun: 1.5, desc: '모든 적 피해 + 1.5초 기절' },
+  };
+  for (const sk of SKILLS) { const f = WARFIX[sk.id]; if (!f) continue; for (const [k, v] of Object.entries(f)) { if (v === null) delete sk[k]; else sk[k] = v; } }
+
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
   const I_ = (id, name, cls, t, shape, st, fx, desc, feel) => ({ kind: 'item', id, name, cls, t, shape, st, fx, desc, feel });
   const ITEMS = [

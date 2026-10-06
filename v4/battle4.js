@@ -346,7 +346,7 @@
     }
     function execSkill(cb, u, t, s, scale = 1) {
       const d = s.def, foe = 1 - u.side, k = SKSTAR[s.star || 1];
-      const P = (d.power || 0) * (u.pow || 1) * k * (u.spell || 1) * scale;
+      const F = (u.pow || 1) * k * (u.spell || 1) * scale, P = (d.power || 0) * F;
       const dir = facing(u, t);
       u.dir = dir;
       const col = u.side ? '#e8436b' : clsCol(d.cls);
@@ -410,13 +410,13 @@
             for (let j = 0; j < n; j++) { const v = d.focus && t && !t.dead ? t : ts[j % Math.max(1, ts.length)]; if (v) cb.projectiles.push({ x: u.px, y: u.py, tgt: v, src: u, dmg: P, crit: false, kind: 'spell', speed: 480 + j * 30, color: col }); }
             break;
           }
-          const cells = cellsOf();
+          const cells = d.mode === 'all' ? cb.alive(foe).filter((x) => !x.object).map((x) => x.cell) : cellsOf();
           visual(cells, cells.map(i => cb.occ[i]).filter(v => v && v.side === foe && !v.dead));
           if ((SLASH.has(d.id) || d.slash) && d.mode === 'facing') slashFacing(cb, u, dir, s.cells || d.cells, cells);
           else if ((SLASH.has(d.id) || d.slash) && d.mode === 'self') slashRing(cb, u, cells);
           else tiles(cb, cells, col);
           let dealt = 0;
-          for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe) dealt += applySkillHit(cb, u, v, P, d); }
+          for (let h = 0; h < (d.hits || 1); h++) for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe && !v.dead) dealt += applySkillHit(cb, u, v, P, d); }
           if (d.drain && dealt) cb.heal(u, dealt * d.drain, u);
           if (d.mode === 'line' && cells.length) { const last = grid.cells[cells[cells.length - 1]]; cb.beam(u.px, u.py, last.x, last.y, col, 0.3); }
           break;
@@ -451,7 +451,8 @@
           const list = d.mode === 'all' ? cb.alive(u.side).filter((x) => !x.object) : allies(cellsOf());
           visual(d.mode === 'all' ? list.map(a => a.cell) : cellsOf(), list);
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#6aa8ff');
-          for (const a of list) { giveShield(a, P * Hm, u); if (d.heal) cb.heal(a, d.heal * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
+          if (d.selfShield && !list.includes(u)) list.push(u);
+          for (const a of list) { giveShield(a, (a === u && d.selfShield ? d.selfShield * F : P) * Hm, u); if (d.heal) cb.heal(a, d.heal * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
           break;
         }
         case 'taunt': {
@@ -463,7 +464,14 @@
           break;
         }
         case 'parry': giveShield(u, P * Hm, u); u.st.parry = 4; cb.ring(u.px, u.py, '#c3cbd6', 30); break;
-        case 'fortify': u.st.fort = d.dur || 5; u.st.fortRed = d.red || 0.4; cb.heal(u, P * Hm, u); cb.ring(u.px, u.py, '#9aa3b2', 30); break;
+        case 'fortify': u.st.fort = d.dur || 5; u.st.fortRed = d.red || 0.4; if (P) cb.heal(u, P * Hm, u); if (d.hot) u.st.hot = { t: d.dur || 5, hps: d.hot * F * Hm, src: u }; cb.ring(u.px, u.py, '#9aa3b2', 30); break;
+        case 'rally': { // 불굴의 함성: 자신과 범위 아군 받는 피해 감소 + 지속 회복
+          const cells = cellsOf(), list = allies(cells); if (!list.includes(u)) list.push(u);
+          tiles(cb, cells, '#f5c400');
+          for (const a of list) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, d.red || 0.3); a.st.fort = Math.max(a.st.fort || 0, d.dur || 4); a.st.hot = { t: d.dur || 4, hps: (d.hot || 0) * F * Hm, src: u }; cb.ring(a.px, a.py, '#ffe08a', 22); }
+          break;
+        }
+        case 'bladeAura': u.st.blades = { t: d.dur || 5, dps: (d.power || 50) * k, dur: d.bleedDur || 10 }; cb.ring(u.px, u.py, '#c3cbd6', 34, 0.6); cb.float(u.px, u.py - 40, '칼날', '#e8ecf2'); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
           // 축복: 6초간(다시 걸면 시간만 새로). 예전에는 영구히 곱해져 같은 딱지에 끝없이 쌓였다
@@ -860,6 +868,13 @@
                 if (s.t <= 0) delete st[key];
               }
               if (u.dead) continue;
+              if (st.hot) { st.hot.t -= 0.5; if (u.hp < u.maxHp) cb.heal(u, st.hot.hps * 0.5, st.hot.src && !st.hot.src.dead ? st.hot.src : u); if (st.hot.t <= 0) delete st.hot; }
+              if (st.blades) { // 검의 폭풍: 주변 8칸 적에게 출혈
+                st.blades.t -= 0.5;
+                for (const n of grid.neighbors[u.cell]) { const v = cb.occ[n]; if (v && !v.dead && v.side !== u.side && !v.object) addStatus(cb, v, 'bleed', { dps: st.blades.dps, dur: st.blades.dur }, u); }
+                cb.ring(u.px, u.py, '#c3cbd6', 34, 0.25);
+                if (st.blades.t <= 0) delete st.blades;
+              }
               if (u.regen > 0 && u.hp < u.maxHp) { const h = Math.min(u.maxHp - u.hp, u.maxHp * u.regen * 0.5); u.hp += h; u.healDone = (u.healDone || 0) + h; }
               if (u.passive === 'healAura') for (const a of cb.units) if (!a.dead && a.side === u.side && !a.object && grid.dist(a.cell, u.cell) <= 1) { const h = Math.min(a.maxHp - a.hp, a.maxHp * 0.005 * u.healMult); a.hp += h; u.healDone = (u.healDone || 0) + h; }
             }
