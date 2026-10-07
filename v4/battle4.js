@@ -51,6 +51,7 @@
       if (st.heal) s.heal *= 1 + st.heal * k;
       if (st.mana) s.mana += st.mana * Math.min(k, 1.6);
       if (st.manaPerHit) s.manaPerHit += st.manaPerHit * k;
+      if (it.fx === 'elephant') s.as *= 0.5; // 코끼리망치: 공격 속도 절반
       s.fx = it.fx; s.fxK = k;
     }
     s.hp = Math.round(s.hp); s.atk = Math.round(s.atk);
@@ -264,6 +265,7 @@
       e.maxHp = Math.round(e.maxHp); e.hp = e.maxHp;
       if (s.fx === 'vampire') e.hp = Math.round(e.maxHp * 0.5); // 흡혈귀의 검: 체력 50%로 시작
       e.lsBase = e.lifesteal;
+      if (s.fx === 'elephant') e.elMiss = Math.max(0, 0.5 - 0.1 * ((card.item.star || 1) - 1)); // 코끼리망치: 기본 공격 빗나감
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
       setupSkills(e, mana);
       return e;
@@ -856,7 +858,7 @@
         silenced: (u) => !!(u.st && u.st.silence > 0),
         rooted: (u) => !!(u.st && u.st.root > 0),
         immune: (t) => !!(t.st && t.st.invuln > 0),
-        missChance: (src) => (src.st && src.st.blind ? src.st.blind.amt : 0),
+        missChance: (src) => { const a = src.st && src.st.blind ? src.st.blind.amt : 0, b = src.elMiss || 0; return 1 - (1 - a) * (1 - b); },
         healMod: (t) => (t.st && t.st.antiheal > 0 ? 0.2 : 1),
         forceCrit: (u, t, cb) => {
           if (u.st && u.st.sure > 0) return true;
@@ -883,6 +885,7 @@
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'deadeye' && t && t.hp < t.maxHp * 0.5) { m *= 1.25; proc('deadeye', src, [t]); }
+          if (src.ifx === 'elephant' && kind === 'atk') m *= 4.5;
           if (src.ifx === 'longshot' && t && grid.dist(src.cell, t.cell) >= 3) { m *= 1 + 0.25 * Math.min(1.6, src.ifxK); proc('longshot', src, [t]); }
           if (src.ifx === 'venomBonus' && t && t.st && t.st.poison) { m *= 1 + 0.15 * Math.min(1.6, src.ifxK); proc('venomBonus', src, [t]); }
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;

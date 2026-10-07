@@ -241,6 +241,7 @@
     I_('holymace', '성스러운 철퇴', 'war', 2, 'mace', { hp: 0.1 }, 'healMace', '체력 +10%. 공격할 때마다 가장 다친 아군을 공격력의 25%만큼 회복', '성기사'),
     I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.15 }, 'bloodthirst', '공격력 +20%, 흡혈 15%. 체력 50% 이하에서는 흡혈 25%', '광전사'),
     I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.1, hp: 0.1 }, 'cleave', '공격력·체력 +10%. 공격하면 대상 주변 적에게도 피해 25%', '제압'),
+    I_('elephanthammer', '코끼리망치', 'war', 3, 'hammer', {}, 'elephant', '기본 공격 피해 450%, 공격 속도 절반, 기본 공격 명중률 50%(★2 60% · ★3 70%)', '한 방'),
     I_('thornmail', '독 단도', 'war', 3, 'dagger', { as: 0.3, crit: 0.05 }, 'venomStack', '공격 속도 +30%, 치명 +5%. 공격할 때 5초 중독(초당 20), 끝없이 겹침', '암살자'),
     I_('dragonslayer', '그림자 검', 'war', 4, 'sword', { atk: 0.25, crit: 0.1 }, 'multiHit', '공격력 +25%, 치명 +10%. 기본 공격이 30% 확률로 2번, 10% 확률로 3번', '암살자'),
     I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.3, armor: 0.15 }, 'guardHeal', '체력 +30%, 받는 피해 −15%. 받은 피해의 10%만큼 체력 비율이 가장 낮은 아군 회복', '수호자'),
@@ -314,7 +315,7 @@
     // ---- 무기 스타일 ----
     j_knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'job', cls: 'war', th: [2, 3], members: ['buckler', 'holymace', 'towershield'],
       desc: ['기사 무기를 쥔 딱지 받는 피해 −15%', '받는 피해 −25%, 체력 +10%'] },
-    j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer'],
+    j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer', 'elephanthammer'],
       desc: ['용병 공격력 +15%, 승리하면 골드 +1', '용병 공격력 +30%, 승리하면 골드 +2'] },
     j_assassin: { name: '암살자', short: '암', col: '#4a3f6b', kind: 'job', cls: 'war', th: [2, 3], members: ['twinblades', 'thornmail', 'dragonslayer', 'vampsword'],
       desc: ['암살자 치명 +15%, 치명 피해 +30%', '암살자 치명 +30%, 치명 피해 +60%'] },
