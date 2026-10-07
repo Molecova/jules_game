@@ -1,0 +1,329 @@
+{
+  "variants": 3,
+  "compositions": 30,
+  "viewports": [
+    [
+      390,
+      844
+    ],
+    [
+      360,
+      640
+    ]
+  ],
+  "counts": [
+    {
+      "act": 1,
+      "phase": "early",
+      "left": {
+        "name": "숲속 오솔길",
+        "ids": [
+          "slime",
+          "goblin",
+          "gobarcher",
+          "wolf"
+        ],
+        "count": 4
+      },
+      "right": {
+        "name": "고블린 초소",
+        "ids": [
+          "gobarcher",
+          "wolf",
+          "slime",
+          "goblin",
+          "gobarcher"
+        ],
+        "count": 5
+      }
+    },
+    {
+      "act": 1,
+      "phase": "late",
+      "left": {
+        "name": "덩굴 협곡",
+        "ids": [
+          "shroom",
+          "woodguard",
+          "gobdrummer",
+          "thornroot",
+          "acornlobber",
+          "shroom"
+        ],
+        "count": 6
+      },
+      "right": {
+        "name": "북소리 야영지",
+        "ids": [
+          "gobdrummer",
+          "thornroot",
+          "acornlobber",
+          "shroom",
+          "woodguard",
+          "gobdrummer",
+          "thornroot"
+        ],
+        "count": 7
+      }
+    },
+    {
+      "act": 2,
+      "phase": "early",
+      "left": {
+        "name": "묘지 샛길",
+        "ids": [
+          "skel",
+          "skelarch",
+          "zombie",
+          "bat",
+          "skel"
+        ],
+        "count": 5
+      },
+      "right": {
+        "name": "무너진 성문",
+        "ids": [
+          "zombie",
+          "bat",
+          "skel",
+          "skelarch",
+          "zombie",
+          "bat"
+        ],
+        "count": 6
+      }
+    },
+    {
+      "act": 2,
+      "phase": "late",
+      "left": {
+        "name": "장송의 묘지",
+        "ids": [
+          "necro",
+          "boneguard",
+          "coffinbearer",
+          "chainwraith",
+          "bellkeeper",
+          "necro",
+          "boneguard"
+        ],
+        "count": 7
+      },
+      "right": {
+        "name": "망령의 관문",
+        "ids": [
+          "coffinbearer",
+          "chainwraith",
+          "bellkeeper",
+          "necro",
+          "boneguard",
+          "coffinbearer",
+          "chainwraith",
+          "bellkeeper"
+        ],
+        "count": 8
+      }
+    },
+    {
+      "act": 3,
+      "phase": "early",
+      "left": {
+        "name": "재가 쌓인 길",
+        "ids": [
+          "imp",
+          "lizard",
+          "salam",
+          "harpy",
+          "imp",
+          "lizard"
+        ],
+        "count": 6
+      },
+      "right": {
+        "name": "흑요석 관문",
+        "ids": [
+          "salam",
+          "harpy",
+          "imp",
+          "lizard",
+          "salam",
+          "harpy",
+          "imp"
+        ],
+        "count": 7
+      }
+    },
+    {
+      "act": 3,
+      "phase": "late",
+      "left": {
+        "name": "용암 분출지",
+        "ids": [
+          "whelp",
+          "magmagolem",
+          "powderimp",
+          "obsidian",
+          "lavaborer",
+          "flamerider",
+          "whelp",
+          "magmagolem"
+        ],
+        "count": 8
+      },
+      "right": {
+        "name": "화염 기수 주둔지",
+        "ids": [
+          "powderimp",
+          "obsidian",
+          "lavaborer",
+          "flamerider",
+          "whelp",
+          "magmagolem",
+          "powderimp",
+          "obsidian",
+          "lavaborer"
+        ],
+        "count": 9
+      }
+    },
+    {
+      "act": 4,
+      "phase": "early",
+      "left": {
+        "name": "눈 덮인 계곡",
+        "ids": [
+          "yeti",
+          "frostwolf",
+          "frostskel",
+          "icesprite",
+          "yeti",
+          "frostwolf",
+          "frostskel"
+        ],
+        "count": 7
+      },
+      "right": {
+        "name": "얼음 감시탑",
+        "ids": [
+          "frostskel",
+          "icesprite",
+          "yeti",
+          "frostwolf",
+          "frostskel",
+          "icesprite",
+          "yeti",
+          "frostwolf"
+        ],
+        "count": 8
+      }
+    },
+    {
+      "act": 4,
+      "phase": "late",
+      "left": {
+        "name": "눈표범 사냥터",
+        "ids": [
+          "snowarcher",
+          "iceguard",
+          "frostdrummer",
+          "snowleopard",
+          "crystalmage",
+          "snowarcher",
+          "iceguard",
+          "frostdrummer",
+          "snowleopard"
+        ],
+        "count": 9
+      },
+      "right": {
+        "name": "수정 요새",
+        "ids": [
+          "frostdrummer",
+          "snowleopard",
+          "crystalmage",
+          "snowarcher",
+          "iceguard",
+          "frostdrummer",
+          "snowleopard",
+          "crystalmage",
+          "snowarcher",
+          "iceguard"
+        ],
+        "count": 10
+      }
+    },
+    {
+      "act": 5,
+      "phase": "early",
+      "left": {
+        "name": "버려진 회랑",
+        "ids": [
+          "demon",
+          "fallen",
+          "hellhound",
+          "shade",
+          "demon",
+          "fallen",
+          "hellhound",
+          "shade"
+        ],
+        "count": 8
+      },
+      "right": {
+        "name": "차원 성문",
+        "ids": [
+          "hellhound",
+          "shade",
+          "demon",
+          "fallen",
+          "hellhound",
+          "shade",
+          "demon",
+          "fallen",
+          "hellhound"
+        ],
+        "count": 9
+      }
+    },
+    {
+      "act": 5,
+      "phase": "late",
+      "left": {
+        "name": "그림자 회랑",
+        "ids": [
+          "darkpriest",
+          "contractpriest",
+          "abyssbanner",
+          "executioner",
+          "mirrordemon",
+          "darkpriest",
+          "contractpriest",
+          "abyssbanner",
+          "executioner",
+          "mirrordemon"
+        ],
+        "count": 10
+      },
+      "right": {
+        "name": "계약의 성채",
+        "ids": [
+          "abyssbanner",
+          "executioner",
+          "mirrordemon",
+          "darkpriest",
+          "contractpriest",
+          "abyssbanner",
+          "executioner",
+          "mirrordemon",
+          "darkpriest",
+          "contractpriest",
+          "abyssbanner",
+          "executioner"
+        ],
+        "count": 12
+      }
+    }
+  ],
+  "errors": [],
+  "failed": []
+}
