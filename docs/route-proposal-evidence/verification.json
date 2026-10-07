@@ -23,7 +23,14 @@
           "gobarcher",
           "wolf"
         ],
-        "count": 4
+        "count": 4,
+        "profile": {
+          "min": 4,
+          "max": 5,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 전열을 익히는 전투"
+        }
       },
       "right": {
         "name": "고블린 초소",
@@ -34,7 +41,14 @@
           "goblin",
           "gobarcher"
         ],
-        "count": 5
+        "count": 5,
+        "profile": {
+          "min": 4,
+          "max": 5,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 전열을 익히는 전투"
+        }
       }
     },
     {
@@ -47,10 +61,16 @@
           "woodguard",
           "gobdrummer",
           "thornroot",
-          "acornlobber",
-          "shroom"
+          "acornlobber"
         ],
-        "count": 6
+        "count": 5,
+        "profile": {
+          "min": 5,
+          "max": 6,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 호위와 지원 병종"
+        }
       },
       "right": {
         "name": "북소리 야영지",
@@ -60,10 +80,16 @@
           "acornlobber",
           "shroom",
           "woodguard",
-          "gobdrummer",
-          "thornroot"
+          "gobdrummer"
         ],
-        "count": 7
+        "count": 6,
+        "profile": {
+          "min": 5,
+          "max": 6,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 호위와 지원 병종"
+        }
       }
     },
     {
@@ -76,9 +102,19 @@
           "skelarch",
           "zombie",
           "bat",
-          "skel"
+          "skel",
+          "skelarch",
+          "zombie",
+          "bat"
         ],
-        "count": 5
+        "count": 8,
+        "profile": {
+          "min": 8,
+          "max": 10,
+          "hp": 0.65,
+          "atk": 0.75,
+          "label": "다수전 · 약한 적이 무리 지어 등장"
+        }
       },
       "right": {
         "name": "무너진 성문",
@@ -88,9 +124,20 @@
           "skel",
           "skelarch",
           "zombie",
+          "bat",
+          "skel",
+          "skelarch",
+          "zombie",
           "bat"
         ],
-        "count": 6
+        "count": 10,
+        "profile": {
+          "min": 8,
+          "max": 10,
+          "hp": 0.65,
+          "atk": 0.75,
+          "label": "다수전 · 약한 적이 무리 지어 등장"
+        }
       }
     },
     {
@@ -105,9 +152,19 @@
           "chainwraith",
           "bellkeeper",
           "necro",
-          "boneguard"
+          "boneguard",
+          "coffinbearer",
+          "chainwraith",
+          "bellkeeper"
         ],
-        "count": 7
+        "count": 10,
+        "profile": {
+          "min": 10,
+          "max": 12,
+          "hp": 0.65,
+          "atk": 0.75,
+          "label": "다수전 · 회복과 증원의 물결"
+        }
       },
       "right": {
         "name": "망령의 관문",
@@ -119,38 +176,57 @@
           "boneguard",
           "coffinbearer",
           "chainwraith",
-          "bellkeeper"
+          "bellkeeper",
+          "necro",
+          "boneguard",
+          "coffinbearer",
+          "chainwraith"
         ],
-        "count": 8
+        "count": 12,
+        "profile": {
+          "min": 10,
+          "max": 12,
+          "hp": 0.65,
+          "atk": 0.75,
+          "label": "다수전 · 회복과 증원의 물결"
+        }
       }
     },
     {
       "act": 3,
       "phase": "early",
       "left": {
-        "name": "재가 쌓인 길",
+        "name": "거인의 재길",
         "ids": [
-          "imp",
-          "lizard",
-          "salam",
-          "harpy",
-          "imp",
-          "lizard"
+          "magmagolem",
+          "whelp",
+          "dragonkin"
         ],
-        "count": 6
+        "count": 3,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 1.7,
+          "atk": 1.25,
+          "label": "소수 정예 · 한 기씩 확실하게 처치"
+        }
       },
       "right": {
-        "name": "흑요석 관문",
+        "name": "용족의 관문",
         "ids": [
-          "salam",
-          "harpy",
-          "imp",
-          "lizard",
-          "salam",
-          "harpy",
-          "imp"
+          "dragonkin",
+          "firecult",
+          "magmagolem",
+          "whelp"
         ],
-        "count": 7
+        "count": 4,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 1.7,
+          "atk": 1.25,
+          "label": "소수 정예 · 한 기씩 확실하게 처치"
+        }
       }
     },
     {
@@ -159,31 +235,35 @@
       "left": {
         "name": "용암 분출지",
         "ids": [
-          "whelp",
-          "magmagolem",
-          "powderimp",
           "obsidian",
           "lavaborer",
-          "flamerider",
-          "whelp",
-          "magmagolem"
+          "flamerider"
         ],
-        "count": 8
+        "count": 3,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 2,
+          "atk": 1.4,
+          "label": "소수 정예 · 강력한 공격에 대비"
+        }
       },
       "right": {
         "name": "화염 기수 주둔지",
         "ids": [
-          "powderimp",
-          "obsidian",
-          "lavaborer",
           "flamerider",
-          "whelp",
-          "magmagolem",
-          "powderimp",
+          "demonknight",
           "obsidian",
           "lavaborer"
         ],
-        "count": 9
+        "count": 4,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 2,
+          "atk": 1.4,
+          "label": "소수 정예 · 강력한 공격에 대비"
+        }
       }
     },
     {
@@ -196,11 +276,16 @@
           "frostwolf",
           "frostskel",
           "icesprite",
-          "yeti",
-          "frostwolf",
-          "frostskel"
+          "yeti"
         ],
-        "count": 7
+        "count": 5,
+        "profile": {
+          "min": 5,
+          "max": 6,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 둔화와 추격"
+        }
       },
       "right": {
         "name": "얼음 감시탑",
@@ -210,11 +295,16 @@
           "yeti",
           "frostwolf",
           "frostskel",
-          "icesprite",
-          "yeti",
-          "frostwolf"
+          "icesprite"
         ],
-        "count": 8
+        "count": 6,
+        "profile": {
+          "min": 5,
+          "max": 6,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 둔화와 추격"
+        }
       }
     },
     {
@@ -228,12 +318,16 @@
           "frostdrummer",
           "snowleopard",
           "crystalmage",
-          "snowarcher",
-          "iceguard",
-          "frostdrummer",
-          "snowleopard"
+          "snowarcher"
         ],
-        "count": 9
+        "count": 6,
+        "profile": {
+          "min": 6,
+          "max": 7,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 후열을 노리는 기습"
+        }
       },
       "right": {
         "name": "수정 요새",
@@ -244,12 +338,16 @@
           "snowarcher",
           "iceguard",
           "frostdrummer",
-          "snowleopard",
-          "crystalmage",
-          "snowarcher",
-          "iceguard"
+          "snowleopard"
         ],
-        "count": 10
+        "count": 7,
+        "profile": {
+          "min": 6,
+          "max": 7,
+          "hp": 1,
+          "atk": 1,
+          "label": "보통 규모 · 후열을 노리는 기습"
+        }
       }
     },
     {
@@ -260,14 +358,16 @@
         "ids": [
           "demon",
           "fallen",
-          "hellhound",
-          "shade",
-          "demon",
-          "fallen",
-          "hellhound",
-          "shade"
+          "hellhound"
         ],
-        "count": 8
+        "count": 3,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 1.4,
+          "atk": 1.1,
+          "label": "소수 경비 · 핵심 적부터 제거"
+        }
       },
       "right": {
         "name": "차원 성문",
@@ -275,14 +375,16 @@
           "hellhound",
           "shade",
           "demon",
-          "fallen",
-          "hellhound",
-          "shade",
-          "demon",
-          "fallen",
-          "hellhound"
+          "fallen"
         ],
-        "count": 9
+        "count": 4,
+        "profile": {
+          "min": 3,
+          "max": 4,
+          "hp": 1.4,
+          "atk": 1.1,
+          "label": "소수 경비 · 핵심 적부터 제거"
+        }
       }
     },
     {
@@ -302,7 +404,14 @@
           "executioner",
           "mirrordemon"
         ],
-        "count": 10
+        "count": 10,
+        "profile": {
+          "min": 10,
+          "max": 12,
+          "hp": 0.8,
+          "atk": 0.9,
+          "label": "대규모 습격 · 차원문에서 몰려오는 적"
+        }
       },
       "right": {
         "name": "계약의 성채",
@@ -320,7 +429,14 @@
           "abyssbanner",
           "executioner"
         ],
-        "count": 12
+        "count": 12,
+        "profile": {
+          "min": 10,
+          "max": 12,
+          "hp": 0.8,
+          "atk": 0.9,
+          "label": "대규모 습격 · 차원문에서 몰려오는 적"
+        }
       }
     }
   ],

@@ -1,1 +1,1 @@
-PASS 3 layouts, 30 compositions, 2 mobile viewports, left/right switch, arrival, boss, next act, direct links; console exceptions and resource failures 0
+PASS B default, 3 layouts, 30 compositions, 40 B routes with act-specific counts and proposed strength, 2 mobile viewports, left/right switch, arrival, boss, next act, direct links; console exceptions and resource failures 0

@@ -6,20 +6,23 @@ const out=process.env.ROUTE_OUTPUT||'/tmp/jules-route-proposals';fs.mkdirSync(ou
   const p=await b.newPage({viewport:{width:1180,height:1050},deviceScaleFactor:2}),errors=[],failed=[];p.on('pageerror',e=>errors.push(e.message));p.on('requestfailed',r=>failed.push(r.url()));
   try{
     await p.goto('http://127.0.0.1:8000/concepts/v4-route-proposals.html');
-    const counts=[];
+    const counts=[],ranges={1:{early:[4,5],late:[5,6]},2:{early:[8,10],late:[10,12]},3:{early:[3,4],late:[3,4]},4:{early:[5,6],late:[6,7]},5:{early:[3,4],late:[10,12]}};
+    assert.equal(await p.locator('#proposal-b').isVisible(),true);assert.equal(await p.locator('#proposal-a').isVisible(),false);
+    await p.locator('[data-view="compare"]').click();
     for(let act=1;act<=5;act++){
       await p.locator('#act').selectOption(String(act));
       for(const phase of ['early','late']){
         await p.locator(`[data-phase="${phase}"]`).click();
         const states=await p.evaluate(()=>RouteStudy.states);
-        for(const s of states){assert.equal(s.act,act);assert.equal(s.stage,'choice');assert.equal(s.choices.length,2);assert.ok(s.choices[0].ids.length>= (phase==='early'?act+3:act+5));assert.ok(s.choices.every(r=>r.count===r.ids.length));assert.ok(s.choices.every(r=>new Set(r.ids).size>=4));}
+        const [min,max]=ranges[act][phase];
+        for(const s of states){assert.equal(s.act,act);assert.equal(s.stage,'choice');assert.equal(s.choices.length,2);assert.equal(s.choices[0].count,min);assert.equal(s.choices[1].count,max);assert.ok(s.choices.every(r=>r.count===r.ids.length));assert.ok(s.choices.every(r=>new Set(r.ids).size>=Math.min(4,r.count)));if(act===3)assert.ok(s.choices.every(r=>r.profile.hp>1&&r.profile.atk>1));if(act===2)assert.ok(s.choices.every(r=>r.profile.hp<1&&r.profile.atk<1));}
         assert.equal(await p.evaluate(()=>RouteStudy.states.every(s=>s.choices.every(r=>r.ids.every(id=>!!GD.MONSTERS[id])))),true);
         const fit=await p.evaluate(()=>[...document.querySelectorAll('.proposal .screen')].map(s=>({variant:s.closest('.proposal').id,content:s.querySelector('.theme-note,.journal-note').getBoundingClientRect().bottom,bottom:s.querySelector('.bottom').getBoundingClientRect().top})));
         for(const r of fit)assert.ok(r.content<=r.bottom+1,JSON.stringify(r));
         counts.push({act,phase,left:states[0].choices[0],right:states[0].choices[1]});
       }
     }
-    for(let act=1;act<=5;act++){const early=counts.find(c=>c.act===act&&c.phase==='early'),late=counts.find(c=>c.act===act&&c.phase==='late');assert.ok(late.left.ids.every(id=>!early.left.ids.includes(id)),'distinct early/late roster');assert.ok(late.left.count>early.left.count);}
+    for(let act=1;act<=5;act++){const early=counts.find(c=>c.act===act&&c.phase==='early'),late=counts.find(c=>c.act===act&&c.phase==='late');assert.ok(late.left.ids.every(id=>!early.left.ids.includes(id)),'distinct early/late roster');if(act===3){assert.equal(late.left.count,early.left.count);assert.ok(late.left.profile.hp>early.left.profile.hp);}else assert.ok(late.left.count>early.left.count);}
     await p.locator('#act').selectOption('1');await p.locator('[data-phase="early"]').click();await p.screenshot({path:path.join(out,'comparison-desktop.png'),fullPage:true});
     for(const [width,height]of [[390,844],[360,640]]){
       await p.setViewportSize({width,height});
@@ -44,11 +47,20 @@ const out=process.env.ROUTE_OUTPUT||'/tmp/jules-route-proposals';fs.mkdirSync(ou
     // Eight choices lead to the boss; clearing the preview opens the next act.
     await p.locator('[data-view="b"]').click();await p.locator('[data-phase="early"]').click();
     const s=p.locator('#proposal-b .screen');
+    await p.setViewportSize({width:390,height:844});
+    for(const [act,phase]of [[2,'early'],[3,'late'],[5,'early'],[5,'late']]){await p.locator('#act').selectOption(String(act));await p.locator(`[data-phase="${phase}"]`).click();await s.screenshot({path:path.join(out,`b-act${act}-${phase}.png`)});}
+    // Every route across all eight steps must retain its act's battle rhythm.
+    for(let act=1;act<=5;act++){
+      await p.locator('#act').selectOption(String(act));await p.locator('[data-phase="early"]').click();
+      for(let step=0;step<8;step++){const state=await p.evaluate(()=>RouteStudy.states.find(s=>s.id==='b')),[min,max]=ranges[act][step<4?'early':'late'];assert.equal(state.step,step);assert.ok(state.choices.every(r=>r.count>=min&&r.count<=max));await s.locator(`[data-side="${step%2}"]`).click();await s.locator('[data-depart]').click();await s.locator('[data-next]').click();}
+      assert.equal(await p.evaluate(()=>RouteStudy.states.find(s=>s.id==='b').stage),'boss');assert.ok((await s.locator('.arrival b').innerText()).includes(`적 ${ranges[act].late[1]}기`));
+    }
+    await p.locator('#act').selectOption('1');await p.locator('[data-phase="early"]').click();
     for(let i=0;i<8;i++){await s.locator(`[data-side="${i%2}"]`).click();await s.locator('[data-depart]').click();await s.locator('[data-next]').click();}
     assert.equal(await p.evaluate(()=>RouteStudy.states.find(s=>s.id==='b').stage),'boss');await s.screenshot({path:path.join(out,'boss-gate.png')});await s.locator('[data-next]').click();assert.equal(await p.evaluate(()=>RouteStudy.states.find(s=>s.id==='b').act),2);
     await p.goto('http://127.0.0.1:8000/concepts/v4-route-proposals.html#c');assert.equal(await p.locator('#proposal-c').isVisible(),true);assert.equal(await p.locator('#proposal-a').isVisible(),false);
     assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
     fs.writeFileSync(path.join(out,'verification.json'),JSON.stringify({variants:3,compositions:30,viewports:[[390,844],[360,640]],counts,errors,failed},null,2));
-    console.log('PASS 3 layouts, 30 compositions, 2 mobile viewports, left/right switch, arrival, boss, next act, direct links; console exceptions and resource failures 0');
+    console.log('PASS B default, 3 layouts, 30 compositions, 40 B routes with act-specific counts and proposed strength, 2 mobile viewports, left/right switch, arrival, boss, next act, direct links; console exceptions and resource failures 0');
   }catch(e){await p.screenshot({path:path.join(out,'failure.png'),fullPage:true});throw e;}finally{await b.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
