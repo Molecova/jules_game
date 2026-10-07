@@ -2,7 +2,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 function fixture(id) {
   const c = {}; c.window = c; vm.createContext(c);
-  for (const f of ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/enemies4.js', 'v4/enemy-combat4.js', 'v4/battle4.js']) vm.runInContext(fs.readFileSync(path.resolve(__dirname, '..', f), 'utf8'), c);
+  for (const f of ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/balance4.js', 'v4/enemies4.js', 'v4/enemy-combat4.js', 'v4/battle4.js']) vm.runInContext(fs.readFileSync(path.resolve(__dirname, '..', f), 'utf8'), c);
   const grid = c.AC.squareGrid(5, 6, 64), r = { act: c.GD.MONSTERS[id].act, round: c.GD.MONSTERS[id].act * 9, diff: 'normal', relics: [] };
   const api = c.BT4.create({ grid, PLAYER_ROW: 3, COLS: 5, ROWS: 6, getR: () => r, random: () => .5, fx: { play() {}, burst() {}, death() {}, shake() {} } });
   const boss = api.makeFoe({ def: c.GD.MONSTERS[id], cell: grid.idx(2, 2) });

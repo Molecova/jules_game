@@ -2,7 +2,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), vm = require('node:vm'), path = require('node:path');
 const { create, profiles } = require('../scripts/balance-policy4.js');
 const c = {}; c.window = c; vm.createContext(c);
-for (const f of ['game/data.js', 'v4/data4.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'), c);
+for (const f of ['game/data.js', 'v4/data4.js', 'v4/balance4.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'), c);
 const catalog = JSON.parse(JSON.stringify({ def: c.V4.DEF, traits: c.V4.TRAITS, xp: c.V4.XPNEED }));
 const unit = (id, star = 1) => ({ kind: 'unit', id, star, uid: id + star, item: null, skills: [] });
 function obs() {
@@ -47,6 +47,14 @@ test('counter choices use currently visible boss abilities, without predicting t
   assert.equal(shield - normal, 45);
   const s = { kind: 'skill', id: 'silence', star: 1 };
   assert.ok(Math.abs(p.gearValue(s, unit('apprentice'), { enemies: [{ boss: true, hint: '' }] }) - p.gearValue(s, unit('apprentice')) - 32) < 1e-9);
+});
+
+test('a rear caster chooses a reachable attack over a stronger blast confined to adjacent cells', () => {
+  const o = obs(); Object.assign(o, { act: 3, round: 23, lv: 9, gold: 20 });
+  o.board = [unit('squire', 2), unit('archer', 2), unit('apprentice', 2)];
+  o.shop = { unit: [], item: [], skill: ['frostnova', 'ice'].map(id => ({ kind: 'skill', id, star: 1 })) };
+  const a = create(catalog, 'balanced', 77).shop(o);
+  assert.equal(a.type, 'buy'); assert.equal(a.kind, 'skill'); assert.equal(a.i, 1);
 });
 
 test('a high-grade merge project can be bought before it is strong enough to replace a starter', () => {

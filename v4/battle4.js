@@ -12,6 +12,12 @@
   const ITSTAR = [0, 1, 1.6, 2.5];   // 아이템 별
   // 스킬 칩·아이템 액티브: 재사용 대기시간(마나 8당 1초, ★마다 10% 짧게)
   const chipCd = (d, star = 1) => (d.cd || Math.max(5, Math.round((d.mana || 80) / 8))) * (1 - 0.1 * (star - 1));
+  function skillDef(d, star = 1) {
+    if (!d.durPerStar && !d.markPerStar && !d.hpFloorPerStar) return d;
+    return { ...d, ...(d.durPerStar ? { dur: d.dur + d.durPerStar * (star - 1) } : {}),
+      ...(d.markPerStar ? { mark: d.mark + d.markPerStar * (star - 1) } : {}),
+      ...(d.hpFloorPerStar ? { hpFloor: d.hpFloor + d.hpFloorPerStar * (star - 1) } : {}) };
+  }
   const def = (kind, id) => V.DEF[kind + ':' + id];
   const clsCol = (c) => (V.CLS[c] ? V.CLS[c].col : '#e8436b');
 
@@ -301,7 +307,7 @@
     }
     function makeSummon(id, cell, side, owner) {
       const d = MONSTERS[id];
-      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.3 : 1) * (owner.wildSummon || 1) : 1;
+      const k = owner ? (owner.pow || 1) * (has('whistle') && side === 0 ? 1.3 : 1) * (owner.wildSummon || 1) * (id === 'hawk' && owner.ifx === 'hawkFocus' ? owner.ifxK : 1) : 1;
       const e = baseEntity({ hp: d.hp * k, atk: d.atk * k, as: d.as, range: d.range, armor: d.armor || 0, crit: 0.05 }, side, cell, {
         def: d, artId: d.id, cls: 'melee', summon: true, skills: [], procs: new Set(), healMult: 1, thorns: 0, regen: 0, critDmg: 1.75, pow: k, spell: 1,
       });
@@ -353,7 +359,7 @@
       let amt = P;
       if (d.execute && v.hp / v.maxHp <= 0.5) amt *= d.execute;
       const dealt = amt > 0 ? cb.damage(u, v, amt, 'spell', !!d.crit) : 0;
-      const kk = u.castK || 1, dot = (o) => (kk === 1 ? o : Object.assign({}, o, { dps: o.dps * kk })); // 지속 피해도 칩 별 배수
+      const kk = u.castDotK || u.castK || 1, dot = (o) => (kk === 1 ? o : Object.assign({}, o, { dps: o.dps * kk }));
       if (d.stun) addStatus(cb, v, 'stun', d.stun, u);
       if (d.slow) addStatus(cb, v, 'slow', d.slow, u);
       if (d.weak) addStatus(cb, v, 'weak', d.weak, u);
@@ -382,9 +388,10 @@
       return true;
     }
     function execSkill(cb, u, t, s, scale = 1) {
-      const d = s.def, foe = 1 - u.side, k = SKSTAR[s.star || 1];
+      const d = skillDef(s.def, s.star || 1), foe = 1 - u.side, k = (d.kind === 'act' ? ITSTAR : SKSTAR)[s.star || 1];
       const F = (u.pow || 1) * k * (u.spell || 1) * scale, P = (d.power || 0) * F;
       u.castK = k; u.castStar = s.star || 1;
+      u.castDotK = k * (u.spell || 1) * scale; // addStatus applies the owner's star once.
       const dir = facing(u, t);
       u.dir = dir;
       const col = u.side ? '#e8436b' : clsCol(d.cls);
@@ -495,7 +502,7 @@
           const cells = cellsOf(), delay = d.delay || 1.2;
           const visualInfo = visualData(cells, [], { phase: 'warn', delay });
           if (fx.skill) fx.skill(d.id, visualInfo);
-          cb.tele.push({ cells, t: 0, delay, dmg: P, side: foe, src: u, color: col, burn: d.burn, visualInfo, skillId: d.id });
+          cb.tele.push({ cells, t: 0, delay, dmg: P, side: foe, src: u, color: col, burn: d.burn ? { ...d.burn, dps: d.burn.dps * u.castDotK } : null, visualInfo, skillId: d.id });
           break;
         }
         case 'heal': {
@@ -515,7 +522,7 @@
           visual(list.map(a => a.cell), d.selfShield && !list.includes(u) ? [...list, u] : list, { target: pos(list[0] || u) });
           if (d.mode !== 'all') tiles(cb, cellsOf(), '#6aa8ff');
           if (d.selfShield && !list.includes(u)) list.push(u);
-          for (const a of list) { giveShield(a, (a === u && d.selfShield ? d.selfShield * F : P) * Hm, u); if (d.heal) cb.heal(a, d.heal * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
+          for (const a of list) { giveShield(a, (a === u && d.selfShield ? d.selfShield * F : P) * Hm, u); if (d.heal) cb.heal(a, d.heal * F * Hm, u); if (d.cleanse) cleanse(a); cb.ring(a.px, a.py, '#9fd0ff', 22); }
           break;
         }
         case 'taunt': {
@@ -536,12 +543,12 @@
           for (const a of list) { const on = a.st.fort > 0; a.st.fortRed = Math.max(on ? a.st.fortRed || 0 : 0, d.red || 0.3); a.st.fort = Math.max(a.st.fort || 0, d.dur || 4); a.st.hot = { t: d.dur || 4, hps: (d.hot || 0) * F * Hm, src: u }; cb.ring(a.px, a.py, '#ffe08a', 22); }
           break;
         }
-        case 'berserk': { // 결의: 체력을 20%로 낮추고 공격 속도 +100%
+        case 'berserk': { // Risk/reward: a higher-star chip preserves more of the user's HP.
           visual([u.cell], [u], { target: pos(u) });
-          const floor = Math.round(u.maxHp * 0.2); if (u.hp > floor) { u.hp = floor; cb.float(u.px, u.py - 46, '결의!', '#ff8a8a', true); }
+          const floor = Math.round(u.maxHp * (d.hpFloor || 0.2)); if (u.hp > floor) { u.hp = floor; cb.float(u.px, u.py - 46, '결의!', '#ff8a8a', true); }
           addHaste(u, d.id, d.dur || 6, 2); cb.ring(u.px, u.py, '#e8436b', 30, 0.6); break;
         }
-        case 'bladeAura': visual([u.cell], [u], { target: pos(u) }); u.st.blades = { t: d.dur || 5, dps: (d.power || 50) * k, dur: d.bleedDur || 10 }; cb.ring(u.px, u.py, '#c3cbd6', 34, 0.6); cb.float(u.px, u.py - 40, '칼날', '#e8ecf2'); break;
+        case 'bladeAura': visual([u.cell], [u], { target: pos(u) }); u.st.blades = { t: d.dur || 5, dps: (d.power || 50) * u.castDotK, dur: d.bleedDur || 10 }; cb.ring(u.px, u.py, '#c3cbd6', 34, 0.6); cb.float(u.px, u.py - 40, '칼날', '#e8ecf2'); break;
         case 'buff': {
           const a = cb.alive(u.side).filter((x) => !x.object).sort((x, y) => y.atk - x.atk)[0];
           // 축복: 6초간(다시 걸면 시간만 새로). 예전에는 영구히 곱해져 같은 딱지에 끝없이 쌓였다
@@ -599,7 +606,7 @@
         }
         case 'zone': { // 장판: 칸 안의 적에게 0.5초마다 상태
           const cells = cellsOf(); visual(cells, cells.map(i => cb.occ[i]).filter(v => v && v.side === foe && !v.dead)); tiles(cb, cells, '#7fbf4a', 0.6);
-          (cb.zones = cb.zones || []).push({ cells, t: d.dur || 4, tick: 0, side: foe, src: u, poison: d.poison ? { dps: d.poison.dps * k, dur: 1.5 } : null, color: '#7fbf4a' });
+          (cb.zones = cb.zones || []).push({ cells, t: d.dur || 4, tick: 0, side: foe, src: u, poison: d.poison ? { dps: d.poison.dps * u.castDotK, dur: 1.5 } : null, color: '#7fbf4a' });
           break;
         }
         case 'blind': { const cells = cellsOf(); visual(cells, cells.map(i => cb.occ[i]).filter(v => v && v.side === foe && !v.dead)); tiles(cb, cells, '#9a9a9a', 0.6); for (const i of cells) { const v = cb.occ[i]; if (v && v.side === foe && !v.dead) applySkillHit(cb, u, v, 0, d); } break; }
@@ -916,7 +923,7 @@
           if (src.ifx === 'longshot' && t && grid.dist(src.cell, t.cell) >= 3) { m *= 1 + 0.25 * Math.min(1.6, src.ifxK); proc('longshot', src, [t]); }
           if (src.ifx === 'venomBonus' && t && t.st && t.st.poison) { m *= 1 + 0.15 * Math.min(1.6, src.ifxK); proc('venomBonus', src, [t]); }
           if (src.side === 0 && t && (t.elite || t.boss) && has('crest')) m *= 1.08;
-          if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') { m *= 1 + (src.passive === 'focus' ? 0.08 : 0.05) * (src.focusN || 0); if (src.focusN > 0) proc('focus', src, [t], { stacks: src.focusN }); }
+          if ((src.passive === 'focus' || src.ifx === 'hawkFocus') && kind === 'atk') { m *= 1 + (src.passive === 'focus' ? 0.08 : 0.05 * Math.min(1.6, src.ifxK)) * (src.focusN || 0); if (src.focusN > 0) proc('focus', src, [t], { stacks: src.focusN }); }
           return m;
         },
         dmgTakenMod: (t, cb, src, kind) => {
@@ -1167,5 +1174,5 @@
     return { facing, rel, skillCells, synergyCounts, makeAlly, makeFoe, makeSummon, hooks, loadoutOf, wpArt, unitStats, foePreview: foeMul };
   }
 
-  global.BT4 = { create, unitStats, expandCells, chipCd, STAR, POW, SKSTAR, ITSTAR };
+  global.BT4 = { create, unitStats, expandCells, chipCd, skillDef, STAR, POW, SKSTAR, ITSTAR };
 })(window);

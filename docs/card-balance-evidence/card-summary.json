@@ -1,0 +1,549 @@
+{
+  "before": {
+    "reference": "2d0300d",
+    "sourceHashes": {
+      "shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "v4/balance4.js": "6985ed64a53ff83e6e62095091e825b0a9bc6a66cd8efc1c733a1f4b541dd004",
+      "v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "v4/battle4.js": "8a14f84573a08fac9ab349a8d8bddc312cb9e16e4c07dfa2a3ab90ee55f4365a"
+    },
+    "seedCount": 3,
+    "stars": {
+      "unit": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "unitSkill": [
+        0,
+        1,
+        1.7,
+        2.8
+      ],
+      "chip": [
+        0,
+        1,
+        1.7,
+        2.6
+      ],
+      "item": [
+        0,
+        1,
+        1.6,
+        2.5
+      ]
+    }
+  },
+  "after": {
+    "reference": null,
+    "sourceHashes": {
+      "shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "v4/balance4.js": "352c76e5dd89c1ec7ea2238dd5cd4cd1ad27d9cc2417bc94f1ab9de4d6121e15",
+      "v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "v4/battle4.js": "af7ef2cf23cc0064dc319a303c95ec471e03c243ba3525a611f9136cabebea8b"
+    },
+    "seedCount": 3,
+    "stars": {
+      "unit": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "unitSkill": [
+        0,
+        1,
+        1.7,
+        2.8
+      ],
+      "chip": [
+        0,
+        1,
+        1.7,
+        2.6
+      ],
+      "item": [
+        0,
+        1,
+        1.6,
+        2.5
+      ]
+    }
+  },
+  "controlledFightsEach": 5994,
+  "snapshotRowsEach": 999,
+  "method": "fixed-army card diagnostics; not legal full-run win rates",
+  "cardEffects": [
+    {
+      "kind": "unit",
+      "id": "scout",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 6001.666666666667,
+        "meanTeamSustain": 1369.0466666666664,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7336.833333333333,
+        "meanTeamSustain": 1517.5,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "unit",
+      "id": "bishop",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 9494.166666666666,
+        "meanTeamSustain": 2135.0,
+        "meanHpRatio": 0.019622950893709707
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10406.166666666666,
+        "meanTeamSustain": 2651.8333333333335,
+        "meanHpRatio": 0.053487672780435945
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "resolve",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 6818.333333333333,
+        "meanTeamSustain": 779.1666666666666,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7270.0,
+        "meanTeamSustain": 779.1666666666666,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "resolve",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 6818.333333333333,
+        "meanTeamSustain": 779.1666666666666,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7475.333333333333,
+        "meanTeamSustain": 779.1666666666666,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "resolve",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 6818.333333333333,
+        "meanTeamSustain": 779.1666666666666,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7634.333333333333,
+        "meanTeamSustain": 850.0,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "aegis",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10305.166666666666,
+        "meanTeamSustain": 3002.3333333333335,
+        "meanHpRatio": 0.08567040598290598
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10351.333333333334,
+        "meanTeamSustain": 3034.0,
+        "meanHpRatio": 0.0893028846153846
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "aegis",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 11426.833333333334,
+        "meanTeamSustain": 4499.5,
+        "meanHpRatio": 0.12419293920652615
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 11148.666666666666,
+        "meanTeamSustain": 4539.166666666667,
+        "meanHpRatio": 0.09561965811965811
+      }
+    },
+    {
+      "kind": "skill",
+      "id": "aegis",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 12922.5,
+        "meanTeamSustain": 6894.333333333333,
+        "meanHpRatio": 0.1893039491205252
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 13904.666666666666,
+        "meanTeamSustain": 8300.333333333334,
+        "meanHpRatio": 0.3005042596504267
+      }
+    },
+    {
+      "kind": "item",
+      "id": "whistle",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 10285.5,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 10285.5,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "item",
+      "id": "whistle",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 10285.5,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10772.833333333334,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.05540054563492064
+      }
+    },
+    {
+      "kind": "item",
+      "id": "whistle",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 10285.5,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 12005.833333333334,
+        "meanTeamSustain": 1133.3333333333333,
+        "meanHpRatio": 0.08483287545787548
+      }
+    },
+    {
+      "kind": "item",
+      "id": "prayerbook",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8406.166666666666,
+        "meanTeamSustain": 1754.1666666666667,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 9431.833333333334,
+        "meanTeamSustain": 1988.3333333333333,
+        "meanHpRatio": 0.07281593574129248
+      }
+    },
+    {
+      "kind": "item",
+      "id": "prayerbook",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 9630.166666666666,
+        "meanTeamSustain": 2618.1666666666665,
+        "meanHpRatio": 0.05896173007246377
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10032.5,
+        "meanTeamSustain": 2836.1666666666665,
+        "meanHpRatio": 0.10053067363922626
+      }
+    },
+    {
+      "kind": "item",
+      "id": "prayerbook",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10377.333333333334,
+        "meanTeamSustain": 3594.3333333333335,
+        "meanHpRatio": 0.10780406545209177
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 12363.166666666666,
+        "meanTeamSustain": 5441.333333333333,
+        "meanHpRatio": 0.23491752653651968
+      }
+    },
+    {
+      "kind": "item",
+      "id": "vampsword",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7217.333333333333,
+        "meanTeamSustain": 781.765,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8012.5,
+        "meanTeamSustain": 1084.7450000000001,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "item",
+      "id": "vampsword",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8039.333333333333,
+        "meanTeamSustain": 956.7080000000001,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 9983.666666666666,
+        "meanTeamSustain": 1926.8413333333335,
+        "meanHpRatio": 0.09606176900584795
+      }
+    },
+    {
+      "kind": "item",
+      "id": "vampsword",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 11887.0,
+        "meanTeamSustain": 2113.1200000000003,
+        "meanHpRatio": 0.11808226495726497
+      },
+      "after": {
+        "n": 6,
+        "kills": 4,
+        "meanTeamDamage": 17053.833333333332,
+        "meanTeamSustain": 5530.916,
+        "meanHpRatio": 0.4419694546252757
+      }
+    },
+    {
+      "kind": "item",
+      "id": "elephanthammer",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 7674.833333333333,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8825.833333333334,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "item",
+      "id": "elephanthammer",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8663.333333333334,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 9973.333333333334,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "item",
+      "id": "elephanthammer",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 8880.5,
+        "meanTeamSustain": 920.8333333333334,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 10824.5,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.0
+      }
+    },
+    {
+      "kind": "item",
+      "id": "archstaff",
+      "hostStar": 2,
+      "cardStar": 1,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 9557.666666666666,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.03120506958822176
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10312.166666666666,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.04197668650793651
+      }
+    },
+    {
+      "kind": "item",
+      "id": "archstaff",
+      "hostStar": 2,
+      "cardStar": 2,
+      "before": {
+        "n": 6,
+        "kills": 0,
+        "meanTeamDamage": 9676.333333333334,
+        "meanTeamSustain": 920.8333333333334,
+        "meanHpRatio": 0.0
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10770.833333333334,
+        "meanTeamSustain": 920.8333333333334,
+        "meanHpRatio": 0.057940911116862205
+      }
+    },
+    {
+      "kind": "item",
+      "id": "archstaff",
+      "hostStar": 2,
+      "cardStar": 3,
+      "before": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 10699.166666666666,
+        "meanTeamSustain": 991.6666666666666,
+        "meanHpRatio": 0.055071655020703936
+      },
+      "after": {
+        "n": 6,
+        "kills": 1,
+        "meanTeamDamage": 11854.666666666666,
+        "meanTeamSustain": 1062.5,
+        "meanHpRatio": 0.06547500154837112
+      }
+    }
+  ]
+}

@@ -759,7 +759,7 @@
       const eq = shop ? '' : [...c.skills.map((x) => def(x).name + starTxt(x.star)), c.item ? def(c.item).name + starTxt(c.item.star) : null].filter(Boolean).join(' · ');
       body = `<p>${hl(d.trait)}<br><span class="meta">사거리 ${st.range}${eq ? ' · ' + esc(eq) : ''}</span>${unitLadder(d, c.star)}</p>${sl}`;
     } else if (c.kind === 'skill') {
-      body = `<p>${hl(d.desc)}<br><span class="meta">${d.passive ? '패시브(늘 켜짐)' : `재사용 ${secTxt(BT4.chipCd(d, c.star))}초마다 저절로`}${skillExtras(d, BASE_E) ? ' · ' + skillExtras(d, BASE_E) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
+      body = `<p>${hl(d.desc)}<br><span class="meta">${d.passive ? '패시브(늘 켜짐)' : `재사용 ${secTxt(BT4.chipCd(d, c.star))}초마다 저절로`}${skillExtras(d, BASE_E, c.star) ? ' · ' + skillExtras(d, BASE_E, c.star) : ''}</span>${skillLadder(d, c.star, BASE_E)}</p>${patternGrid(d, c.star)}`;
     } else {
       body = `<p>${hl(d.desc)}<br><span class="meta">끼우면 ${d.feel}</span>${itemLadder(d, c.star, BASE_E)}</p>`;
     }
@@ -786,7 +786,7 @@
     towerGuard: () => '4초마다 주변 적 도발, 맞으면 주변 아군 보호막',
     poisonHit: (e, k) => `공격 시 중독(초당 <em>${Math.round(15 * k)}</em>, 최대 3중첩)`,
     quiverHeal: (e, k) => `3타마다 치유 화살 ${atkAmt(e, 1.8 * e.healMult * k)}`,
-    hawkFocus: () => '사냥매 소환, 같은 적을 계속 쏘면 피해 증가',
+    hawkFocus: (e, k) => `사냥매 소환(체력·공격 ×${k}) · 연속 공격 피해 최대 +${pct(0.25 * Math.min(1.6, k))}%`,
     markAura: (e, k) => `맞힌 적 받는 피해 <em>+${Math.round(10 * Math.min(2, k))}%</em>, 주변 아군 공속 <em>+${Math.round(10 * k)}%</em>`,
     spellSlow: () => '스킬에 맞은 적 둔화',
     spellBurn: (e, k) => `스킬에 맞은 적 화상(초당 <em>${Math.round(35 * k)}</em>)`,
@@ -816,8 +816,10 @@
     if (st.as) parts.push(`공속 <em>+${pct(st.as * k)}%</em>`);
     if (st.hp) parts.push(`체력 <em>+${pct(st.hp * k)}%</em>`);
     if (st.armor) parts.push(`받는 피해 <em>−${pct(st.armor * k)}%</em>`);
-    if (st.range) parts.push(`사거리 <em>+${st.range}</em>`);
+    if (st.range) parts.push(`사거리 <em>${st.range > 0 ? '+' : ''}${st.range}</em>`);
     if (st.crit) parts.push(`치명 <em>+${pct(st.crit * k)}%</em>`);
+    if (st.critDmg) parts.push(`치명 피해 <em>+${pct(st.critDmg * k)}%</em>`);
+    if (st.dodge) parts.push(`회피 <em>+${pct(st.dodge * Math.min(k, 1.6))}%</em>`);
     if (st.lifesteal) parts.push(`흡혈 <em>${pct(st.lifesteal * k)}%</em>`);
     if (st.spell) parts.push(`스킬 위력 <em>+${pct(st.spell * k)}%</em>`);
     if (st.heal) parts.push(`치유 <em>+${pct(st.heal * k)}%</em>`);
@@ -829,8 +831,9 @@
     return parts.join(' · ');
   }
   // 스킬 부가 효과(성급과 무관)
-  function skillExtras(sd, e) {
-    const pw = e.pow, ex = [];
+  function skillExtras(sd, e, star = 1) {
+    sd = BT4.skillDef(sd, star);
+    const pw = e.pow * (sd.kind === 'act' ? BT4.ITSTAR : BT4.SKSTAR)[star] * e.spell, ex = [];
     if (sd.stun) ex.push(`기절 ${sd.stun}초`);
     if (sd.slow) ex.push(`둔화 ${sd.slow}초`);
     if (sd.burn) ex.push(`화상 초당 ${Math.round(sd.burn.dps * pw)}`);
@@ -844,7 +847,8 @@
   }
   // 스킬 주 수치(성급에 따라 커짐)
   function skillMain(sd, star, e) {
-    const k = BT4.SKSTAR[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult;
+    sd = BT4.skillDef(sd, star);
+    const k = (sd.kind === 'act' ? BT4.ITSTAR : BT4.SKSTAR)[star], P = Math.round((sd.power || 0) * e.pow * k * e.spell), H = e.healMult;
     let main = '';
     switch (sd.effect) {
       case 'dmg': if (!sd.power) { main = sd.desc; break; } main = `피해 <em>${P}</em>${sd.hits > 1 ? ` × ${sd.hits}회` : ''}${sd.mode === 'all' ? ' · 모든 적' : ''}${sd.mode === 'front' ? ` · 맨 앞 ${sd.n || 2}명` : ''}${sd.mode === 'volley' ? ` × ${(sd.count || 3) + (star >= 3 ? 2 : 0)}발` : sd.mode === 'chain' ? ` · ${(sd.jumps || 4) + (star >= 3 ? 2 : 0)}번 튐` : ''}`; break;
@@ -852,38 +856,44 @@
       case 'lightrain': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * (sd.heal != null ? sd.heal / (sd.power || 1) : 0.6) * H)}</em>`; break;
       case 'smite': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * (sd.heal != null ? sd.heal / (sd.power || 1) : 1) * H)}</em>`; break;
       case 'heal': main = `회복 <em>${Math.round(P * H)}</em>`; break;
-      case 'shield': main = sd.selfShield ? `자신 보호막 <em>${Math.round(sd.selfShield * e.pow * k * e.spell * H)}</em> · 아군 <em>${Math.round(P * H)}</em>` : `보호막 <em>${Math.round(P * H)}</em>`; break;
+      case 'shield': main = sd.selfShield ? `자신 보호막 <em>${Math.round(sd.selfShield * e.pow * k * e.spell * H)}</em> · 아군 <em>${Math.round(P * H)}</em>` : `보호막 <em>${Math.round(P * H)}</em>`; if (sd.heal) main += ` · 회복 <em>${Math.round(sd.heal * e.pow * k * e.spell * H)}</em>`; break;
       case 'brace': main = `4초 이동 불가 · 1초마다 보호막 <em>${Math.round(P * H)}</em> × 4회`; break;
       case 'rally': main = `${sd.dur || 4}초 받는 피해 −${pct(sd.red || 0.3)}% · 초당 회복 <em>${Math.round((sd.hot || 0) * e.pow * k * e.spell * H)}</em>`; break;
-      case 'bladeAura': main = `${sd.dur || 5}초 칼날 · 출혈 초당 <em>${Math.round((sd.power || 50) * k * e.pow)}</em>`; break;
+      case 'bladeAura': main = `${sd.dur || 5}초 칼날 · 출혈 초당 <em>${Math.round((sd.power || 50) * k * e.pow * e.spell)}</em>`; break;
       case 'taunt': main = `3초 도발 · 보호막 <em>${P}</em>`; break;
       case 'buff': main = `6초간 피해 <em>+${30 + 10 * (star - 1)}%</em> · 공속 +20%`; break;
       case 'haste': case 'timewarp': main = `공속 <em>+${Math.round(((sd.amt || 1.25) + 0.08 * (star - 1) - 1) * 100)}%</em> ${sd.dur || 6}초${sd.effect === 'timewarp' ? ` · 적 둔화 ${3 + star - 1}초` : ''}`; break;
       case 'debuff': main = `적 약화(피해 −30%) <em>${(sd.weak || 4) + (star - 1)}초</em>`; break;
       case 'mana': main = `${sd.n ? `가까운 아군 ${sd.n}명` : '주변 아군'} 마나 <em>+${Math.round((sd.power || 30) * k)}</em>`; break;
       case 'heavy': main = `피해 ${atkAmt(e, sd.power * k)}`; break;
-      case 'guard': main = `${sd.only ? '전사 아군 ' : ''}받는 피해 <em>−${pct((sd.red || 0.25) + 0.05 * (star - 1))}%</em> ${sd.dur || 5}초`; break;
+      case 'guard': main = `${sd.only ? '전사 아군 ' : ''}받는 피해 <em>−${pct((sd.red || 0.25) + 0.05 * ((e.card?.star || e.unitStar || 1) - 1))}%</em> ${sd.dur || 5}초`; break;
       case 'curse': main = `피해 <em>${P}</em> · 약화 ${sd.weak || 6}초`; break;
       case 'aim': main = `${sd.delay || 2}초 조준 뒤 피해 <em>${P}</em>`; break;
       case 'explosive': main = `피해 <em>${P}</em> · ${sd.delay || 2}초 뒤 폭발 <em>${Math.round((sd.blast || sd.power) * e.pow * k * e.spell)}</em>`; break;
       case 'meteors': main = `운석 ${sd.count || 6}개 · 각 피해 <em>${P}</em>`; break;
       case 'thornshield': main = `보호막 <em>${Math.round(P * H)}</em> · 반사 ${pct(sd.reflect || 0.3)}% ${sd.dur || 4}초`; break;
       case 'passive': main = sd.targetChange ? `공격 대상 변경 시 피해 ${atkAmt(e, sd.targetChange[star - 1])} · 첫 공격 제외` : sd.ls ? `기본 공격 피해의 <em>${pct(sd.ls[star - 1] || sd.ls[0])}%</em> 회복` : sd.desc; break;
-      case 'berserk': main = `체력 20%로 · 공속 <em>+100%</em> ${sd.dur || 6}초`; break;
+      case 'berserk': main = `체력 ${pct(sd.hpFloor || 0.2)}%로 · 공속 <em>+100%</em> ${sd.dur || 6}초`; break;
+      case 'windwalk': main = `${sd.dur}초 회피 +${pct(sd.dodge)}% · 공속 +${pct(sd.amt - 1)}%`; break;
+      case 'bind': main = `${sd.dur}초 적 둘 피해 ${pct(sd.amt)}% 공유`; break;
+      case 'invuln': main = `가장 다친 아군 ${sd.dur}초 무적`; break;
+      case 'storm': main = `${sd.dur}초 공속 ×2 · 기본 공격 주변 피해 50%`; break;
+      case 'sure': main = `${sd.dur}초 확정 치명 · 치명 피해 +${pct(sd.critAdd)}%`; break;
       case 'markRandom': main = `적 ${sd.n || 2}명 ${sd.stun ? `빙결 <em>${sd.stun}초</em> · ` : ''}받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
       case 'summon': main = sd.summon === 'hawk' ? `매 소환(최대 ${sd.max || 1})` : '골렘 소환'; break;
       case 'fortify': main = `${sd.dur || 5}초 받는 피해 −${pct(sd.red || 0.4)}% · ${sd.hot ? `초당 회복 <em>${Math.round(sd.hot * e.pow * k * e.spell * H)}</em>` : `회복 <em>${Math.round(P * H)}</em>`}`; break;
       default: main = sd.desc;
     }
+    if (sd.mark) main = `대상 ${sd.mark}회 확정 치명(8초)`;
     return main;
   }
-  function skillText(sd, star, e) { const ex = skillExtras(sd, e); return skillMain(sd, star, e) + (ex ? ' · ' + ex : ''); }
+  function skillText(sd, star, e) { const ex = skillExtras(sd, e, star); return skillMain(sd, star, e) + (ex ? ' · ' + ex : ''); }
   // 성급표: ★1 · ★2 · ★3 실제 수치를 줄마다(지금 성급 줄 강조)
   const ladder = (fn, cur) => `<span class="ladder">${[1, 2, 3].map((st) => `<span class="${st === cur ? 'on' : ''}"><i>${'★'.repeat(st)}</i><span>${fn(st)}</span></span>`).join('')}</span>`;
   const wider = (sd) => ((BT4.expandCells(sd, 3) || sd.cells || []).length > (sd.cells || []).length);
   const skillLadder = (sd, cur, e) => ladder((st) => skillMain(sd, st, e) + (st === 3 && wider(sd) ? ' · 범위 확장' : ''), cur);
   const itemLadder = (it, cur, e) => ladder((st) => itemText(it, st, e), cur);
-  const unitLadder = (d, cur) => ladder((st) => { const u = BT4.unitStats({ id: d.id, star: st, skills: [], item: null }); return `체력 <em>${Math.round(u.hp)}</em> · 공격 <em>${Math.round(u.atk)}</em>${d.ult ? ` · ${d.ult.name} ${skillMain(d.ult, 1, { pow: BT4.POW[st], spell: 1 + (d.spellBonus || 0), healMult: 1, atk: u.atk })}` : ''}`; }, cur);
+  const unitLadder = (d, cur) => ladder((st) => { const u = BT4.unitStats({ id: d.id, star: st, skills: [], item: null }); return `체력 <em>${Math.round(u.hp)}</em> · 공격 <em>${Math.round(u.atk)}</em>${d.ult ? ` · ${d.ult.name} ${skillMain(d.ult, 1, { unitStar: st, pow: BT4.POW[st], spell: 1 + (d.spellBonus || 0), healMult: 1, atk: u.atk })}` : ''}`; }, cur);
   // ---------- 딱지 정보: 트레이딩 카드(A안) ----------
   // 딱지를 탭하면 큰 유닛 카드가 가운데로. 체력·공격은 그림 모서리 배지, 칩 줄을 탭하면 그 칩 카드가 앞으로,
   // 뒤집으면 뒷면에 ★1·★2·★3 성급표. 적 딱지도 같은 카드(붉은 테 + 행동 예고)
@@ -978,7 +988,7 @@
         sub = `<button class="scbg" data-act="subclose" aria-label="칩 카드 닫기"></button>
           <div class="scard ${isItem ? 'k-item' : 'k-skill'}" style="--cc:${CLS[sd.cls].col};--tc:var(--t${sd.t})" role="dialog" aria-label="${sd.name}">
             <div class="sc-h"><img src="${imgOf(x, 110)}" alt=""><div><b>${sd.name}${starTxt(x.star) ? ' ' + starTxt(x.star) : ''}</b>${head}</div>${isItem ? '' : sd.passive ? '<span class="drop cdb">패시브</span>' : `<span class="drop cdb">${secTxt(BT4.chipCd(sd, x.star))}초</span>`}</div>
-            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e) ? `<br><span class="meta">${skillExtras(sd, e)}</span>` : ''}${!isItem && !sd.passive ? '<br>' + cdTxt(BT4.chipCd(sd, x.star), '재사용 ') : ''}</p>
+            <p class="sc-d">${hl(sd.desc)}${!isItem && skillExtras(sd, e, x.star) ? `<br><span class="meta">${skillExtras(sd, e, x.star)}</span>` : ''}${!isItem && !sd.passive ? '<br>' + cdTxt(BT4.chipCd(sd, x.star), '재사용 ') : ''}</p>
             <div class="sc-r">${isItem ? '' : patternGrid(sd, x.star)}<div class="sc-l">${lad}</div></div>
             <div class="sc-b"><button class="wbtn" data-un="${isItem ? 'item' : k}">${isItem ? '아이템' : '칩'} 빼기</button><button class="wbtn" data-act="subclose">돌아가기</button></div>
           </div>`;

@@ -56,6 +56,8 @@
         if (d.antiheal && o.enemies.some(e => /회복|흡혈|치유|치료|보호막|방패/.test(e.hint))) v += 45;
       }
       if (d.mode === 'facing' && ud.range > 1) v *= .65;
+      // A short self-centered blast is a poor fit for a caster that stays at range.
+      if (d.mode === 'self' && d.effect === 'dmg' && ud.range > 1 && d.cells && Math.max(...d.cells.map(([x, y]) => Math.max(Math.abs(x), Math.abs(y)))) < ud.range) v *= .55;
       if (d.effect === 'brace' && ud.range === 1) v *= .75;
       return v * [0, 1, 1.7, 2.6][c.star];
     }

@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-function world(){const c={};c.window=c;vm.createContext(c);vm.runInContext('let seed=123; Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296)',c);for(const f of ['shared/engine.js','game/data.js','v4/data4.js','v4/enemies4.js','v4/encounters4.js','v4/enemy-combat4.js','v4/projectiles4.js','v4/battle4.js'])vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),c);return c;}
+function world(){const c={};c.window=c;vm.createContext(c);vm.runInContext('let seed=123; Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296)',c);for(const f of ['shared/engine.js','game/data.js','v4/data4.js', 'v4/balance4.js','v4/enemies4.js','v4/encounters4.js','v4/enemy-combat4.js','v4/projectiles4.js','v4/battle4.js'])vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),c);return c;}
 function fixture(id){const c=world(),grid=c.AC.squareGrid(5,6,64),r={relics:[],act:c.GD.MONSTERS[id].act,round:1,diff:'normal'},fx={play(){},burst(){},death(){},shake(){}},api=c.BT4.create({grid,PLAYER_ROW:3,COLS:5,ROWS:6,getR:()=>r,fx});
  const ally=(id,col,row)=>api.makeAlly({id,uid:id,star:1,skills:[],item:null},grid.idx(col,row),{ttiers:{}});
  const foe=(id,col,row)=>api.makeFoe({uid:id,def:c.GD.MONSTERS[id],cell:grid.idx(col,row),scale:1});

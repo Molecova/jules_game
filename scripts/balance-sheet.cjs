@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* 밸런스 시트: 유닛(능력치+고유기)과 상점 스킬 칩을 표 하나로 내보내고, 고친 표를 게임에 적용한다.
+/* 밸런스 시트: 유닛·고유기·스킬 칩·무기와 무기 액티브를 내보내고 적용한다.
    내보내기: node scripts/balance-sheet.cjs export            → docs/balance-sheet.csv (엑셀·구글 시트용)
    적용하기: node scripts/balance-sheet.cjs apply <표.csv|tsv> → v4/balance4.js (data4.js 원본과 다른 값만 담는다)
    빈 칸은 "그대로", 효과를 없애려면 0. 회색 참고 칸(범위·효과)은 적용하지 않는다. */
@@ -30,6 +30,12 @@ const COLS = [
   ['화상dps', 'burn.dps', 's'], ['화상초', 'burn.dur', 's'], ['중독dps', 'poison.dps', 's'], ['중독초', 'poison.dur', 's'],
   ['출혈dps', 'bleed.dps', 's'], ['출혈초', 'bleed.dur', 's'], ['취약', 'vuln.amt', 's'], ['취약초', 'vuln.dur', 's'],
   ['설명', 'desc', 's'],
+  ['무기공격%', 'st.atk', 'i'], ['무기공속%', 'st.as', 'i'], ['무기체력%', 'st.hp', 'i'], ['무기방어', 'st.armor', 'i'],
+  ['무기사거리', 'st.range', 'i'], ['무기치명', 'st.crit', 'i'], ['무기치명피해', 'st.critDmg', 'i'], ['무기회피', 'st.dodge', 'i'],
+  ['무기흡혈', 'st.lifesteal', 'i'], ['무기주문%', 'st.spell', 'i'], ['무기치유%', 'st.heal', 'i'], ['무기시작마나', 'st.mana', 'i'], ['무기타격마나', 'st.manaPerHit', 'i'],
+  ['무기액티브위력', 'act.power', 'i'], ['무기액티브대기시간', 'act.cd', 'i'], ['무기효과(참고)', 'fx', 'info'], ['보스전용(참고)', 'special', 'info'],
+  ['성급당지속', 'durPerStar', 's'], ['표적횟수', 'mark', 's'], ['성급당표적', 'markPerStar', 's'], ['결의체력비율', 'hpFloor', 's'], ['성급당결의체력', 'hpFloorPerStar', 's'],
+  ['지속회복', 'hot', 's'], ['후속폭발', 'blast', 's'],
 ];
 const CLS = { war: '전사', arc: '궁수', mag: '마법사', any: '공용' };
 const AREA = (d) => `${d.mode || ''}${d.cells ? ' ' + d.cells.length + '칸' : ''}`;
@@ -47,6 +53,11 @@ function rows(V) {
   for (const d of V.SKILLS) {
     const r = { kind: '스킬', id: d.id, cls: CLS[d.cls] || d.cls, name: '', t: d.t, sname: d.name, area: AREA(d), effect: d.effect, desc: d.desc };
     for (const [, k, w] of COLS) if (w === 's' && !(k in r)) r[k] = get(d, k);
+    out.push(r);
+  }
+  for (const d of V.ITEMS) {
+    const r = { kind: '무기', id: d.id, cls: CLS[d.cls], name: d.name, t: d.t, desc: d.desc, fx: d.fx || '', special: d.special ? '예' : '', sname: d.act?.name || '', area: d.act ? AREA(d.act) : '', effect: d.act?.effect || '' };
+    for (const [, k, w] of COLS) if (w === 'i') r[k] = get(d, k);
     out.push(r);
   }
   return out;
@@ -84,14 +95,15 @@ function applySheet(file) {
   const idx = Object.fromEntries(COLS.map(([h, k]) => [k, head.indexOf(h)]));
   if (idx.id < 0 || idx.kind < 0) throw new Error('머리글에 구분·id 칸이 없습니다');
   const V = load(false);
-  const patch = { units: {}, ult: {}, skills: {} }, changes = [], warn = [];
+  const patch = { units: {}, ult: {}, skills: {}, items: {} }, changes = [], warn = [];
   const num = (s) => { const v = Number(String(s).replace(/,/g, '').replace(/%$/, '')); return Number.isFinite(v) ? v : null; };
   for (const cells of table) {
     const val = (k) => (idx[k] >= 0 ? (cells[idx[k]] ?? '').trim() : '');
     const kind = val('kind'), id = val('id');
     const unit = kind === '유닛' ? V.UNITS.find((u) => u.id === id) : null;
     const skill = kind === '스킬' ? V.SKILLS.find((s) => s.id === id) : null;
-    if (!unit && !skill) { warn.push(`모르는 줄: ${kind} ${id}`); continue; }
+    const item = kind === '무기' ? V.ITEMS.find((s) => s.id === id) : null;
+    if (!unit && !skill && !item) { warn.push(`모르는 줄: ${kind} ${id}`); continue; }
     const set = (bucket, obj, k, raw, label) => {
       if (raw === '') return;
       const old = get(obj, k), isNum = typeof old === 'number' || old === undefined && k !== 'desc' && k !== 'name';
@@ -110,6 +122,7 @@ function applySheet(file) {
       else if (unit && w === 's' && unit.ult) set(patch.ult, unit.ult, k === 'sname' ? 'name' : k, raw, h);
       else if (skill && w === 's') set(patch.skills, skill, k === 'sname' ? 'name' : k, raw, h);
       else if (skill && k === 't') set(patch.skills, skill, k, raw, h);
+      else if (item && (w === 'i' || ['name', 't', 'desc'].includes(k))) set(patch.items, item, k, raw, h);
     }
   }
   for (const b of Object.values(patch)) for (const id of Object.keys(b)) if (!Object.keys(b[id]).length) delete b[id];
@@ -125,6 +138,7 @@ function applySheet(file) {
     if (u.ult && PATCH.ult[u.id]) { put(u.ult, PATCH.ult[u.id]); u.trait = u.ult.name + ': ' + u.ult.desc; }
   }
   for (const s of V.SKILLS) if (PATCH.skills[s.id]) { put(s, PATCH.skills[s.id]); if (PATCH.skills[s.id].t != null) s.tier = s.t; }
+  for (const it of V.ITEMS) if (PATCH.items[it.id]) put(it, PATCH.items[it.id]);
   V.BALANCE_PATCH = PATCH;
 })(window);
 `;
@@ -133,7 +147,10 @@ function applySheet(file) {
   if (warn.length) console.log('\n확인 필요:\n' + warn.join('\n'));
 }
 
-const [cmd, arg] = process.argv.slice(2);
-if (cmd === 'export') exportSheet();
-else if (cmd === 'apply' && arg) applySheet(arg);
-else console.log('사용: node scripts/balance-sheet.cjs export | apply <표.csv|tsv>');
+module.exports = { load, rows, parse, COLS };
+if (require.main === module) {
+  const [cmd, arg] = process.argv.slice(2);
+  if (cmd === 'export') exportSheet();
+  else if (cmd === 'apply' && arg) applySheet(arg);
+  else console.log('사용: node scripts/balance-sheet.cjs export | apply <표.csv|tsv>');
+}

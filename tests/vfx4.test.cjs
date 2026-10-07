@@ -1,7 +1,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const ROOT = path.resolve(__dirname, '..'), plain = x => JSON.parse(JSON.stringify(x));
-const FILES = ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/projectiles4.js', 'v4/battle4.js', 'v4/vfx4.js'];
+const FILES = ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/balance4.js', 'v4/projectiles4.js', 'v4/battle4.js', 'v4/vfx4.js'];
 function world() {
   const c = { randomCalls: 0 }; c.window = c; vm.createContext(c);
   vm.runInContext('let seed=12345; Math.random=()=>{randomCalls++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};', c);

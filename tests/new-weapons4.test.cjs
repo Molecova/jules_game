@@ -3,7 +3,7 @@ const fs = require('node:fs'), path = require('node:path'), vm = require('node:v
 const root = path.resolve(__dirname, '..'), plain = x => JSON.parse(JSON.stringify(x));
 function world() {
   const c = {}; c.window = c; vm.createContext(c);
-  for (const f of ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/enemies4.js', 'v4/encounters4.js', 'v4/enemy-combat4.js', 'v4/projectiles4.js', 'v4/battle4.js', 'v4/vfx4.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), c);
+  for (const f of ['shared/engine.js', 'game/data.js', 'v4/data4.js', 'v4/balance4.js', 'v4/enemies4.js', 'v4/encounters4.js', 'v4/enemy-combat4.js', 'v4/projectiles4.js', 'v4/battle4.js', 'v4/vfx4.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), c);
   return c;
 }
 function fixture({ item = null, skill = null, star = 1, seed = 17, enabled = true, act = 1 } = {}) {

@@ -33,7 +33,7 @@ function summarize(runs) {
   await p.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: '' }));
   try {
     if (process.env.BASELINE) {
-      for (const file of ['v4/data4.js', 'v4/encounters4.js', 'v4/battle4.js', 'v4/game4.js']) {
+      for (const file of ['v4/data4.js', 'v4/balance4.js', 'v4/encounters4.js', 'v4/battle4.js', 'v4/game4.js']) {
         let source = cp.execFileSync('git', ['show', process.env.BASELINE + ':' + file], { cwd: root, encoding: 'utf8' });
         // Export already-existing legal actions; no old gameplay code or coefficients are altered.
         if (file.endsWith('game4.js')) source = source.replace('startCombat, afterCombat,', 'startCombat, endCombat, afterCombat, tapBench, tapCell, unequip,');

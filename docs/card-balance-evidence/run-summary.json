@@ -1,0 +1,2312 @@
+{
+  "before": {
+    "baseline": "2d0300d",
+    "sourceHashes": {
+      "/shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "/v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "/v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "/v4/balance4.js": "6985ed64a53ff83e6e62095091e825b0a9bc6a66cd8efc1c733a1f4b541dd004",
+      "/game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "/v4/battle4.js": "8a14f84573a08fac9ab349a8d8bddc312cb9e16e4c07dfa2a3ab90ee55f4365a",
+      "/game/sfx.js": "19dddb9f70c47a61f0f5b38eab1b4bdce7fc3ff7db8b19bda6168bf9f23ec759",
+      "/game/art.js": "ddc7f12420269e3c07b3922004061b0c245f129d8fb83944dc53804cae86d711",
+      "/v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "/v4/enemy-art4.js": "09cfca4cec8f4f44cf1c9515d16e5466915a34b0e3339bda51beb49fc14af675",
+      "/v4/terrain4.js": "ee471cba5297b125ecd054220d3b3a5075e61a2be60e44e012e17ae41aa7eaf9",
+      "/v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "/v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "/v4/game4.js": "977218c815bef4aca390497f216faaa6f6daf95c9ea32a322da3dae8acea6942",
+      "/v4/vfx4.js": "a0f3aa709becd219f84fedcef2f9ee3ab97b1a81ac417fc5b8940dc22bf6e6a3",
+      "/v4/save4.js": "126297c016162c6ad8ca27c49f10f224cfffc91de8cfe355e7502829691bb2f2",
+      "/v4/scenes4.js": "8db772e4a5951e3e75dd3dd3be77c888264414644a1ca048e5db5eba63d627d9",
+      "balance-policy4.js": "49e7be71e16118d794784b5a5df6da43035044492533ec6c460c0d5934349689",
+      "balance-runner4.js": "6d1a140ed451e42e7c3a49438bd48efa1efc0dfc827d534f3e6f9622772f2c0b"
+    },
+    "calibration": null,
+    "commit": "2d0300d941df35ccbff8d9bf4f723bddca0f2d5b",
+    "seed": 66000001,
+    "count": 12,
+    "errors": [],
+    "coefficients": {
+      "base": {
+        "hp": 2,
+        "atk": 1.5
+      },
+      "ramp": 1.045,
+      "waves": [
+        null,
+        {
+          "early": [
+            4,
+            5
+          ],
+          "late": [
+            5,
+            6
+          ],
+          "strength": [
+            2.2,
+            3.6
+          ],
+          "intro": 1.7
+        },
+        {
+          "early": [
+            8,
+            10
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.8,
+            5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            3,
+            4
+          ],
+          "strength": [
+            3.6,
+            4.6
+          ]
+        },
+        {
+          "early": [
+            5,
+            6
+          ],
+          "late": [
+            6,
+            7
+          ],
+          "strength": [
+            4.5,
+            5.5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.2,
+            6.5
+          ]
+        }
+      ],
+      "normal": {
+        "hp": [
+          0,
+          1.65,
+          1.936,
+          2.4016,
+          3.3286,
+          4.128
+        ],
+        "atk": [
+          0,
+          1.18,
+          1.6159,
+          1.7374,
+          3.3825,
+          3.4947
+        ]
+      },
+      "elite": {
+        "ogre": [
+          0.7263,
+          0.6129
+        ],
+        "alpha": [
+          0.7425,
+          0.6264
+        ],
+        "banditchief": [
+          0.7443,
+          0.6282
+        ],
+        "dknight": [
+          1.6984,
+          2.556
+        ],
+        "gargoyle": [
+          2.4264,
+          3.6508
+        ],
+        "banshee": [
+          2.8704,
+          4.3197
+        ],
+        "giant": [
+          2.3894,
+          3.6439
+        ],
+        "dragonkin": [
+          4.214,
+          6.4266
+        ],
+        "demonknight": [
+          2.5805,
+          3.9358
+        ],
+        "frostgiant": [
+          3.6852,
+          4.972
+        ],
+        "yetichief": [
+          5.319,
+          7.1765
+        ],
+        "iceknight": [
+          5.151,
+          6.9495
+        ],
+        "archdemon": [
+          4.2072,
+          4.215
+        ],
+        "fallen": [
+          9.7768,
+          9.7947
+        ],
+        "succubus": [
+          14.5952,
+          14.622
+        ]
+      },
+      "boss": {
+        "gobking": [
+          1.4697,
+          1.6965
+        ],
+        "slimeking": [
+          1.6448,
+          1.8977
+        ],
+        "lich": [
+          2.4303,
+          3.5978
+        ],
+        "vampire": [
+          2.2139,
+          3.278
+        ],
+        "dragon": [
+          2.3455,
+          3.0699
+        ],
+        "surt": [
+          2.4305,
+          3.1812
+        ],
+        "icequeen": [
+          5.2311,
+          5.1207
+        ],
+        "yetiking": [
+          3.656,
+          3.5429
+        ],
+        "abysslord": [
+          6.5006,
+          6.1947
+        ],
+        "fallenking": [
+          5.0881,
+          5.9853
+        ]
+      }
+    },
+    "summary": [
+      {
+        "policy": "novice/normal",
+        "n": 12,
+        "clears": 3,
+        "clearRate95": [
+          0.08894003962896138,
+          0.53231033912066
+        ],
+        "finalBossKills": 3,
+        "phoenixUses": 0,
+        "reach": [
+          12,
+          10,
+          8,
+          4,
+          4
+        ],
+        "bosses": [
+          {
+            "n": 12,
+            "wins": 10,
+            "kills": 10
+          },
+          {
+            "n": 10,
+            "wins": 8,
+            "kills": 8
+          },
+          {
+            "n": 8,
+            "wins": 4,
+            "kills": 4
+          },
+          {
+            "n": 4,
+            "wins": 4,
+            "kills": 4
+          },
+          {
+            "n": 4,
+            "wins": 3,
+            "kills": 3
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 4
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          }
+        ]
+      },
+      {
+        "policy": "balanced/normal",
+        "n": 12,
+        "clears": 3,
+        "clearRate95": [
+          0.08894003962896138,
+          0.53231033912066
+        ],
+        "finalBossKills": 2,
+        "phoenixUses": 4,
+        "reach": [
+          12,
+          11,
+          11,
+          6,
+          3
+        ],
+        "bosses": [
+          {
+            "n": 12,
+            "wins": 11,
+            "kills": 11
+          },
+          {
+            "n": 11,
+            "wins": 11,
+            "kills": 11
+          },
+          {
+            "n": 10,
+            "wins": 5,
+            "kills": 5
+          },
+          {
+            "n": 3,
+            "wins": 3,
+            "kills": 3
+          },
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 4
+          },
+          {
+            "fight": 3,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "synergy/normal",
+        "n": 12,
+        "clears": 3,
+        "clearRate95": [
+          0.08894003962896138,
+          0.53231033912066
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 5,
+        "reach": [
+          12,
+          10,
+          10,
+          9,
+          4
+        ],
+        "bosses": [
+          {
+            "n": 11,
+            "wins": 10,
+            "kills": 10
+          },
+          {
+            "n": 10,
+            "wins": 10,
+            "kills": 10
+          },
+          {
+            "n": 10,
+            "wins": 8,
+            "kills": 8
+          },
+          {
+            "n": 7,
+            "wins": 4,
+            "kills": 4
+          },
+          {
+            "n": 4,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 1,
+            "elite": 1,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          }
+        ]
+      }
+    ],
+    "observedDeploymentCoverage": {
+      "unit": {
+        "distinctCards": 25,
+        "distinctStarVariants": 57,
+        "battleAppearances": 5776
+      },
+      "skill": {
+        "distinctCards": 62,
+        "distinctStarVariants": 85,
+        "battleAppearances": 5527
+      },
+      "item": {
+        "distinctCards": 37,
+        "distinctStarVariants": 58,
+        "battleAppearances": 5502
+      }
+    },
+    "legalChecks": 21453
+  },
+  "after": {
+    "baseline": null,
+    "sourceHashes": {
+      "/game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "/v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "/game/sfx.js": "19dddb9f70c47a61f0f5b38eab1b4bdce7fc3ff7db8b19bda6168bf9f23ec759",
+      "/game/art.js": "ddc7f12420269e3c07b3922004061b0c245f129d8fb83944dc53804cae86d711",
+      "/shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "/v4/balance4.js": "352c76e5dd89c1ec7ea2238dd5cd4cd1ad27d9cc2417bc94f1ab9de4d6121e15",
+      "/v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "/v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "/v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "/v4/enemy-art4.js": "09cfca4cec8f4f44cf1c9515d16e5466915a34b0e3339bda51beb49fc14af675",
+      "/v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "/v4/terrain4.js": "ee471cba5297b125ecd054220d3b3a5075e61a2be60e44e012e17ae41aa7eaf9",
+      "/v4/vfx4.js": "a0f3aa709becd219f84fedcef2f9ee3ab97b1a81ac417fc5b8940dc22bf6e6a3",
+      "/v4/save4.js": "126297c016162c6ad8ca27c49f10f224cfffc91de8cfe355e7502829691bb2f2",
+      "/v4/battle4.js": "af7ef2cf23cc0064dc319a303c95ec471e03c243ba3525a611f9136cabebea8b",
+      "/v4/scenes4.js": "8db772e4a5951e3e75dd3dd3be77c888264414644a1ca048e5db5eba63d627d9",
+      "/v4/game4.js": "46e6c95628903ea74a5b371083a11105557655c7dba61726fffe0fe0378e3d39",
+      "balance-policy4.js": "49e7be71e16118d794784b5a5df6da43035044492533ec6c460c0d5934349689",
+      "balance-runner4.js": "6d1a140ed451e42e7c3a49438bd48efa1efc0dfc827d534f3e6f9622772f2c0b"
+    },
+    "calibration": null,
+    "commit": "2d0300d941df35ccbff8d9bf4f723bddca0f2d5b",
+    "seed": 66000001,
+    "count": 12,
+    "errors": [],
+    "coefficients": {
+      "base": {
+        "hp": 2,
+        "atk": 1.5
+      },
+      "ramp": 1.045,
+      "waves": [
+        null,
+        {
+          "early": [
+            4,
+            5
+          ],
+          "late": [
+            5,
+            6
+          ],
+          "strength": [
+            2.2,
+            3.6
+          ],
+          "intro": 1.7
+        },
+        {
+          "early": [
+            8,
+            10
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.8,
+            5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            3,
+            4
+          ],
+          "strength": [
+            3.6,
+            4.6
+          ]
+        },
+        {
+          "early": [
+            5,
+            6
+          ],
+          "late": [
+            6,
+            7
+          ],
+          "strength": [
+            4.5,
+            5.5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.2,
+            6.5
+          ]
+        }
+      ],
+      "normal": {
+        "hp": [
+          0,
+          1.65,
+          1.936,
+          2.4016,
+          3.3286,
+          4.128
+        ],
+        "atk": [
+          0,
+          1.18,
+          1.6159,
+          1.7374,
+          3.3825,
+          3.4947
+        ]
+      },
+      "elite": {
+        "ogre": [
+          0.7263,
+          0.6129
+        ],
+        "alpha": [
+          0.7425,
+          0.6264
+        ],
+        "banditchief": [
+          0.7443,
+          0.6282
+        ],
+        "dknight": [
+          1.6984,
+          2.556
+        ],
+        "gargoyle": [
+          2.4264,
+          3.6508
+        ],
+        "banshee": [
+          2.8704,
+          4.3197
+        ],
+        "giant": [
+          2.3894,
+          3.6439
+        ],
+        "dragonkin": [
+          4.214,
+          6.4266
+        ],
+        "demonknight": [
+          2.5805,
+          3.9358
+        ],
+        "frostgiant": [
+          3.6852,
+          4.972
+        ],
+        "yetichief": [
+          5.319,
+          7.1765
+        ],
+        "iceknight": [
+          5.151,
+          6.9495
+        ],
+        "archdemon": [
+          4.2072,
+          4.215
+        ],
+        "fallen": [
+          9.7768,
+          9.7947
+        ],
+        "succubus": [
+          14.5952,
+          14.622
+        ]
+      },
+      "boss": {
+        "gobking": [
+          1.4697,
+          1.6965
+        ],
+        "slimeking": [
+          1.6448,
+          1.8977
+        ],
+        "lich": [
+          2.4303,
+          3.5978
+        ],
+        "vampire": [
+          2.2139,
+          3.278
+        ],
+        "dragon": [
+          2.3455,
+          3.0699
+        ],
+        "surt": [
+          2.4305,
+          3.1812
+        ],
+        "icequeen": [
+          5.2311,
+          5.1207
+        ],
+        "yetiking": [
+          3.656,
+          3.5429
+        ],
+        "abysslord": [
+          6.5006,
+          6.1947
+        ],
+        "fallenking": [
+          5.0881,
+          5.9853
+        ]
+      }
+    },
+    "summary": [
+      {
+        "policy": "novice/normal",
+        "n": 12,
+        "clears": 4,
+        "clearRate95": [
+          0.13811783989736134,
+          0.609382412602386
+        ],
+        "finalBossKills": 3,
+        "phoenixUses": 1,
+        "reach": [
+          12,
+          10,
+          8,
+          5,
+          5
+        ],
+        "bosses": [
+          {
+            "n": 12,
+            "wins": 10,
+            "kills": 10
+          },
+          {
+            "n": 10,
+            "wins": 8,
+            "kills": 8
+          },
+          {
+            "n": 8,
+            "wins": 5,
+            "kills": 5
+          },
+          {
+            "n": 5,
+            "wins": 5,
+            "kills": 5
+          },
+          {
+            "n": 5,
+            "wins": 3,
+            "kills": 3
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          }
+        ]
+      },
+      {
+        "policy": "balanced/normal",
+        "n": 12,
+        "clears": 3,
+        "clearRate95": [
+          0.08894003962896138,
+          0.53231033912066
+        ],
+        "finalBossKills": 3,
+        "phoenixUses": 1,
+        "reach": [
+          12,
+          9,
+          9,
+          8,
+          6
+        ],
+        "bosses": [
+          {
+            "n": 12,
+            "wins": 9,
+            "kills": 9
+          },
+          {
+            "n": 9,
+            "wins": 9,
+            "kills": 9
+          },
+          {
+            "n": 9,
+            "wins": 7,
+            "kills": 7
+          },
+          {
+            "n": 6,
+            "wins": 6,
+            "kills": 6
+          },
+          {
+            "n": 5,
+            "wins": 3,
+            "kills": 3
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 2,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 2
+          }
+        ]
+      },
+      {
+        "policy": "synergy/normal",
+        "n": 12,
+        "clears": 2,
+        "clearRate95": [
+          0.04696414761482223,
+          0.44803635738467273
+        ],
+        "finalBossKills": 2,
+        "phoenixUses": 3,
+        "reach": [
+          12,
+          10,
+          9,
+          7,
+          3
+        ],
+        "bosses": [
+          {
+            "n": 12,
+            "wins": 10,
+            "kills": 10
+          },
+          {
+            "n": 10,
+            "wins": 9,
+            "kills": 9
+          },
+          {
+            "n": 9,
+            "wins": 4,
+            "kills": 4
+          },
+          {
+            "n": 5,
+            "wins": 3,
+            "kills": 3
+          },
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 2
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          }
+        ]
+      }
+    ],
+    "observedDeploymentCoverage": {
+      "unit": {
+        "distinctCards": 26,
+        "distinctStarVariants": 61,
+        "battleAppearances": 5792
+      },
+      "skill": {
+        "distinctCards": 64,
+        "distinctStarVariants": 87,
+        "battleAppearances": 5527
+      },
+      "item": {
+        "distinctCards": 37,
+        "distinctStarVariants": 60,
+        "battleAppearances": 5495
+      }
+    },
+    "legalChecks": 21055
+  },
+  "clearedScreenshot": {
+    "seed": 66039596,
+    "profile": "novice",
+    "difficulty": "normal",
+    "boss": "타락한 왕 모르간 · 그림자 침투대"
+  },
+  "difficulties-before": {
+    "baseline": "2d0300d",
+    "sourceHashes": {
+      "/shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "/game/sfx.js": "19dddb9f70c47a61f0f5b38eab1b4bdce7fc3ff7db8b19bda6168bf9f23ec759",
+      "/game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "/v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "/v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "/game/art.js": "ddc7f12420269e3c07b3922004061b0c245f129d8fb83944dc53804cae86d711",
+      "/v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "/v4/balance4.js": "6985ed64a53ff83e6e62095091e825b0a9bc6a66cd8efc1c733a1f4b541dd004",
+      "/v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "/v4/enemy-art4.js": "09cfca4cec8f4f44cf1c9515d16e5466915a34b0e3339bda51beb49fc14af675",
+      "/v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "/v4/save4.js": "126297c016162c6ad8ca27c49f10f224cfffc91de8cfe355e7502829691bb2f2",
+      "/v4/scenes4.js": "8db772e4a5951e3e75dd3dd3be77c888264414644a1ca048e5db5eba63d627d9",
+      "/v4/terrain4.js": "ee471cba5297b125ecd054220d3b3a5075e61a2be60e44e012e17ae41aa7eaf9",
+      "/v4/battle4.js": "8a14f84573a08fac9ab349a8d8bddc312cb9e16e4c07dfa2a3ab90ee55f4365a",
+      "/v4/vfx4.js": "a0f3aa709becd219f84fedcef2f9ee3ab97b1a81ac417fc5b8940dc22bf6e6a3",
+      "/v4/game4.js": "977218c815bef4aca390497f216faaa6f6daf95c9ea32a322da3dae8acea6942",
+      "balance-policy4.js": "49e7be71e16118d794784b5a5df6da43035044492533ec6c460c0d5934349689",
+      "balance-runner4.js": "6d1a140ed451e42e7c3a49438bd48efa1efc0dfc827d534f3e6f9622772f2c0b"
+    },
+    "calibration": null,
+    "commit": "2d0300d941df35ccbff8d9bf4f723bddca0f2d5b",
+    "seed": 68000001,
+    "count": 6,
+    "errors": [],
+    "coefficients": {
+      "base": {
+        "hp": 2,
+        "atk": 1.5
+      },
+      "ramp": 1.045,
+      "waves": [
+        null,
+        {
+          "early": [
+            4,
+            5
+          ],
+          "late": [
+            5,
+            6
+          ],
+          "strength": [
+            2.2,
+            3.6
+          ],
+          "intro": 1.7
+        },
+        {
+          "early": [
+            8,
+            10
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.8,
+            5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            3,
+            4
+          ],
+          "strength": [
+            3.6,
+            4.6
+          ]
+        },
+        {
+          "early": [
+            5,
+            6
+          ],
+          "late": [
+            6,
+            7
+          ],
+          "strength": [
+            4.5,
+            5.5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.2,
+            6.5
+          ]
+        }
+      ],
+      "normal": {
+        "hp": [
+          0,
+          1.65,
+          1.936,
+          2.4016,
+          3.3286,
+          4.128
+        ],
+        "atk": [
+          0,
+          1.18,
+          1.6159,
+          1.7374,
+          3.3825,
+          3.4947
+        ]
+      },
+      "elite": {
+        "ogre": [
+          0.7263,
+          0.6129
+        ],
+        "alpha": [
+          0.7425,
+          0.6264
+        ],
+        "banditchief": [
+          0.7443,
+          0.6282
+        ],
+        "dknight": [
+          1.6984,
+          2.556
+        ],
+        "gargoyle": [
+          2.4264,
+          3.6508
+        ],
+        "banshee": [
+          2.8704,
+          4.3197
+        ],
+        "giant": [
+          2.3894,
+          3.6439
+        ],
+        "dragonkin": [
+          4.214,
+          6.4266
+        ],
+        "demonknight": [
+          2.5805,
+          3.9358
+        ],
+        "frostgiant": [
+          3.6852,
+          4.972
+        ],
+        "yetichief": [
+          5.319,
+          7.1765
+        ],
+        "iceknight": [
+          5.151,
+          6.9495
+        ],
+        "archdemon": [
+          4.2072,
+          4.215
+        ],
+        "fallen": [
+          9.7768,
+          9.7947
+        ],
+        "succubus": [
+          14.5952,
+          14.622
+        ]
+      },
+      "boss": {
+        "gobking": [
+          1.4697,
+          1.6965
+        ],
+        "slimeking": [
+          1.6448,
+          1.8977
+        ],
+        "lich": [
+          2.4303,
+          3.5978
+        ],
+        "vampire": [
+          2.2139,
+          3.278
+        ],
+        "dragon": [
+          2.3455,
+          3.0699
+        ],
+        "surt": [
+          2.4305,
+          3.1812
+        ],
+        "icequeen": [
+          5.2311,
+          5.1207
+        ],
+        "yetiking": [
+          3.656,
+          3.5429
+        ],
+        "abysslord": [
+          6.5006,
+          6.1947
+        ],
+        "fallenking": [
+          5.0881,
+          5.9853
+        ]
+      }
+    },
+    "summary": [
+      {
+        "policy": "novice/hard",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 1,
+        "reach": [
+          6,
+          2,
+          1,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          },
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 2,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "balanced/hard",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 1,
+        "reach": [
+          6,
+          3,
+          2,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 4,
+            "wins": 3,
+            "kills": 3
+          },
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          },
+          {
+            "n": 2,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "synergy/hard",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 1,
+        "reach": [
+          6,
+          5,
+          2,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 5,
+            "wins": 5,
+            "kills": 5
+          },
+          {
+            "n": 5,
+            "wins": 2,
+            "kills": 2
+          },
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "novice/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          1,
+          0,
+          0,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 5,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "balanced/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          1,
+          0,
+          0,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 4,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "synergy/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 3,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 3,
+            "elite": 0,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      }
+    ],
+    "observedDeploymentCoverage": {
+      "unit": {
+        "distinctCards": 22,
+        "distinctStarVariants": 49,
+        "battleAppearances": 1864
+      },
+      "skill": {
+        "distinctCards": 49,
+        "distinctStarVariants": 64,
+        "battleAppearances": 1780
+      },
+      "item": {
+        "distinctCards": 32,
+        "distinctStarVariants": 50,
+        "battleAppearances": 1780
+      }
+    },
+    "legalChecks": 8900
+  },
+  "difficulties-after": {
+    "baseline": null,
+    "sourceHashes": {
+      "/shared/engine.js": "de8fb4d7a8c2bb129ca28ba0267e30d50aa83df0cdbf551d888f676f2d8db2e5",
+      "/v4/balance4.js": "352c76e5dd89c1ec7ea2238dd5cd4cd1ad27d9cc2417bc94f1ab9de4d6121e15",
+      "/game/sfx.js": "19dddb9f70c47a61f0f5b38eab1b4bdce7fc3ff7db8b19bda6168bf9f23ec759",
+      "/game/art.js": "ddc7f12420269e3c07b3922004061b0c245f129d8fb83944dc53804cae86d711",
+      "/game/data.js": "cff982d4d864810883915941f1dd83cfd1b6a0a32462f495c3a6123be9659a93",
+      "/v4/data4.js": "3bbf9bb2a872541c8d4737f71a7954a98ef3a4679ff63dbdf7405bea2dae7a64",
+      "/v4/enemies4.js": "bf4b7d80b14220ba02e260bf8c78194166481e75f59aadd77ed897a2c33d3fa4",
+      "/v4/encounters4.js": "0dd76a5fc868ba05f7c65a264f7e5d8fa0c548640e78bea7a74f622e440c88af",
+      "/v4/enemy-art4.js": "09cfca4cec8f4f44cf1c9515d16e5466915a34b0e3339bda51beb49fc14af675",
+      "/v4/terrain4.js": "ee471cba5297b125ecd054220d3b3a5075e61a2be60e44e012e17ae41aa7eaf9",
+      "/v4/projectiles4.js": "560ff6cd71ff8a44dd967ab9f92090bc38e20e6f9ce751649a6cd0b361edb5cc",
+      "/v4/enemy-combat4.js": "b9686ad8d5bcc7a3dd8c1514f4bfeb2dc6f1ee743826f395a805b68e9d9a28fc",
+      "/v4/scenes4.js": "8db772e4a5951e3e75dd3dd3be77c888264414644a1ca048e5db5eba63d627d9",
+      "/v4/save4.js": "126297c016162c6ad8ca27c49f10f224cfffc91de8cfe355e7502829691bb2f2",
+      "/v4/vfx4.js": "a0f3aa709becd219f84fedcef2f9ee3ab97b1a81ac417fc5b8940dc22bf6e6a3",
+      "/v4/battle4.js": "af7ef2cf23cc0064dc319a303c95ec471e03c243ba3525a611f9136cabebea8b",
+      "/v4/game4.js": "46e6c95628903ea74a5b371083a11105557655c7dba61726fffe0fe0378e3d39",
+      "balance-policy4.js": "49e7be71e16118d794784b5a5df6da43035044492533ec6c460c0d5934349689",
+      "balance-runner4.js": "6d1a140ed451e42e7c3a49438bd48efa1efc0dfc827d534f3e6f9622772f2c0b"
+    },
+    "calibration": null,
+    "commit": "2d0300d941df35ccbff8d9bf4f723bddca0f2d5b",
+    "seed": 68000001,
+    "count": 6,
+    "errors": [],
+    "coefficients": {
+      "base": {
+        "hp": 2,
+        "atk": 1.5
+      },
+      "ramp": 1.045,
+      "waves": [
+        null,
+        {
+          "early": [
+            4,
+            5
+          ],
+          "late": [
+            5,
+            6
+          ],
+          "strength": [
+            2.2,
+            3.6
+          ],
+          "intro": 1.7
+        },
+        {
+          "early": [
+            8,
+            10
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.8,
+            5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            3,
+            4
+          ],
+          "strength": [
+            3.6,
+            4.6
+          ]
+        },
+        {
+          "early": [
+            5,
+            6
+          ],
+          "late": [
+            6,
+            7
+          ],
+          "strength": [
+            4.5,
+            5.5
+          ]
+        },
+        {
+          "early": [
+            3,
+            4
+          ],
+          "late": [
+            10,
+            12
+          ],
+          "strength": [
+            3.2,
+            6.5
+          ]
+        }
+      ],
+      "normal": {
+        "hp": [
+          0,
+          1.65,
+          1.936,
+          2.4016,
+          3.3286,
+          4.128
+        ],
+        "atk": [
+          0,
+          1.18,
+          1.6159,
+          1.7374,
+          3.3825,
+          3.4947
+        ]
+      },
+      "elite": {
+        "ogre": [
+          0.7263,
+          0.6129
+        ],
+        "alpha": [
+          0.7425,
+          0.6264
+        ],
+        "banditchief": [
+          0.7443,
+          0.6282
+        ],
+        "dknight": [
+          1.6984,
+          2.556
+        ],
+        "gargoyle": [
+          2.4264,
+          3.6508
+        ],
+        "banshee": [
+          2.8704,
+          4.3197
+        ],
+        "giant": [
+          2.3894,
+          3.6439
+        ],
+        "dragonkin": [
+          4.214,
+          6.4266
+        ],
+        "demonknight": [
+          2.5805,
+          3.9358
+        ],
+        "frostgiant": [
+          3.6852,
+          4.972
+        ],
+        "yetichief": [
+          5.319,
+          7.1765
+        ],
+        "iceknight": [
+          5.151,
+          6.9495
+        ],
+        "archdemon": [
+          4.2072,
+          4.215
+        ],
+        "fallen": [
+          9.7768,
+          9.7947
+        ],
+        "succubus": [
+          14.5952,
+          14.622
+        ]
+      },
+      "boss": {
+        "gobking": [
+          1.4697,
+          1.6965
+        ],
+        "slimeking": [
+          1.6448,
+          1.8977
+        ],
+        "lich": [
+          2.4303,
+          3.5978
+        ],
+        "vampire": [
+          2.2139,
+          3.278
+        ],
+        "dragon": [
+          2.3455,
+          3.0699
+        ],
+        "surt": [
+          2.4305,
+          3.1812
+        ],
+        "icequeen": [
+          5.2311,
+          5.1207
+        ],
+        "yetiking": [
+          3.656,
+          3.5429
+        ],
+        "abysslord": [
+          6.5006,
+          6.1947
+        ],
+        "fallenking": [
+          5.0881,
+          5.9853
+        ]
+      }
+    },
+    "summary": [
+      {
+        "policy": "novice/hard",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 1,
+        "reach": [
+          6,
+          3,
+          2,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 3,
+            "wins": 3,
+            "kills": 3
+          },
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 2,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "balanced/hard",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          3,
+          2,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 3,
+            "wins": 3,
+            "kills": 3
+          },
+          {
+            "n": 3,
+            "wins": 2,
+            "kills": 2
+          },
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 2,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "synergy/hard",
+        "n": 6,
+        "clears": 1,
+        "clearRate95": [
+          0.03005258587173032,
+          0.563509436563646
+        ],
+        "finalBossKills": 1,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          4,
+          1,
+          1,
+          1
+        ],
+        "bosses": [
+          {
+            "n": 5,
+            "wins": 4,
+            "kills": 4
+          },
+          {
+            "n": 4,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 3
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "novice/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          1,
+          1,
+          0,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 4,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "balanced/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 1,
+        "reach": [
+          6,
+          1,
+          1,
+          1,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 4,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 1,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      },
+      {
+        "policy": "synergy/hell",
+        "n": 6,
+        "clears": 0,
+        "clearRate95": [
+          0,
+          0.3903430336530645
+        ],
+        "finalBossKills": 0,
+        "phoenixUses": 0,
+        "reach": [
+          6,
+          1,
+          0,
+          0,
+          0
+        ],
+        "bosses": [
+          {
+            "n": 2,
+            "wins": 1,
+            "kills": 1
+          },
+          {
+            "n": 1,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          },
+          {
+            "n": 0,
+            "wins": 0,
+            "kills": 0
+          }
+        ],
+        "deaths": [
+          {
+            "fight": 4,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 1
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          },
+          {
+            "fight": 0,
+            "elite": 0,
+            "boss": 0
+          }
+        ]
+      }
+    ],
+    "observedDeploymentCoverage": {
+      "unit": {
+        "distinctCards": 22,
+        "distinctStarVariants": 52,
+        "battleAppearances": 2093
+      },
+      "skill": {
+        "distinctCards": 55,
+        "distinctStarVariants": 71,
+        "battleAppearances": 2013
+      },
+      "item": {
+        "distinctCards": 33,
+        "distinctStarVariants": 51,
+        "battleAppearances": 1993
+      }
+    },
+    "legalChecks": 9830
+  }
+}
