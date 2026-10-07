@@ -395,10 +395,10 @@
   };
 
   const DIFF = {
-    // foeHp: 적 체력 배수, foeAtk: 적 공격력(스킬 위력 포함) 배수
-    normal: { name: '보통', desc: '기본 난이도', foeHp: 2.0, foeAtk: 1.5, phoenix: false },
-    hard: { name: '어려움', desc: '적이 더 강하다', foeHp: 3.0, foeAtk: 2.25, phoenix: false },
-    hell: { name: '지옥', desc: '적이 훨씬 강하다', foeHp: 4.0, foeAtk: 3.0, phoenix: false },
+    // 보통 = ×1. foeHp: 적 체력, foeAtk: 적 공격력·스킬 위력 배수
+    normal: { name: '보통', desc: '기본 난이도', foeHp: 1.0, foeAtk: 1.0, phoenix: false },
+    hard: { name: '어려움', desc: '적 체력·공격력 1.5배', foeHp: 1.5, foeAtk: 1.5, phoenix: false },
+    hell: { name: '지옥', desc: '적 체력·공격력 2배', foeHp: 2.0, foeAtk: 2.0, phoenix: false },
   };
 
   // 적 강도: 일반 적 한 마리의 체력·공격이 1막 대비 2막 2배 · 3막 4배 · 4막 8배 · 5막 15배가 되도록 막마다 맞춘 배수.
