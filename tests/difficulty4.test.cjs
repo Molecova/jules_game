@@ -46,15 +46,19 @@ test('hard and hell scale regular, elite, boss and reduced-size enemies by 1.5 a
 
 test('existing normal runs and unknown difficulty fallback use the new boss baseline', () => {
   const { r, foe } = fixture(); r.act = 5; r.round = 45;
-  const boss = foe('abysslord'); assert.equal(boss.maxHp, 350077); assert.equal(Math.round(boss.atk), 7708);
+  const boss = foe('abysslord'); assert.equal(boss.maxHp, 147290); assert.equal(Math.round(boss.atk), 1385);
   r.diff = 'unknown'; const fallback = foe('abysslord');
   assert.equal(fallback.maxHp, boss.maxHp); assert.equal(fallback.atk, boss.atk); assert.equal(fallback.pow, boss.pow);
 });
 
-test('normalizing difficulty preserves pre-change final stats for every enemy, act position and difficulty', () => {
+test('the calibrated baseline retains exact equivalence between neutral and legacy difficulty representations', () => {
   const legacy = require('./fixtures/difficulty-before-normalization.json');
   const current = fixture(), before = fixture();
-  before.c.V4.DIFF = legacy.diff; before.c.V4.FOE = legacy.foe;
+  before.c.V4.DIFF = legacy.diff;
+  // Balance may change; normalization must still be representation-only for any new baseline.
+  before.c.V4.FOE = JSON.parse(JSON.stringify(current.c.V4.FOE));
+  delete before.c.V4.FOE.base;
+  assert.equal(current.c.V4.DIFF.normal.foeHp, 1); assert.equal(current.c.V4.DIFF.normal.foeAtk, 1);
   for (const id of Object.keys(current.c.GD.MONSTERS)) {
     const d = current.c.GD.MONSTERS[id]; if (d.object) continue;
     const acts = d.act >= 1 && d.act <= 5 ? [d.act] : [1, 2, 3, 4, 5];

@@ -8,12 +8,12 @@ function fixture(id){const c=world(),grid=c.AC.squareGrid(5,6,64),r={relics:[],a
  const h=api.hooks(),cb=new c.AC.Combat(grid,[u,pal,a,b],{hooks:h,maxTime:40});return{c,grid,api,u,pal,a,b,h,cb,tick(dt){cb.t+=dt;h.onTick(cb,dt);}};
 }
 test('60 normal enemies, 30 abilities and 18 individual projectile profiles',()=>{const c=world();assert.equal(c.ENEMIES4.added.length,20);assert.equal(c.ENEMIES4.reworked.length,10);assert.equal(Object.keys(c.ENEMIES4.abilities).length,30);assert.equal(Object.keys(c.SHOTS4.profiles).length,18);for(let a=1;a<=5;a++)assert.equal(c.GD.ACTS[a].normal.length,12);});
-test('5,000 seeded acts: unique encounters, legal cells, budget, persistence and complete coverage',()=>{
+test('5,000 seeded acts: unique encounters, act rhythms, legal cells, strength budget, persistence and complete coverage',()=>{
  const c=world(),grid=c.AC.squareGrid(5,6,64),coverage=new Set();
  for(let act=1;act<=5;act++)for(let seed=0;seed<1000;seed++){
   let r={act,round:0,board:[],map:{boss:c.GD.ACTS[act].bosses[seed%2]},encounters:{version:1,seed,used:{},history:[],nodes:{}}};const ids=new Set();
   for(let f=0;f<5;f++){
-   r.round=(act-1)*6+f+1;r.node={id:act+'-'+f};const a=c.ENCOUNTERS4.generate(r,'fight',grid);coverage.add(r.encounter.id);assert.ok(!ids.has(r.encounter.id));ids.add(r.encounter.id);assert.ok(a.length>0&&a.length<=9);assert.ok(a.some(x=>x.id===r.encounter.core));assert.equal(new Set(a.map(x=>x.cell)).size,a.length);assert.ok(a.every(x=>x.cell>=0&&x.cell<15));assert.ok(a.reduce((v,x)=>v+c.GD.MONSTERS[x.id].v,0)<=2.2+.4*r.round+.50001);
+   r.round=(act-1)*9+f+1;r.node={id:act+'-'+f,f};const a=c.ENCOUNTERS4.generate(r,'fight',grid);coverage.add(r.encounter.id);assert.ok(!ids.has(r.encounter.id));ids.add(r.encounter.id);const wave=c.V4.FOE.waves[act],late=f>=4,range=late?wave.late:wave.early;assert.ok(a.length>=range[0]&&a.length<=range[1]);assert.ok(a.some(x=>x.id===r.encounter.core));assert.equal(new Set(a.map(x=>x.cell)).size,a.length);assert.ok(a.every(x=>x.cell>=0&&x.cell<15));assert.ok(Math.abs(a.reduce((v,x)=>v+x.scale,0)-(act===1&&f===0?wave.intro:wave.strength[late?1:0]))<1e-9);assert.equal(r.encounter.phase,late?'late':'early');
    const before=JSON.stringify(a);r=JSON.parse(JSON.stringify(r));assert.equal(JSON.stringify(c.ENCOUNTERS4.generate(r,'fight',grid)),before);
   }
   for(const kind of ['elite','boss']){r.node={id:act+'-'+kind};const a=c.ENCOUNTERS4.generate(r,kind,grid);assert.ok(a.length>0);assert.equal(new Set(a.map(x=>x.cell)).size,a.length);assert.ok(a.every(x=>c.GD.MONSTERS[x.id]));}

@@ -397,23 +397,29 @@
   const DIFF = {
     // 보통 = ×1. foeHp: 적 체력, foeAtk: 적 공격력·스킬 위력 배수
     normal: { name: '보통', desc: '기본 난이도', foeHp: 1.0, foeAtk: 1.0, phoenix: false },
-    hard: { name: '어려움', desc: '적 체력·공격력 1.5배', foeHp: 1.5, foeAtk: 1.5, phoenix: false },
-    hell: { name: '지옥', desc: '적 체력·공격력 2배', foeHp: 2.0, foeAtk: 2.0, phoenix: false },
+    hard: { name: '어려움', desc: '적 체력·공격력 1.5배 · 시작 8골드, 노드 수입 +1, 경험치 +3', foeHp: 1.5, foeAtk: 1.5, startGold: 8, income: 1, xpPerNode: 3, phoenix: false },
+    hell: { name: '지옥', desc: '적 체력·공격력 2배 · 시작 14골드, 노드 수입 +3, 경험치 +4', foeHp: 2.0, foeAtk: 2.0, startGold: 14, income: 3, xpPerNode: 4, phoenix: false },
   };
 
-  // 기존 보통 난이도의 체력 ×2·공격 ×1.5를 FOE.base 기준 보정으로 옮겼다.
-  // DIFF는 보통 ×1 / 어려움 ×1.5 / 지옥 ×2이며, 각 난이도의 최종 전투 수치는 정규화 이전과 같다.
-  // 적 강도: 일반 적 한 마리의 체력·공격이 1막 대비 2막 2배 · 3막 4배 · 4막 8배 · 5막 15배가 되도록 막마다 맞춘 배수.
-  // 막 안에서는 라운드마다 ×ramp(막 가운데가 기준). 정예전은 같은 라운드 일반전 대비 체력 합 1.5배·초당 피해 1.25배,
-  // 보스전은 막 마지막 일반전 대비 체력 합 2배·초당 피해 1.2배가 되도록(처음 3배·1.4배로 맞춘 뒤 ×2/3·×6/7) 핵심 적(정예 0번·보스)마다 따로 맞췄다
-  // (같은 막의 정예·보스끼리는 체력×공격이 같고, 체력과 공격의 비율은 원래 개성을 따른다). 난이도 배수는 여기에 곱한다.
+  // 난이도는 보통 ×1 / 어려움 ×1.5 / 지옥 ×2. 과거 보통 보정은 base에 유지한다.
+  // 성장·편성·보스 표는 실제 구매/합성/경로/보상을 거치는 전체 원정으로 재측정했다.
+  // 막 안의 상승은 1.045^(층-5), 병력 수와 개체 위력은 waves에서 함께 조정한다.
+  // 근거·재현 명령: docs/balance-2026-10-07.md. 개별 적 기본 데이터에 아래 계수를 곱한다.
   const ACT_LEN = 9; // 한 막의 칸 수(첫 전투 1 + 중간 7 + 보스 1)
   const FOE = {
     base: { hp: 2, atk: 1.5 }, // 보통 기준 능력치 보정. DIFF는 이 기준에 대한 상대 배수
-    mult: [0, 1, 2, 4, 8, 15], ramp: 1.08,
-    normal: { hp: [0, 1.65, 1.936, 2.528, 3.916, 5.504], atk: [0, 1.18, 1.469, 2.044, 4.51, 6.354] },
-    elite: { ogre: [0.807, 0.721], alpha: [0.825, 0.737], banditchief: [0.827, 0.739], dknight: [2.123, 3.007], gargoyle: [3.033, 4.295], banshee: [3.588, 5.082], giant: [3.676, 5.606], dragonkin: [6.483, 9.887], demonknight: [3.97, 6.055], frostgiant: [6.142, 9.944], yetichief: [8.865, 14.353], iceknight: [8.585, 13.899], archdemon: [10.518, 14.05], fallen: [24.442, 32.649], succubus: [36.488, 48.74] },
-    boss: { gobking: [1.729, 2.175], slimeking: [1.935, 2.433], lich: [3.739, 5.535], vampire: [3.406, 5.043], dragon: [4.691, 8.771], surt: [4.861, 9.089], icequeen: [9.511, 17.069], yetiking: [7.312, 13.122], abysslord: [13.543, 30.218], fallenking: [9.251, 20.639] },
+    ramp: 1.045,
+    // 보통 수 / 물량 / 소수 정예 / 보통 수 / 후반 물량. strength는 합산 병력 예산이다.
+    waves: [null,
+      { early: [4, 5], late: [5, 6], strength: [2.2, 3.6], intro: 1.7 },
+      { early: [8, 10], late: [10, 12], strength: [3.8, 5.0] },
+      { early: [3, 4], late: [3, 4], strength: [3.6, 4.6] },
+      { early: [5, 6], late: [6, 7], strength: [4.5, 5.5] },
+      { early: [3, 4], late: [10, 12], strength: [3.2, 6.5] },
+    ],
+    normal: {hp: [0, 1.65, 1.936, 2.4016, 3.3286, 4.128], atk: [0, 1.18, 1.6159, 1.7374, 3.3825, 3.4947]},
+    elite: {ogre: [0.7263, 0.6129], alpha: [0.7425, 0.6264], banditchief: [0.7443, 0.6282], dknight: [1.6984, 2.556], gargoyle: [2.4264, 3.6508], banshee: [2.8704, 4.3197], giant: [2.3894, 3.6439], dragonkin: [4.214, 6.4266], demonknight: [2.5805, 3.9358], frostgiant: [3.6852, 4.972], yetichief: [5.319, 7.1765], iceknight: [5.151, 6.9495], archdemon: [4.2072, 4.215], fallen: [9.7768, 9.7947], succubus: [14.5952, 14.622]},
+    boss: {gobking: [1.4697, 1.6965], slimeking: [1.6448, 1.8977], lich: [2.4303, 3.5978], vampire: [2.2139, 3.278], dragon: [2.3455, 3.0699], surt: [2.4305, 3.1812], icequeen: [5.2311, 5.1207], yetiking: [3.656, 3.5429], abysslord: [6.5006, 6.1947], fallenking: [5.0881, 5.9853]},
   };
 
   // 3막 두 번째 보스(몬스터·막 원본은 GD 를 이 페이지에서만 늘린다)
@@ -466,6 +472,8 @@
       fallenking: '5초마다 앞쪽 3×2에 처형의 일격, 8초마다 어둠의 방패(보호막)를 두릅니다. 체력 50% 이하에서 타락 기사 둘을 부르고 빨라집니다. 보호막이 오르기 전에 몰아치세요.',
     });
   }
+
+  for (const [id, m] of Object.entries(GD.MONSTERS)) if (m.boss) GD.BOSS_INFO[id] += ' 기절·침묵으로 능력 사용과 예고 중인 공격을 중단할 수 있습니다.';
 
   global.V4 = { CLS, SYN, TRAITS, UNITS, SKILLS, ITEMS, DEF, ODDS, XPNEED, MAXLV, LAST_ACT, POOL_N, MAXT, BENCH, RELICS, NODE, DIFF, FOE, ACT_LEN };
 })(window);

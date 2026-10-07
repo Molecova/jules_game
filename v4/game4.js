@@ -65,7 +65,7 @@
     const seed = globalThis.crypto?.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
     R = {
       rng: seed, saveVersion: SAVE4.VERSION, pending: null, result: null, encounters: { version: 1, seed, used: {}, history: [], nodes: {} },
-      v: 4, diff, act: 1, round: 0, gold: START_GOLD, lv: 3, xp: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
+      v: 4, diff, act: 1, round: 0, gold: DIFF[diff].startGold || START_GOLD, lv: 3, xp: 0, relics: DIFF[diff].phoenix ? ['phoenix'] : [],
       board: [], bench: Array(V.BENCH).fill(null), shop: { unit: [], skill: [], item: [] }, locked: { unit: false, skill: false, item: false },
       pool: {}, map: null, pos: null, path: [], node: null, freeRolls: 0, oddsBonus: 0, enemies: [], mode: 'map',
       stats: { wins: 0, battles: 0, merges: 0, goldEarned: 0, kills: 0, time: 0, elites: 0, bosses: 0 },
@@ -317,7 +317,7 @@
     R.oddsBonus = n.k === 'shop' ? 1 : 0;
     R.freeRolls = has('scale') ? 1 : 0;
     let inc = null;
-    if (R.round > 1) { inc = income(); R.gold += inc.total; R.stats.goldEarned += inc.total; addXp(2); }
+    if (R.round > 1) { inc = income(); R.gold += inc.total; R.stats.goldEarned += inc.total; addXp((DIFF[R.diff] || DIFF.normal).xpPerNode || 2); }
     rollAll(R.round === 1);
     if (R.round === 1 && !allUnits().length) starterRow();
     R.enemies = ['fight', 'elite', 'boss'].includes(n.k) ? genEnemies(n.k) : [];
@@ -1046,39 +1046,41 @@
   }
 
   // ---------- 입력 ----------
-  function tapBench(i) {
+  function tapBench(i, quiet = false) {
+    const paint = () => { if (!quiet) renderPlay(); };
     const c = R.bench[i], s = ui.sel;
-    if (s && s.from === 'board' && !c) { R.board = R.board.filter((u) => u !== s.c); R.bench[i] = s.c; ui.sel = null; SFX.play('card'); return renderPlay(); }
-    if (s && s.from === 'bench' && s.c.kind !== 'unit' && c && c.kind === 'unit') { equip(s.c, s.i, c); ui.sel = null; return renderPlay(); }
-    if (s && s.from === 'bench' && !c) { R.bench[s.i] = null; R.bench[i] = s.c; ui.sel = null; return renderPlay(); }
-    if (!c) { ui.sel = null; return renderPlay(); }
+    if (s && s.from === 'board' && !c) { R.board = R.board.filter((u) => u !== s.c); R.bench[i] = s.c; ui.sel = null; SFX.play('card'); return paint(); }
+    if (s && s.from === 'bench' && s.c.kind !== 'unit' && c && c.kind === 'unit') { equip(s.c, s.i, c); ui.sel = null; return paint(); }
+    if (s && s.from === 'bench' && !c) { R.bench[s.i] = null; R.bench[i] = s.c; ui.sel = null; return paint(); }
+    if (!c) { ui.sel = null; return paint(); }
     ui.sel = s && s.c === c ? null : { from: 'bench', i, c };
     SFX.play('click');
-    renderPlay();
+    paint();
   }
-  function tapCell(x, y, fromDrag) {
+  function tapCell(x, y, fromDrag, quiet = false) {
+    const paint = () => { if (!quiet) renderPlay(); };
     const s = ui.sel, u = R.board.find((b) => b.x === x && b.y === y);
-    if (!fromDrag && u && s && s.c.kind === 'unit' && s.c !== u) { ui.sel = { from: 'board', c: u }; SFX.play('click'); return renderPlay(); }
-    if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); ui.sel = null; ui.foe = e && ui.foe !== e ? e : null; if (e) SFX.play('card'); return renderPlay(); }
+    if (!fromDrag && u && s && s.c.kind === 'unit' && s.c !== u) { ui.sel = { from: 'board', c: u }; SFX.play('click'); return paint(); }
+    if (y < PLAYER_ROW) { const e = R.enemies.find((q) => q.cell === grid.idx(x, y)); ui.sel = null; ui.foe = e && ui.foe !== e ? e : null; if (e) SFX.play('card'); return paint(); }
     // 판 위 창고 딱지: 창고 칸처럼 고른다(딱지를 옮겨 놓으면 창고 딱지는 다른 빈칸으로 비킨다)
     const oi = u ? -1 : overflowAt(x, y);
-    if (oi >= 0 && (!s || s.from === 'shop' || s.c.kind !== 'unit' || s.c === R.bench[oi])) return tapBench(oi);
-    if (s && s.from === 'bench' && s.c.kind !== 'unit') { if (u) { equip(s.c, s.i, u); ui.sel = null; } else ui.sel = null; return renderPlay(); }
+    if (oi >= 0 && (!s || s.from === 'shop' || s.c.kind !== 'unit' || s.c === R.bench[oi])) return tapBench(oi, quiet);
+    if (s && s.from === 'bench' && s.c.kind !== 'unit') { if (u) { equip(s.c, s.i, u); ui.sel = null; } else ui.sel = null; return paint(); }
     if (s && s.from === 'bench' && s.c.kind === 'unit') {
       if (u) { R.board = R.board.filter((b) => b !== u); R.bench[s.i] = u; }
       else if (R.board.length >= deployMax()) return toast(`출전은 ${deployMax()}명까지. 레벨업하면 늘어요`);
       else R.bench[s.i] = null;
       s.c.x = x; s.c.y = y; R.board.push(s.c); ui.sel = null; SFX.play('place');
       tryMerge('unit', s.c.id, s.c.star);
-      return renderPlay();
+      return paint();
     }
     if (s && s.from === 'board' && u !== s.c) {
       if (u) { u.x = s.c.x; u.y = s.c.y; }
-      s.c.x = x; s.c.y = y; ui.sel = null; SFX.play('place'); return renderPlay();
+      s.c.x = x; s.c.y = y; ui.sel = null; SFX.play('place'); return paint();
     }
     ui.sel = u ? (s && s.c === u ? null : { from: 'board', c: u }) : null;
     if (u) SFX.play('click');
-    renderPlay();
+    paint();
   }
   $('bench').addEventListener('click', (e) => { const b = e.target.closest('[data-b]'); if (b && !B && performance.now() - drag.endT > 250) tapBench(+b.dataset.b); });
   $('srows').addEventListener('click', (e) => {
@@ -1909,7 +1911,7 @@
     const cur = oddsLv(), rows = [3, 4, 5, 6, 7, 8, 9].map((lv) => `<tr class="${lv === Math.min(9, cur) ? 'on' : ''}"><th>Lv${lv}</th>${ODDS[lv].map((p) => `<td>${p ? p + '%' : '·'}</td>`).join('')}</tr>`).join('');
     openSheet(`<span class="eyebrow">상점 확률 · 원정대 Lv${R.lv}${cur !== R.lv ? ` (확률은 Lv${cur} 기준)` : ''}</span><h2>등급별로 나올 확률</h2>
       <table class="odds"><thead><tr><th></th>${[1, 2, 3, 4, 5].map((t) => `<th><i style="--tc:var(--t${t})"></i>${t}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
-      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 라운드마다 경험치 +2, ${lvCost()}골드로 +4.${R.lv < MAXLV ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬은 5등급, 아이템은 4등급까지 나오며 1막은 3등급, 2막은 4등급까지만 나옵니다.</p>
+      <p class="meta" style="margin:0">레벨이 오르면 출전 인원이 늘고 높은 등급이 잘 나옵니다. 첫 노드 이후 경험치 +${(DIFF[R.diff] || DIFF.normal).xpPerNode || 2}, ${lvCost()}골드로 +4.${R.lv < MAXLV ? ` 다음 레벨까지 ${XPNEED[R.lv] - R.xp}.` : ''} 스킬·아이템은 5등급까지 나오며 1막은 3등급, 2막은 4등급까지만 나옵니다.</p>
       <button class="btn" data-close>닫기</button>`);
     $('sheetIn').onclick = (e) => { if (e.target.closest('[data-close]')) closeSheet(); };
   }
@@ -1950,7 +1952,7 @@
     let diff = 'normal';
     const render = () => {
       openSheet(`<span class="eyebrow">출정 준비</span><h2>난이도를 고르세요</h2>
-        <p class="lead" style="margin:0;color:var(--muted);font-size:12px">부대 없이 ${START_GOLD}골드로 떠납니다. 첫 상점에 1골드 전사·궁수·마법사가 하나씩 나옵니다.</p>
+        <p class="lead" style="margin:0;color:var(--muted);font-size:12px">부대 없이 ${DIFF[diff].startGold || START_GOLD}골드로 떠납니다. 첫 상점에 1골드 전사·궁수·마법사가 하나씩 나옵니다.</p>
         <div class="diffs">${Object.entries(DIFF).map(([k, D]) => `<button class="diff d-${k}${k === diff ? ' on' : ''}" data-df="${k}"><b>${D.name}</b><small>${D.desc}</small></button>`).join('')}</div>
         <div class="dbtn"><button class="btn" data-x>돌아가기</button><button class="btn go" data-go>출정!</button></div>`);
       $('sheetIn').onclick = (e) => {
@@ -2016,9 +2018,9 @@
         <p><b>시너지</b> 딱지마다 클래스 1개 + 특성 2개. 같은 특성 딱지가 정해진 수만큼 출전하면(기본 시너지) 또는 지정된 조합이 모두 출전하면(특별 조합) 효과가 켜집니다. 판 왼쪽 시너지 레일과 ‘전체’ 버튼으로 효과와 구성원을 봅니다.</p>
         <p><b>합성</b> 같은 카드 3장 → ★2, ★2 3장 → ★3. 보드·창고·장착된 칩까지 모두 셉니다.</p>
         <p><b>장착</b> 유닛마다 스킬 칩 1개 + 아이템 1개. 같은 클래스만(공용 스킬은 누구나). 스킬 칩은 재사용 대기시간마다 저절로 쓰고(★마다 10% 짧게), 아이템은 패시브 효과나 일정 시간마다 쓰는 액티브가 있습니다. 같은 스타일 무기를 여러 종류 쥐면 스타일 시너지가 켜집니다.</p>
-        <p><b>레벨</b> 원정대 레벨 = 출전 인원. 라운드마다 경험치 +2, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
+        <p><b>레벨</b> 원정대 레벨 = 출전 인원. 첫 노드 이후 경험치 +${R ? (DIFF[R.diff].xpPerNode || 2) : 2}, 4골드로 +4. 레벨이 오르면 높은 등급 카드가 잘 나옵니다.</p>
         <p><b>고유기</b> 유닛마다 고유기가 하나 있고(광전사·석궁병·화염술사는 패시브), 마나가 가득 차면 씁니다. 마나는 기본 공격 1번에 +12, 피해를 받으면 받은 만큼(한 번에 최대 +10) 찹니다. 딱지 카드의 시계 표시는 기본 공격만 셌을 때의 주기라, 맞으면 더 빨리 씁니다. 유닛 ★이 오르면 고유기 위력이 오릅니다.</p>
-        <p><b>수입</b> 라운드마다 5 + 이자(10골드당 1, 최대 5). 이기면 +1.</p>
+        <p><b>수입</b> 첫 노드 이후 기본 수입 ${R ? income().base : 5} + 이자(10골드당 1, 최대 5). 일반전 승리 +1(정예·보스 추가 보상).</p>
         <p><b>전리품</b> 일반 전투에서 이기면 스킬·아이템 셋 중 하나, 정예는 한 등급 높은 카드, 보스는 유물과 높은 등급 전리품(40% 확률로 보스 전용 아이템). 창고가 가득 차 있으면 판 위 빈칸에 ‘창고’ 딱지로 놓이고, 창고에 빈칸이 생기면 저절로 들어갑니다.</p>
         <p><b>패배</b> 한 번 지면 원정이 끝납니다.</p></div><button class="btn" data-m="close">닫기</button>`);
       if (m === 'sound') { SFX.setMuted(!SFX.muted); return openMenu(); }
@@ -2086,7 +2088,7 @@
 
   // 테스트·밸런스용 진입점
   window.__g = {
-    get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, sellCard, tryMerge, owned, simFight,
-    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, afterCombat, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, skipCombat, eliteChoices, lootChoices, bossLoot,
+    get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, unequip, sellCard, tryMerge, owned, simFight,
+    W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, endCombat, afterCombat, tapBench, tapCell, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, skipCombat, eliteChoices, lootChoices, bossLoot,
   };
 })();

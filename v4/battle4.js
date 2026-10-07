@@ -714,6 +714,9 @@
     function bossTick(cb, b, dt) {
       const s = b.script, f = s.flags;
       s.a -= dt; s.b -= dt; s.c -= dt;
+      // Boss patterns obey the same control rules as ordinary enemy abilities.
+      // Cooldowns keep running, so a short interrupt cannot freeze their timers forever.
+      if (b.stun > 0 || (b.st && b.st.silence > 0)) return;
       const foes = cb.alive(0).filter((x) => !x.object);
       if (!foes.length) return;
       const near = foes.slice().sort((x, y) => grid.dist(b.cell, x.cell) - grid.dist(b.cell, y.cell))[0];
@@ -1110,6 +1113,10 @@
             cb.zones = cb.zones.filter((z) => z.t > 0);
           }
           for (const tl of cb.tele) {
+            if (tl.src && tl.src.boss && (tl.src.dead || tl.src.stun > 0 || (tl.src.st && tl.src.st.silence > 0))) {
+              tl.done = true; // An announced strike has not landed yet; interrupt it.
+              continue;
+            }
             tl.t += dt;
             if (tl.t >= tl.delay && !tl.done) {
               tl.done = true;

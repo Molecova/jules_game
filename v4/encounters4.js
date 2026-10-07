@@ -21,12 +21,18 @@
   const used=state.used[r.act]||(state.used[r.act]=[]), recent=state.history.slice(-2);
   let choices=templates.filter(t=>t.act===r.act&&!used.includes(t.id));
   if(!choices.length)choices=templates.filter(t=>t.act===r.act); // migrated or extended maps only
+  const floor=r.node?.f ?? ((r.round-1)%(g.V4.ACT_LEN||9));
+  const late=floor>=4;
+  // Favor different identities in each half; retain unused templates when a preferred half is exhausted.
+  const phaseIds=templates.filter(t=>t.act===r.act).slice(late?3:0,late?6:3).map(t=>t.id);
+  const phaseChoices=choices.filter(t=>phaseIds.includes(t.id));if(phaseChoices.length)choices=phaseChoices;
   const fresh=choices.filter(t=>!recent.includes(t.tag));if(fresh.length)choices=fresh;
   // Every route teaches these three distinct ideas first.
   let t=kind==='fight'&&r.act===1&&used.length<3?templates[[0,1,3][used.length]]:pick(choices);
   if(kind==='fight')used.push(t.id);
   let ids=[],info={id:t.id,name:t.name,tag:t.tag,hint:t.hint,core:t.core};
-  const budget=2.2+.4*r.round*6/(g.V4.ACT_LEN||6); // 적 수 예산: 한 막 6칸 시절 라운드로 환산
+  const wave=g.V4.FOE.waves[r.act],range=late?wave.late:wave.early;
+  const count=range[0]+Math.floor(rand()*(range[1]-range[0]+1));
   if(kind==='boss'){
    const boss=r.map.boss,variants=templates.filter(x=>x.act===r.act&& !['summon','heal','channel'].includes(g.ENEMIES4.abilities[M[x.core].enemyAbility]?.action));
    t=pick(variants);ids=[boss,t.core,t.filler];
@@ -36,10 +42,11 @@
    ids=[eliteCores[r.act-1][i],t.core,t.filler];
    info={id:`elite_${r.act}_${i}`,name:['돌파 시험','진형 시험','지원망 시험'][i]+' · '+t.name,tag:'정예 · '+t.tag,hint:t.hint,core:ids[0]};
   }else{
-   ids=[t.core];let cost=M[t.core].v;
-   if(cost+M[t.wing].v<=budget+.5){ids.push(t.wing);cost+=M[t.wing].v;}
-   const basePool=A[r.act].normal.filter(id=>!M[id].enemyAbility&&!['firecult','cultist','succubus','abyssmage'].includes(id));
-   while(ids.length<7){const pool=[t.filler,...basePool].filter(id=>ids.filter(x=>x===id).length<2&&cost+M[id].v<=budget+.5);if(!pool.length)break;const id=pick(pool);ids.push(id);cost+=M[id].v;}
+   ids=[t.core,t.wing];
+   const basePool=A[r.act].normal.filter(id=>(r.act!==1||late||M[id].v<=1.5)&&!M[id].enemyAbility&&!['firecult','cultist','succubus','abyssmage'].includes(id));
+   while(ids.length<count){const pool=[t.filler,...basePool].filter(id=>ids.filter(x=>x===id).length<3);if(!pool.length)break;ids.push(pick(pool));}
+   info.phase=late?'late':'early';info.size=ids.length;
+
   }
   const taken=new Set(),enemies=[],flip=rand()<.5;
   for(const [i,id]of ids.entries()){
@@ -47,7 +54,7 @@
    const candidates=rows.flatMap(row=>cols.map(col=>grid.idx(col,row))).filter(c=>c>=0&&!taken.has(c));
    let cell=d.boss?grid.idx(2,1):candidates[(i===0?0:Math.floor(rand()*Math.min(3,candidates.length)))];
    if(cell===undefined||taken.has(cell))cell=candidates[0];if(cell===undefined)continue;taken.add(cell);
-   enemies.push({uid:'enc-'+key+'-'+i,id,cell,scale:1,rot:(rand()-.5)*.12,...(kind==='elite'&&i===0?{elite:true}:{})});
+   enemies.push({uid:'enc-'+key+'-'+i,id,cell,scale:kind==='fight'?(r.act===1&&floor===0?wave.intro:wave.strength[late?1:0])/ids.length:1,rot:(rand()-.5)*.12,...(kind==='elite'&&i===0?{elite:true}:{})});
   }
   state.history.push(t.tag);state.history=state.history.slice(-6);state.nodes[key]={info,enemies};r.encounter=info;
   return enemies.map(x=>({...x}));
