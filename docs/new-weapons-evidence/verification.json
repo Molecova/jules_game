@@ -1,0 +1,134 @@
+{
+  "results": [
+    {
+      "star": 1,
+      "shield": 200,
+      "nailMultiplier": 1.3,
+      "transferDamage": 195,
+      "transferCasts": 1,
+      "events": [
+        {
+          "id": "brace",
+          "star": 1
+        },
+        {
+          "id": "p_braceShield",
+          "star": 1
+        },
+        {
+          "id": "p_nailAnchor",
+          "star": 1
+        },
+        {
+          "id": "p_braceShield",
+          "star": 1
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 1
+        },
+        {
+          "id": "transfer",
+          "star": 1
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 1
+        }
+      ],
+      "descriptions": {
+        "greatnail": "같은 칸에 2초 머무르면 모든 주는 피해 <em>+30%</em> · 이동하면 초기화",
+        "restlessbow": "공격력 <em>+50%</em> · 기본 공격마다 사거리 안의 다른 적으로 대상 변경 · 도발 대상 우선",
+        "brace": "4초 이동 불가 · 1초마다 보호막 <em>100</em> × 4회",
+        "transfer": "공격 대상 변경 시 피해 공격력의 <em>300%</em> · 첫 공격 제외"
+      }
+    },
+    {
+      "star": 2,
+      "shield": 340,
+      "nailMultiplier": 1.48,
+      "transferDamage": 277,
+      "transferCasts": 1,
+      "events": [
+        {
+          "id": "brace",
+          "star": 2
+        },
+        {
+          "id": "p_braceShield",
+          "star": 2
+        },
+        {
+          "id": "p_nailAnchor",
+          "star": 2
+        },
+        {
+          "id": "p_braceShield",
+          "star": 2
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 2
+        },
+        {
+          "id": "transfer",
+          "star": 2
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 2
+        }
+      ],
+      "descriptions": {
+        "greatnail": "같은 칸에 2초 머무르면 모든 주는 피해 <em>+48%</em> · 이동하면 초기화",
+        "restlessbow": "공격력 <em>+80%</em> · 기본 공격마다 사거리 안의 다른 적으로 대상 변경 · 도발 대상 우선",
+        "brace": "4초 이동 불가 · 1초마다 보호막 <em>170</em> × 4회",
+        "transfer": "공격 대상 변경 시 피해 공격력의 <em>360%</em> · 첫 공격 제외"
+      }
+    },
+    {
+      "star": 3,
+      "shield": 520,
+      "nailMultiplier": 1.6,
+      "transferDamage": 437,
+      "transferCasts": 1,
+      "events": [
+        {
+          "id": "brace",
+          "star": 3
+        },
+        {
+          "id": "p_braceShield",
+          "star": 3
+        },
+        {
+          "id": "p_nailAnchor",
+          "star": 3
+        },
+        {
+          "id": "p_braceShield",
+          "star": 3
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 3
+        },
+        {
+          "id": "transfer",
+          "star": 3
+        },
+        {
+          "id": "p_restlessTarget",
+          "star": 3
+        }
+      ],
+      "descriptions": {
+        "greatnail": "같은 칸에 2초 머무르면 모든 주는 피해 <em>+60%</em> · 이동하면 초기화",
+        "restlessbow": "공격력 <em>+125%</em> · 기본 공격마다 사거리 안의 다른 적으로 대상 변경 · 도발 대상 우선",
+        "brace": "4초 이동 불가 · 1초마다 보호막 <em>260</em> × 4회",
+        "transfer": "공격 대상 변경 시 피해 공격력의 <em>450%</em> · 첫 공격 제외"
+      }
+    }
+  ],
+  "errors": []
+}

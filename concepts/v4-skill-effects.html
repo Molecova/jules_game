@@ -14,7 +14,7 @@
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),W=440,H=440,grid=AC.squareGrid(5,6,58,{ox:75,oy:48}),ctx=$('stage').getContext('2d');
 const defs=[...V4.UNITS.flatMap(u=>u.ult?[u.ult]:[]),...V4.SKILLS,...V4.ITEMS.flatMap(i=>i.act?[i.act]:[])];
-const entries=[...defs,...V4.ITEMS.map(d=>({id:'w_'+d.id,name:d.name,cls:'weapon',kind:'weapon',item:d,desc:d.desc})),...Object.keys(VFX4.profiles).filter(id=>id.startsWith('p_')).map(id=>({id,name:({cleave:'주변 베기',venomStack:'독 중첩',multiHit:'잔상 연타',hookRoot:'갈고리 속박',vampire:'흡혈',vampireStack:'흡혈 누적',bloodthirst:'피의 대검 흡혈',guardHeal:'방패 회복',longshot:'장거리 명중',venomBonus:'독 대상 추가 피해',burnCrit:'화상 치명',poisonHit:'독 명중',burnHit:'불꽃 명중',stormHit:'번개 갈래',multiShot:'추가 화살',ambush:'기습',healMace:'철퇴 회복',healer:'성서 회복',echo:'메아리',hourglass:'모래시계',lastStand:'불멸의 방패',deadeye:'용의 눈',spellBurn:'마법 화상',spellSlow:'마법 둔화',spellLeech:'마법 흡혈',abyss:'심연의 불꽃',doubleHit:'용병 연타',burnAdd:'용의 숨결 누적',hawkFocus:'사냥매 소환',focus:'연속 공격 집중',headshot:'매의 눈 치명',evasive:'그림자 회피',storm:'폭풍 연쇄'})[id.slice(2)]||id,cls:'proc',kind:'proc',desc:'실제로 발동한 순간의 작은 연출입니다.'}))];
+const entries=[...defs,...V4.ITEMS.map(d=>({id:'w_'+d.id,name:d.name,cls:'weapon',kind:'weapon',item:d,desc:d.desc})),...Object.keys(VFX4.profiles).filter(id=>id.startsWith('p_')).map(id=>({id,name:({nailAnchor:'대못 고정',restlessTarget:'정신없는 활 대상 변경',braceShield:'버팀목 보호막',cleave:'주변 베기',venomStack:'독 중첩',multiHit:'잔상 연타',hookRoot:'갈고리 속박',vampire:'흡혈',vampireStack:'흡혈 누적',bloodthirst:'피의 대검 흡혈',guardHeal:'방패 회복',longshot:'장거리 명중',venomBonus:'독 대상 추가 피해',burnCrit:'화상 치명',poisonHit:'독 명중',burnHit:'불꽃 명중',stormHit:'번개 갈래',multiShot:'추가 화살',ambush:'기습',healMace:'철퇴 회복',healer:'성서 회복',echo:'메아리',hourglass:'모래시계',lastStand:'불멸의 방패',deadeye:'용의 눈',spellBurn:'마법 화상',spellSlow:'마법 둔화',spellLeech:'마법 흡혈',abyss:'심연의 불꽃',doubleHit:'용병 연타',burnAdd:'용의 숨결 누적',hawkFocus:'사냥매 소환',focus:'연속 공격 집중',headshot:'매의 눈 치명',evasive:'그림자 회피',storm:'폭풍 연쇄'})[id.slice(2)]||id,cls:'proc',kind:'proc',desc:'실제로 발동한 순간의 작은 연출입니다.'}))];
 $('summary').textContent=`고유기 ${V4.UNITS.filter(u=>u.ult).length} · 스킬 칩 ${V4.SKILLS.length} · 아이템 액티브 ${V4.ITEMS.filter(i=>i.act).length} · 무기 ${V4.ITEMS.length}`;
 let selected=entries.find(d=>d.id==='u_bishop'),star=1,group='all',time=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,scene,last=performance.now();
 const labels={ult:'유닛 고유기',skill:'스킬 칩',act:'아이템 액티브',weapon:'무기 기본 공격',proc:'패시브'};
@@ -28,6 +28,7 @@ const foes=[[2,2],[2,1],[1,2],[3,2],[1,1],[3,1]].map(([c,r],i)=>{const e=api.mak
 const hooks=api.hooks();cb=new AC.Combat(grid,[...allies,...foes],{hooks,random:AC.rng(21)});for(const u of allies){u.chip=null;u.act=null;u.hp=u.maxHp*.5;}allies[1].hp=allies[1].maxHp*.2;allies[2].hp=allies[2].maxHp*.8;
 const target=foes[0];if(selected.kind==='weapon'){if(caster.range<=1)fx.attack({source:{x:caster.px,y:caster.py},target:{x:target.px,y:target.py},weapon:SHOTS4.profile(caster),star});}
 else if(selected.kind==='proc'){const pos=u=>({x:u.px,y:u.py});effects.emit(selected.id,{source:pos(caster),target:pos(target),points:[pos(target)],cells:[pos(target)],star,stacks:3,healPoints:[pos(allies[1])],summon:'hawk'});}
+else if(selected.targetChange){caster.transfer={def:selected,star};hooks.onAttack(caster,foes[1],cb);hooks.onAttack(caster,target,cb);}
 else if(selected.effect==='passive')hooks.onHit(target,50,caster,'atk',false,cb);
 else {caster.skills=[{def:selected,star:selected.kind==='ult'?1:star,cells:BT4.expandCells(selected,star)}];hooks.onCast(caster,target,cb);}
 scene={cb,effects,events,caster,target,hooks};time=0;}
@@ -45,6 +46,6 @@ document.querySelectorAll('[data-star]').forEach(b=>b.onclick=()=>{star=+b.datas
 $('timeline').oninput=()=>{paused=true;seek(+$('timeline').value);};$('play').onclick=()=>{paused=!paused;draw();};$('replay').onclick=()=>{paused=false;seek(0);};$('effects').onchange=draw;$('statuses').onchange=draw;
 document.addEventListener('keydown',e=>{if(['INPUT','BUTTON'].includes(e.target.tagName))return;if(e.code==='Space'){e.preventDefault();paused=!paused;draw();}if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const i=entries.indexOf(selected);select(entries[(i+(e.key==='ArrowRight'?1:entries.length-1))%entries.length].id);}});
 window.SkillStudy={ids:defs.map(d=>d.id),select,seek, pause(){paused=true;},get events(){return scene.events;}};
-select(selected.id);function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused){for(let n=0;n<Math.max(1,Math.round(dt*60));n++)tick(1/60);if(time>=4)build();}draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);
+select(entries.find(d=>d.id===location.hash.slice(1))?.id||selected.id);function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused){for(let n=0;n<Math.max(1,Math.round(dt*60));n++)tick(1/60);if(time>=4)build();}draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);
 })();
 </script></body></html>

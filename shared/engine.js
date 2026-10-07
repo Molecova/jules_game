@@ -184,6 +184,7 @@
     }
 
     moveTo(u, next) {
+      if (this.hooks.onMove) this.hooks.onMove(u, next, this);
       const g = this.grid;
       this.occ[u.cell] = null;
       const from = { x: u.px, y: u.py };
@@ -193,6 +194,7 @@
     }
 
     teleport(u, cell) {
+      if (this.hooks.onMove) this.hooks.onMove(u, cell, this);
       this.occ[u.cell] = null;
       u.cell = cell;
       this.occ[cell] = u;

@@ -4,8 +4,8 @@
 
 오토체스식 상점·합성으로 바꾼 버전. 설계는 `docs/v4-design.md`, 화면 시안은 `concepts/v4-phone.html`.
 
-- **유닛 27종**: 전사·궁수·마법사. 24종은 마나 고유기, 광전사·석궁병·화염술사는 패시브를 가진다.
-- **스킬 칩 54종 · 아이템 33종**: 유닛당 칩 1칸, 칩은 재사용 대기시간으로 발동. 아이템 10종에는 액티브가 있다.
+- **유닛 27종**: 전사·궁수·마법사. 25종은 마나 고유기, 광전사·용병은 패시브를 가진다.
+- **스킬 칩 64종 · 아이템 38종**: 유닛당 칩 1칸, 칩은 재사용 대기시간 또는 패시브 조건으로 발동. 아이템 6종에는 액티브가 있다.
 - **시너지**: 유닛 성격 10종과 무기 스타일 9종. 판 왼쪽 레일을 누르면 효과와 구성원을 볼 수 있다.
 - **적 다양화**: 1~5막 일반 적 60종(신규 20종), 기존 10종의 대표 행동 개편. 전용 능력 30개, 일반전 템플릿 30개, 정예 조합 15개와 보스 호위 변형.
 - **공격 연출**: 궁수 9종·마법사 9종의 투사체와 명중 효과를 개별화했다. 기본 공격 수치·비행 속도는 유지한다.
@@ -88,9 +88,13 @@ concepts/*.html       시안별 유닛 데이터, 시너지, 고유 규칙(hooks
 - 파일을 브라우저로 열기: `index.html`
 - 또는 로컬 서버: `npx serve .`
 
+## 새 무기·스킬
+
+대못 + 버팀목, 정신없는 활 + 환승을 상점·합성·도감에 추가했습니다. [성급별 수치·발동 조건·캡처·검증 기록](docs/new-weapons-implementation-2026-10-07.md).
+
 ## 스킬 이펙트 시안
 
-`concepts/v4-skill-effects.html`에서 현재 고유기 25개·스킬 칩 62개·아이템 액티브 6개, 무기 기본 공격 34개와 패시브 연출을 선택해 재생합니다. ★1~★3, 일시정지·타임라인, 연출·지속 상태 표시를 조작할 수 있습니다. 같은 `v4/vfx4.js`와 `v4/projectiles4.js`를 실제 전투에서도 사용합니다. [전체 id별 변경·검증 기록](docs/vfx-implementation-2026-10-06.md)을 참고하세요.
+`concepts/v4-skill-effects.html`에서 현재 고유기 25개·스킬 칩 64개·아이템 액티브 6개, 무기 기본 공격 38개와 패시브 연출을 선택해 재생합니다. ★1~★3, 일시정지·타임라인, 연출·지속 상태 표시를 조작할 수 있습니다. 같은 `v4/vfx4.js`와 `v4/projectiles4.js`를 실제 전투에서도 사용합니다. [전체 id별 변경·검증 기록](docs/vfx-implementation-2026-10-06.md)을 참고하세요.
 
 - 단일 HTML로 내보내기: `python3 scripts/build-skill-preview.py /tmp/card-expedition-preview` → `skill-effects.html`, `game-with-effects.html`, `enemy-encounters.html`
 - 전투 결과·난수·이펙트 이벤트 회귀 검사: `node --test tests/vfx4.test.cjs`
@@ -113,6 +117,7 @@ node tests/browser-bugfixes.cjs
 node tests/browser-scenes.cjs
 node tests/browser-run.cjs
 node tests/browser-vfx.cjs
+node tests/browser-new-weapons.cjs
 ```
 
 저장 데이터 검증·백업은 `v4/save4.js`, 전투 전용 RNG는 `AC.rng`와 전투별 `BT4.create({ random })`에 있습니다. 대장간은 별에 해당하는 실제 사본 수로 풀을 정산하며, 재료/결과 카드가 부족하면 비용을 지불하거나 재료를 소모하지 않습니다. 다음 전투 체력 페널티가 겹치면 더 낮은 시작 체력을 유지합니다.

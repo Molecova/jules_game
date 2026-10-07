@@ -24,7 +24,7 @@ function fixture(id, star, enabled, itemId) {
   const d = [...c.V4.SKILLS, ...c.V4.UNITS.flatMap(u => u.ult ? [u.ult] : []), ...c.V4.ITEMS.flatMap(i => i.act ? [i.act] : [])].find(d => d.id === id);
   const unitId = id?.startsWith('u_') ? id.slice(2) : ({ war: 'squire', arc: 'archer', mag: 'apprentice', any: 'squire' })[d?.cls || c.V4.DEF['item:' + itemId]?.cls || 'war'];
   const ally = (id, col, row, skills = [], item = null) => api.makeAlly({ kind: 'unit', id, uid: `${col}-${row}`, star: 1, skills, item, rot: 0 }, grid.idx(col, row), { ttiers: {} });
-  const caster = ally(unitId, 2, 3, id === 'vampire' ? [{ id, star }] : [], itemId ? { id: itemId, star: 1 } : null);
+  const caster = ally(unitId, 2, 3, d?.passive ? [{ id, star }] : [], itemId ? { id: itemId, star: 1 } : null);
   const allies = [caster, ally('squire', 1, 4), ally('archer', 3, 4), ally('apprentice', 0, 4)];
   const foes = [[2,2],[2,1],[1,2],[3,2],[1,1],[3,1]].map(([col,row], i) => { const u = api.makeFoe({ uid: 'foe'+i, def: c.GD.MONSTERS.goblin, cell: grid.idx(col,row), scale: 1, rot: 0 }); u.hp = u.maxHp = 100000; return u; });
   const hooks = api.hooks(), cb = new c.AC.Combat(grid, [...allies, ...foes], { hooks });
@@ -33,7 +33,8 @@ function fixture(id, star, enabled, itemId) {
   allies[1].hp = allies[1].maxHp * .2; allies[2].hp = allies[2].maxHp * .85;
   if (id === 'revive') { allies[1].card.star=star; cb.kill(allies[1],null); }
   if (d?.kind === 'ult') caster.card.star = star;
-  if (d?.effect === 'passive') hooks.onHit(foes[0], 50, caster, 'atk', false, cb);
+  if (d?.targetChange) { hooks.onAttack(caster, foes[1], cb); hooks.onAttack(caster, foes[0], cb); }
+  else if (d?.effect === 'passive') hooks.onHit(foes[0], 50, caster, 'atk', false, cb);
   else if (d) { caster.skills = [{ def: d, star: d.kind === 'ult' ? 1 : star, cells: c.BT4.expandCells(d, star) }]; caster.castIdx = 0; hooks.onCast(caster, foes[0], cb); }
   return { c, cb, grid, api, hooks, caster, allies, foes, events, procs, attacks, effects, d };
 }

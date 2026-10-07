@@ -230,6 +230,8 @@
     N_('iceblessing', '얼음 축복', 'mag', 4, { mode: 'selfOnly', effect: 'invuln', cd: 12, power: 0, dur: 3, icon: 'ice', desc: '체력 비율이 가장 낮은 아군 3초 무적' }),
     N_('vampire', '흡혈귀', 'war', 3, { mode: 'selfOnly', effect: 'passive', passive: true, power: 0, ls: [0.05, 0.1, 0.15], icon: 'drop', desc: '패시브: 기본 공격으로 준 피해의 5%만큼 회복(★2 10% · ★3 15%)' }),
     N_('meteorshower', '운석 낙하', 'mag', 5, { mode: 'selfOnly', effect: 'meteors', cd: 18, power: 250, count: 6, icon: 'fire', desc: '3초 동안 무작위 적 위치에 운석 6개, 각각 3×3 위력 250' }),
+    N_('brace', '버팀목', 'war', 2, { mode: 'selfOnly', effect: 'brace', cd: 12, power: 100, dur: 4, icon: 'shield', desc: '자신 4초 이동 불가. 시전 후 1·2·3·4초에 보호막 100씩 추가(★2 170 · ★3 260). 유닛 별·스킬 위력·보호막 증가 적용, 총 보호막은 최대 체력의 50%까지' }),
+    N_('transfer', '환승', 'arc', 5, { mode: 'single', effect: 'passive', passive: true, power: 0, targetChange: [3, 3.6, 4.5], icon: 'arrow', desc: '패시브: 직전 기본 공격과 대상이 달라지면 새 대상에게 공격력의 300% 추가 피해(★2 360% · ★3 450%). 첫 공격 제외. 무기·시너지 공격력 적용, 스킬 위력·치명타 배수 미적용' }),
   );
 
   // 아이템: st = 능력치(★에 따라 ×1.6/×2.5), fx = 역할을 바꾸는 효과
@@ -242,6 +244,7 @@
     I_('greatsword', '피의 대검', 'war', 3, 'greatsword', { atk: 0.2, lifesteal: 0.15 }, 'bloodthirst', '공격력 +20%, 흡혈 15%. 체력 50% 이하에서는 흡혈 25%', '광전사'),
     I_('warhammer', '전쟁 망치', 'war', 2, 'hammer', { atk: 0.1, hp: 0.1 }, 'cleave', '공격력·체력 +10%. 공격하면 대상 주변 적에게도 피해 25%', '제압'),
     I_('elephanthammer', '코끼리망치', 'war', 3, 'hammer', {}, 'elephant', '기본 공격 피해 450%, 공격 속도 절반, 기본 공격 명중률 50%(★2 60% · ★3 70%)', '한 방'),
+    I_('greatnail', '대못', 'war', 2, 'greatsword', {}, 'nailAnchor', '같은 칸에 2초 머무르면 모든 주는 피해 +30%(★2 +48% · ★3 +60%, 최대 +60%). 이동·밀치기·순간이동 시 초기화', '자리를 지키는 전사'),
     I_('thornmail', '독 단도', 'war', 3, 'dagger', { as: 0.3, crit: 0.05 }, 'venomStack', '공격 속도 +30%, 치명 +5%. 공격할 때 5초 중독(초당 20), 끝없이 겹침', '암살자'),
     I_('dragonslayer', '그림자 검', 'war', 4, 'sword', { atk: 0.25, crit: 0.1 }, 'multiHit', '공격력 +25%, 치명 +10%. 기본 공격이 30% 확률로 2번, 10% 확률로 3번', '암살자'),
     I_('towershield', '수호자의 탑 방패', 'war', 4, 'tower', { hp: 0.3, armor: 0.15 }, 'guardHeal', '체력 +30%, 받는 피해 −15%. 받은 피해의 10%만큼 체력 비율이 가장 낮은 아군 회복', '수호자'),
@@ -250,6 +253,7 @@
     I_('venombow', '독궁', 'arc', 2, 'bow', { atk: 0.05 }, 'venomBonus', '공격력 +5%. 공격 시 3초 중독(초당 15). 중독된 적에게 주는 피해 +15%', '독 사냥꾼'),
     I_('quiver', '도적의 단검', 'arc', 2, 'dagger', { atk: 0.25, as: 0.2, hp: 0.15, melee: true }, null, '근접 공격(사거리 1), 공격력 +25%, 공격 속도 +20%, 체력 +15%', '도적'),
     I_('rabbitbow', '토끼활', 'arc', 2, 'bow', { as: 0.25, atk: 0.1, dodge: 0.1, range: -1 }, 'rabbitHop', '사거리 −1, 공격 속도 +25%, 공격력 +10%, 회피 +10%. 공격 3번마다 적과 멀어지는 쪽으로 한 칸 깡충 물러남', '치고 빠지기'),
+    I_('restlessbow', '정신없는 활', 'arc', 4, 'bow', { atk: 0.5 }, 'restlessTarget', '공격력 +50%(★2 +80% · ★3 +125%). 기본 공격마다 사거리 안의 다른 적을 무작위로 다음 대상으로 선택. 다른 적이 없으면 유지, 도발 중에는 도발 대상 우선', '계속 갈아타는 궁수'),
     I_('whistle', '사냥매 호루라기', 'arc', 3, 'tooth', {}, 'hawkFocus', '전투 시작 시 사냥매 소환, 같은 적 연속 공격 피해 증가', '사냥꾼'),
     I_('flamebow', '화염 활', 'arc', 2, 'bow', { atk: 0.12 }, 'burnCrit', '공격력 +12%. 공격 시 3초 화상. 화상 걸린 적에게 치명 확률 +25%', '화상 궁수'),
     I_('windcloak', '그림자 망토', 'arc', 3, 'cloak', { as: 0.2, dodge: 0.2, hp: 0.1, melee: true }, 'evasive', '근접 공격(사거리 1), 공격 속도 +20%, 회피 +20%, 체력 +10%. 회피하면 다음 공격 치명타', '도적'),
@@ -313,13 +317,13 @@
     peer: { name: '동급', short: '동', col: '#9a7b3a', kind: 'peer', th: [3, 4, 5], members: [],
       desc: ['같은 등급 딱지 3명: 그 딱지들 체력·공격 +12%', '같은 등급 4명: 체력·공격 +20%', '같은 등급 5명: 체력·공격 +30%'] },
     // ---- 무기 스타일 ----
-    j_knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'job', cls: 'war', th: [2, 3], members: ['buckler', 'holymace', 'towershield'],
+    j_knight: { name: '기사', short: '기', col: '#3a5fa8', kind: 'job', cls: 'war', th: [2, 3], members: ['buckler', 'holymace', 'towershield', 'greatnail'],
       desc: ['기사 무기를 쥔 딱지 받는 피해 −15%', '받는 피해 −25%, 체력 +10%'] },
     j_merc: { name: '용병', short: '용', col: '#b07a2a', kind: 'job', cls: 'war', th: [2, 3], members: ['longsword', 'greatsword', 'warhammer', 'elephanthammer'],
       desc: ['용병 공격력 +15%, 승리하면 골드 +1', '용병 공격력 +30%, 승리하면 골드 +2'] },
     j_assassin: { name: '암살자', short: '암', col: '#4a3f6b', kind: 'job', cls: 'war', th: [2, 3], members: ['twinblades', 'thornmail', 'dragonslayer', 'vampsword'],
       desc: ['암살자 치명 +15%, 치명 피해 +30%', '암살자 치명 +30%, 치명 피해 +60%'] },
-    j_hunter: { name: '사냥꾼', short: '냥', col: '#5f7a2a', kind: 'job', cls: 'arc', th: [2, 3], members: ['shortbow', 'venombow', 'whistle', 'rabbitbow'],
+    j_hunter: { name: '사냥꾼', short: '냥', col: '#5f7a2a', kind: 'job', cls: 'arc', th: [2, 3], members: ['shortbow', 'venombow', 'whistle', 'rabbitbow', 'restlessbow'],
       desc: ['사냥꾼 공격 속도 +15%', '사냥꾼 공격 속도 +30%, 공격력 +10%'] },
     j_sniper: { name: '저격수', short: '저', col: '#2e7d5b', kind: 'job', cls: 'arc', th: [2, 3], members: ['longbow', 'flamebow', 'eagleeye'],
       desc: ['저격수 치명 피해 +40%', '저격수 치명 피해 +80%, 사거리 +1'] },

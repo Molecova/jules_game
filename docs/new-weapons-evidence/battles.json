@@ -1,0 +1,242 @@
+[
+  {
+    "item": "greatnail",
+    "act": 1,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 13.68,
+    "activations": 2
+  },
+  {
+    "item": "greatnail",
+    "act": 1,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 13.68,
+    "activations": 2
+  },
+  {
+    "item": "greatnail",
+    "act": 1,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 13.68,
+    "activations": 2
+  },
+  {
+    "item": "greatnail",
+    "act": 2,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 25.7,
+    "activations": 3
+  },
+  {
+    "item": "greatnail",
+    "act": 2,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 27.02,
+    "activations": 3
+  },
+  {
+    "item": "greatnail",
+    "act": 2,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 28.35,
+    "activations": 3
+  },
+  {
+    "item": "greatnail",
+    "act": 3,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 37.68,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 3,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 37.68,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 3,
+    "seed": 47,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 4,
+    "seed": 11,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 4,
+    "seed": 29,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 4,
+    "seed": 47,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 5,
+    "seed": 11,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 5,
+    "seed": 29,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "greatnail",
+    "act": 5,
+    "seed": 47,
+    "winner": -1,
+    "seconds": 40.02,
+    "activations": 4
+  },
+  {
+    "item": "restlessbow",
+    "act": 1,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 7.95,
+    "activations": 5
+  },
+  {
+    "item": "restlessbow",
+    "act": 1,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 9.1,
+    "activations": 7
+  },
+  {
+    "item": "restlessbow",
+    "act": 1,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 7.85,
+    "activations": 6
+  },
+  {
+    "item": "restlessbow",
+    "act": 2,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 12.85,
+    "activations": 10
+  },
+  {
+    "item": "restlessbow",
+    "act": 2,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 12.85,
+    "activations": 10
+  },
+  {
+    "item": "restlessbow",
+    "act": 2,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 12.85,
+    "activations": 10
+  },
+  {
+    "item": "restlessbow",
+    "act": 3,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 17.85,
+    "activations": 14
+  },
+  {
+    "item": "restlessbow",
+    "act": 3,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 19.1,
+    "activations": 15
+  },
+  {
+    "item": "restlessbow",
+    "act": 3,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 17.85,
+    "activations": 14
+  },
+  {
+    "item": "restlessbow",
+    "act": 4,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 22.95,
+    "activations": 18
+  },
+  {
+    "item": "restlessbow",
+    "act": 4,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 24.1,
+    "activations": 19
+  },
+  {
+    "item": "restlessbow",
+    "act": 4,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 24.28,
+    "activations": 19
+  },
+  {
+    "item": "restlessbow",
+    "act": 5,
+    "seed": 11,
+    "winner": 0,
+    "seconds": 29.1,
+    "activations": 23
+  },
+  {
+    "item": "restlessbow",
+    "act": 5,
+    "seed": 29,
+    "winner": 0,
+    "seconds": 29.1,
+    "activations": 23
+  },
+  {
+    "item": "restlessbow",
+    "act": 5,
+    "seed": 47,
+    "winner": 0,
+    "seconds": 33,
+    "activations": 21
+  }
+]

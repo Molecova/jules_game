@@ -1,0 +1,23 @@
+✔ 대못 ★1: 2-second threshold, all damage kinds, instant reset after every movement (32.485673ms)
+✔ 버팀목 ★1: four exact pulses, no immediate shield, expiry and root (15.322881ms)
+✔ 정신없는 활 + 환승 ★1: attack stats and one bonus per actual target change (15.77798ms)
+✔ 대못 ★2: 2-second threshold, all damage kinds, instant reset after every movement (12.127088ms)
+✔ 버팀목 ★2: four exact pulses, no immediate shield, expiry and root (12.910129ms)
+✔ 정신없는 활 + 환승 ★2: attack stats and one bonus per actual target change (12.194966ms)
+✔ 대못 ★3: 2-second threshold, all damage kinds, instant reset after every movement (12.312633ms)
+✔ 버팀목 ★3: four exact pulses, no immediate shield, expiry and root (9.892612ms)
+✔ 정신없는 활 + 환승 ★3: attack stats and one bonus per actual target change (11.424685ms)
+✔ 환승 works without its combo weapon; first, repeated and idle targets do not fire (15.192564ms)
+✔ 정신없는 활 preserves taunt, skips objects/out-of-range/dead enemies and tolerates one remaining enemy (9.879479ms)
+✔ 버팀목 maintains the existing shield cap, antiheal and non-stacking recasts (12.508286ms)
+✔ 버팀목 pauses walking immediately, prevents new pathing and charges 대못 while planted (31.801724ms)
+✔ new effects preserve seeded combat and random consumption across all stars and both builds (626.410175ms)
+✔ both builds trigger in 30 complete fights across five acts (1404.618082ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2371.160766

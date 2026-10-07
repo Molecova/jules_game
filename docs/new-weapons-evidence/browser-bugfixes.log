@@ -1,0 +1,11 @@
+PASS pending/rest camp, shop, treasure; no duplicate payouts
+PASS all 12 events before and after selection, including nested states
+PASS normal/elite/boss result, chained relic/card rewards and exactly-once payout
+PASS camp/mimic/knight ambush rewards across resume
+PASS interrupted combat, HP penalty consumption and persisted defeat
+PASS star 1/2/3 pool accounting, forge second selection resume and empty stock
+PASS duplication and temper success/failure with pool conservation across resume
+PASS codex pause/resume, Enter activation, Escape and background inert
+PASS actual render frequencies, skip and sound have identical combat outcomes
+PASS corrupt save/record recovery, safe new game and storage failure warning
+PASS 4 viewports, no board/shop overlap; JavaScript exceptions 0

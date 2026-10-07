@@ -20,12 +20,12 @@
   assign('quake', 'bash earth shatter quakeking heavy assassinate u_hammer');
   assign('shadowstep', 'shadowstep charge execution a_quiver');
   assign('barrier', 'wall secondwind manashield aegis a_buckler u_shieldman thornshield iceblessing');
-  assign('fortress', 'fortify bulwark u_warden');
+  assign('fortress', 'fortify bulwark u_warden brace');
   assign('taunt', 'taunt');
   assign('blades', 'bladestorm');
   assign('berserk', 'resolve adrenaline');
   assign('arrow', 'spread rain firearrow anklearrow antiheal u_archer u_arbalest u_ninja a_shortbow');
-  assign('pierce', 'u_crossbow u_ranger u_windarcher a_eagleeye');
+  assign('pierce', 'u_crossbow u_ranger u_windarcher a_eagleeye transfer');
   assign('light', 'aid healarrow u_acolyte');
   assign('buff', 'bless warcry horn u_scout');
   assign('poison', 'poisoncloud u_venom');
@@ -61,6 +61,7 @@
   // Pigment accents distinguish related techniques without consuming randomness.
   for (const [id, color] of Object.entries({ bleedcut:'#ba5870', charge:'#79d4ed', execution:'#bf7bb0', firearrow:'#ef6b38', anklearrow:'#88a96d', antiheal:'#b77588', u_ninja:'#c3b1ed', u_arbalest:'#a4b8c8', thunder:'#cab4ff', spark:'#9fcafa', cataclysm:'#df5445', u_archmage:'#7dcfff', u_acolyte:'#84af62', thornshield:'#c7aa7c', iceblessing:'#b0e4ff', secondwind:'#92dcd5' })) profiles[id].color = color;
   const procStyles = {
+    nailAnchor:'fortress', restlessTarget:'target', braceShield:'barrier',
     cleave:'cross', rabbitHop:'wind', venomStack:'poison', multiHit:'cross', hookRoot:'root', vampire:'drain', vampireStack:'drain', bloodthirst:'drain', guardHeal:'light', longshot:'target', venomBonus:'poison', burnCrit:'fire', poisonHit:'poison', burnHit:'fire', stormHit:'chain', multiShot:'arrow', ambush:'target', healMace:'light', healer:'light', echo:'mana', hourglass:'clock', lastStand:'barrier', deadeye:'target', spellBurn:'fire', spellSlow:'ice', spellLeech:'drain', abyss:'fire', doubleHit:'cross', burnAdd:'fire', hawkFocus:'summon', focus:'target', headshot:'target', evasive:'wind', storm:'chain',
   };
   for (const [kind, style] of Object.entries(procStyles)) profiles['p_' + kind] = { style, color: colors[style], life: 0.38, proc: true, variant: signature(kind), icon: kind, name: kind };
@@ -460,6 +461,15 @@
     if(active(st.surge))glyph(c,{x:p.x-r*.8,y:p.y+r*.5},'surge','#a282d4',6);
     if(u.passive==='frenzy'&&u.hp/u.maxHp<.7){c.save();c.globalAlpha=(1-u.hp/u.maxHp)*.6;for(const dx of [-r*.8,r*.8])flame(c,{x:p.x+dx,y:p.y+r*.5},r*(1-u.hp/u.maxHp),8,dx,t);c.restore();}
     if(options.polymorph && u.stun>0)sheep(c,p,r*.8);
+    if(u.ifx==='nailAnchor' && !u.moving && u.anchorCell===u.cell && u.anchorT>=2){
+      // A planted iron nail and ink seal read the combat timer; drawing never charges it.
+      hex(c,{x:p.x,y:p.y+r*.7},r*.65,'#79d4ed');
+      for(const dx of [-r*.75,r*.75]){
+        path(c,[{x:p.x+dx-4,y:p.y+r*.1},{x:p.x+dx+4,y:p.y+r*.1}]);outlined(c,'#a8bcc9',3);
+        path(c,[{x:p.x+dx,y:p.y+r*.1},{x:p.x+dx,y:p.y+r*.65}]);outlined(c,'#a8bcc9',2);
+      }
+    }
+    if(active(st.brace))glyph(c,{x:p.x+r*.8,y:p.y-r*.5},'fort','#9fd0ff',6);
     let i=0;
     for(const [key,[color,icon]] of statusRows){
       if(!active(st[key]))continue;

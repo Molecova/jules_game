@@ -777,6 +777,8 @@
   const BASE_E = { pow: 1, spell: 1, healMult: 1, atk: 0 };
   const atkAmt = (e, mult) => (e.atk ? `<em>${Math.round(e.atk * mult)}</em>` : `공격력의 <em>${pct(mult)}%</em>`);
   const FXTEXT = {
+    nailAnchor: (e, k) => `같은 칸에 2초 머무르면 모든 주는 피해 <em>+${Math.round(30 * Math.min(2, k))}%</em> · 이동하면 초기화`,
+    restlessTarget: () => '기본 공격마다 사거리 안의 다른 적으로 대상 변경 · 도발 대상 우선',
     infiltrate: () => '전투 시작 시 적 뒤로 도약',
     ambush: () => '첫 <em>3</em>번 공격 확정 치명(기습)',
     healMace: (e, k) => `공격마다 가장 다친 아군 ${atkAmt(e, 0.25 * e.healMult * k)} 회복`,
@@ -851,6 +853,7 @@
       case 'smite': main = `피해 <em>${P}</em> · 아군 회복 <em>${Math.round(P * (sd.heal != null ? sd.heal / (sd.power || 1) : 1) * H)}</em>`; break;
       case 'heal': main = `회복 <em>${Math.round(P * H)}</em>`; break;
       case 'shield': main = sd.selfShield ? `자신 보호막 <em>${Math.round(sd.selfShield * e.pow * k * e.spell * H)}</em> · 아군 <em>${Math.round(P * H)}</em>` : `보호막 <em>${Math.round(P * H)}</em>`; break;
+      case 'brace': main = `4초 이동 불가 · 1초마다 보호막 <em>${Math.round(P * H)}</em> × 4회`; break;
       case 'rally': main = `${sd.dur || 4}초 받는 피해 −${pct(sd.red || 0.3)}% · 초당 회복 <em>${Math.round((sd.hot || 0) * e.pow * k * e.spell * H)}</em>`; break;
       case 'bladeAura': main = `${sd.dur || 5}초 칼날 · 출혈 초당 <em>${Math.round((sd.power || 50) * k * e.pow)}</em>`; break;
       case 'taunt': main = `3초 도발 · 보호막 <em>${P}</em>`; break;
@@ -865,7 +868,7 @@
       case 'explosive': main = `피해 <em>${P}</em> · ${sd.delay || 2}초 뒤 폭발 <em>${Math.round((sd.blast || sd.power) * e.pow * k * e.spell)}</em>`; break;
       case 'meteors': main = `운석 ${sd.count || 6}개 · 각 피해 <em>${P}</em>`; break;
       case 'thornshield': main = `보호막 <em>${Math.round(P * H)}</em> · 반사 ${pct(sd.reflect || 0.3)}% ${sd.dur || 4}초`; break;
-      case 'passive': main = sd.ls ? `기본 공격 피해의 <em>${pct(sd.ls[star - 1] || sd.ls[0])}%</em> 회복` : sd.desc; break;
+      case 'passive': main = sd.targetChange ? `공격 대상 변경 시 피해 ${atkAmt(e, sd.targetChange[star - 1])} · 첫 공격 제외` : sd.ls ? `기본 공격 피해의 <em>${pct(sd.ls[star - 1] || sd.ls[0])}%</em> 회복` : sd.desc; break;
       case 'berserk': main = `체력 20%로 · 공속 <em>+100%</em> ${sd.dur || 6}초`; break;
       case 'markRandom': main = `적 ${sd.n || 2}명 ${sd.stun ? `빙결 <em>${sd.stun}초</em> · ` : ''}받는 피해 <em>+${pct(sd.vuln.amt)}%</em>`; break;
       case 'summon': main = sd.summon === 'hawk' ? `매 소환(최대 ${sd.max || 1})` : '골렘 소환'; break;

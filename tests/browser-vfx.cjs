@@ -7,7 +7,7 @@ await p.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/
 await p.route('**/v4/game4.js',r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'v4/game4.js'),'utf8').replace('  // 테스트·밸런스용 진입점','  window.__visualDebug={draw};\n  // 테스트·밸런스용 진입점')}));
 try{
 await p.goto('http://127.0.0.1:8000/concepts/v4-skill-effects.html');await p.evaluate(()=>SkillStudy.pause());
-const ids=await p.evaluate(()=>SkillStudy.ids);assert.equal(ids.length,93);
+const ids=await p.evaluate(()=>SkillStudy.ids);const expected=await p.evaluate(()=>V4.SKILLS.length+V4.UNITS.filter(u=>u.ult).length+V4.ITEMS.filter(i=>i.act).length);assert.equal(ids.length,expected);assert.ok(ids.includes('brace')&&ids.includes('transfer'));
 for(const id of ids){await p.evaluate(id=>{SkillStudy.select(id);SkillStudy.seek(0.2);SkillStudy.seek(2.4);},id);}
 await p.evaluate(()=>{SkillStudy.select('u_bishop');SkillStudy.seek(.23);});await p.screenshot({path:path.join(out,'catalog-mobile.png'),fullPage:true});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
 await p.setViewportSize({width:1180,height:920});await p.screenshot({path:path.join(out,'catalog-desktop.png'),fullPage:true});

@@ -203,7 +203,10 @@
       const c0 = card.skills[0];
       if (c0) {
         const sd = def('skill', c0.id);
-        if (sd.passive) { if (sd.ls) e.atkLs = sd.ls[c0.star - 1] || sd.ls[0]; } // 패시브 칩(흡혈귀): 대기시간 없음
+        if (sd.passive) {
+          if (sd.ls) e.atkLs = sd.ls[c0.star - 1] || sd.ls[0];
+          if (sd.targetChange) e.transfer = { def: sd, star: c0.star }; // 실제 기본 공격 대상 변경 시 발동
+        } // 패시브 칩: 대기시간 없음
         else { const cd = chipCd(sd, c0.star) * (s.fx === 'manaRegen' ? 0.85 : 1); e.chip = { def: sd, star: c0.star, cells: expandCells(sd, c0.star), cd, t: Math.min(3, cd * 0.5) }; }
       }
       const act = card.item && def('item', card.item.id).act;
@@ -266,6 +269,7 @@
       if (s.fx === 'vampire') e.hp = Math.round(e.maxHp * 0.5); // 흡혈귀의 검: 체력 50%로 시작
       e.lsBase = e.lifesteal;
       if (s.fx === 'elephant') e.elMiss = Math.max(0, 0.5 - 0.1 * ((card.item.star || 1) - 1)); // 코끼리망치: 기본 공격 빗나감
+      if (s.fx === 'nailAnchor') { e.anchorCell = cell; e.anchorT = 0; }
       if (p === 'firstStrike') { e.crit0 = e.crit; e.crit = 1; e.firstStrike = true; }
       setupSkills(e, mana);
       return e;
@@ -394,6 +398,19 @@
       const visual = (cells, points, extra) => { if (fx.skill) fx.skill(d.id, visualData(cells, points, extra)); };
       if (d.stackBurn) { u.burnAdd = (u.burnAdd || 0) + d.stackBurn * (u.pow || 1); cb.float(u.px, u.py - 46, `화상 +${Math.round(u.burnAdd)}`, '#ffb347'); } // 용의 숨결: 쓸 때마다 기본 공격 화상 피해 누적
       switch (d.effect) {
+        case 'brace':
+          if (u.moving) cb.teleport(u, u.cell); // Finish the reserved step before planting the support.
+          u.st.root = Math.max(u.st.root || 0, d.dur);
+          // A single reusable timer, including the final pulse exactly at 4 seconds.
+          u.st.brace = { t: d.dur, duration: d.dur, elapsed: 0, next: 1, amount: P * Hm };
+          visual([u.cell], [u], { target: pos(u) });
+          break;
+        case 'passive':
+          if (d.targetChange && t && !t.dead) {
+            visual([t.cell], [t], { target: pos(t), previous: u.attackTargetPos });
+            cb.damage(u, t, u.atk * d.targetChange[(s.star || 1) - 1], 'transfer');
+          }
+          break;
         case 'dmg': {
           if (d.mode === 'boomerang') { // 대상까지 갔다 돌아오며 지나가는 적마다 두 번
             const n = Math.max(1, grid.dist(u.cell, t.cell)), path = [];
@@ -825,6 +842,10 @@
       const h = {
         playerShot: '#2f6fd6', enemyShot: '#e8436b',
         onStart,
+        // Movement invalidates 대못 immediately, before any same-frame damage.
+        onMove: (u, next) => {
+          if (u.ifx === 'nailAnchor' && (next !== u.cell || u.moving)) { u.anchorCell = next; u.anchorT = 0; }
+        },
         // 성서: 다친 아군이 있으면 기본 공격 대신 치유
         preAttack: (u, t, cb) => {
           if (u.nextCrit) { u.nextCrit = false; u.critSave = u.crit; u.crit = 1; }
@@ -881,6 +902,7 @@
           if (src.st && src.st.weak > 0) m *= 0.7;
           if (src.dmgMul) m *= src.dmgMul;
           if (src.st && src.st.bless && src.st.bless.t > 0) m *= src.st.bless.amt;
+          if (src.ifx === 'nailAnchor' && !src.moving && src.anchorCell === src.cell && src.anchorT >= 2) m *= 1 + 0.3 * Math.min(2, src.ifxK);
           if (src.passive === 'opener' && kind === 'atk' && (src.openN || 0) < 3) { src.openN = (src.openN || 0) + 1; m *= 1.6; }
           if (src.ifx === 'giantSlayer' && t && (t.elite || t.boss)) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
           if (src.ifx === 'execute' && t && t.hp < t.maxHp * 0.5) m *= 1 + 0.25 * Math.min(1.6, src.ifxK);
@@ -901,7 +923,7 @@
           if (t.side === 0) for (const n of grid.neighbors[t.cell]) { const w = cb.occ[n]; if (w && w.side === 0 && w.passive === 'guardAura') { m *= 0.9; break; } }
           return m;
         },
-        floatColor: (kind) => ({ burn: '#ffb347', poison: '#a8f08a', bleed: '#ff8a8a', thorns: '#e0c49a', splash: '#fffdf7', link: '#c3cbd6' })[kind] || null,
+        floatColor: (kind) => ({ burn: '#ffb347', poison: '#a8f08a', bleed: '#ff8a8a', thorns: '#e0c49a', splash: '#fffdf7', link: '#c3cbd6', transfer: '#f5c400' })[kind] || null,
         onAttack: (u, t, cb) => {
           if (u.range <= 1 && fx.attack) fx.attack({ source: pos(u), target: pos(t), star: u.card?.item?.star || u.card?.star || 1, weapon: global.SHOTS4 ? global.SHOTS4.profile(u) : null });
           if (u.range > 1) fx.play('shoot', 0.06);
@@ -910,6 +932,14 @@
           if (u.passive === 'focus' || u.ifx === 'hawkFocus') { u.focusN = u.lastT === t ? Math.min(5, (u.focusN || 0) + 1) : 0; u.lastT = t; }
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
+          // First acquisition and idle AI retargeting do not count. Extra hits on
+          // the same target cannot recursively trigger this passive.
+          if (u.transfer && u.attackTargetId != null && u.attackTargetId !== t.id && !t.dead) execSkill(cb, u, t, u.transfer);
+          u.attackTargetId = t.id; u.attackTargetPos = pos(t);
+          if (u.ifx === 'restlessTarget' && !(u.forcedT > 0 && u.forced && !u.forced.dead)) {
+            const candidates = cb.alive(1 - u.side).filter(v => v !== t && !v.object && grid.dist(u.cell, v.cell) <= u.range);
+            if (candidates.length) { u.target = candidates[Math.floor(cb.random() * candidates.length)]; proc('restlessTarget', u, [u.target], { previous: pos(t) }); }
+          }
           if (u.ifx === 'rabbitHop' && u.atkN % 3 === 0 && !u.immobile && !(u.st.root > 0) && !u.moving) { // 토끼활: 적과 멀어지는 빈 칸으로 한 칸
             const foes = cb.alive(1 - u.side).filter((x) => !x.object), far = (c) => Math.min(...foes.map((x) => grid.dist(c, x.cell)));
             const now = far(u.cell), to = grid.neighbors[u.cell].filter((c) => !cb.occ[c]).sort((a, b) => far(b) - far(a))[0];
@@ -996,6 +1026,21 @@
           for (const u of cb.units) {
             if (u.dead) continue;
             const st = u.st;
+            if (u.ifx === 'nailAnchor') {
+              const ready = u.anchorT >= 2;
+              if (u.moving || u.anchorCell !== u.cell) { u.anchorCell = u.cell; u.anchorT = 0; }
+              else { u.anchorT += dt; if (u.anchorT >= 2 - 1e-9) u.anchorT = 2; }
+              if (!ready && u.anchorT >= 2) proc('nailAnchor', u, [u]);
+            }
+            if (st.brace) {
+              const b = st.brace; b.elapsed += dt; b.t = Math.max(0, b.duration - b.elapsed);
+              while (b.next <= b.duration && b.elapsed + 1e-9 >= b.next) {
+                const before = u.shield; giveShield(u, b.amount, u);
+                if (u.shield > before) proc('braceShield', u, [u], { pulse: b.next });
+                b.next++;
+              }
+              if (b.next > b.duration) delete st.brace;
+            }
             for (const k of ['slow', 'weak', 'fort', 'parry', 'root', 'silence', 'invuln', 'antiheal', 'storm']) if (st[k] > 0) st[k] -= dt;
             for (const k of ['chill', 'blind', 'marked', 'link', 'reflect']) if (st[k]) { st[k].t -= dt; if (st[k].t <= 0 || (k === 'marked' && st[k].n <= 0)) delete st[k]; }
             if (st.ww) { st.ww.t -= dt; if (st.ww.t <= 0) { u.dodge -= st.ww.dodge; delete st.ww; } }
