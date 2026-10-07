@@ -41,7 +41,7 @@
       if (st.as) s.as *= 1 + st.as * k;
       if (st.hp) s.hp *= 1 + st.hp * k;
       if (st.armor) s.armor += st.armor * k;
-      if (st.range) s.range += st.range;
+      if (st.range) s.range = Math.max(1, s.range + st.range);
       if (st.melee) s.range = 1; // 도적 무기: 근접 공격
       if (st.crit) s.crit += st.crit * k;
       if (st.critDmg) s.critDmg += st.critDmg * k;
@@ -907,6 +907,11 @@
           if (u.passive === 'focus' || u.ifx === 'hawkFocus') { u.focusN = u.lastT === t ? Math.min(5, (u.focusN || 0) + 1) : 0; u.lastT = t; }
           if (u.side !== 0) return;
           u.atkN = (u.atkN || 0) + 1;
+          if (u.ifx === 'rabbitHop' && u.atkN % 3 === 0 && !u.immobile && !(u.st.root > 0) && !u.moving) { // 토끼활: 적과 멀어지는 빈 칸으로 한 칸
+            const foes = cb.alive(1 - u.side).filter((x) => !x.object), far = (c) => Math.min(...foes.map((x) => grid.dist(c, x.cell)));
+            const now = far(u.cell), to = grid.neighbors[u.cell].filter((c) => !cb.occ[c]).sort((a, b) => far(b) - far(a))[0];
+            if (to !== undefined && far(to) > now) { cb.moveTo(u, to); cb.float(u.px, u.py - 40, '깡충', '#fffdf7'); proc('rabbitHop', u, [t], {}); }
+          }
           if (u.burnAdd && !t.dead) { cb.damage(u, t, u.burnAdd, 'burn'); proc('burnAdd', u, [t], { stacks: u.burnAdd / 30 }); }
           if (u.st.storm > 0) for (const n of grid.neighbors[t.cell]) { const v = cb.occ[n]; if (v && v.side !== u.side && !v.dead && !v.object) cb.damage(u, v, u.atk * 0.5, 'splash'); proc('storm', u, [v]); }
           if (u.ifx === 'multiHit' && !u.dblNow && !t.dead) { const r = cb.random(), n = r < 0.1 ? 2 : r < 0.4 ? 1 : 0; if (n) { proc('multiHit', u, [t], { count: n + 1 }); u.dblNow = true; cb.float(u.px, u.py - 40, n === 2 ? '3연타' : '연타', '#e2d0ff'); for (let i = 0; i < n && !t.dead; i++) cb.attack(u, t); u.dblNow = false; } }
