@@ -277,7 +277,9 @@
 
     /** 막·라운드별 적 강화(V4.FOE). x.elite: 정예전의 핵심 적 */
     function foeMul(d, x) {
-      const r = R(), F = V.FOE, t = global.__tune || {}, D = V.DIFF[r.diff] || V.DIFF.normal, dfHp = t.foe || D.foeHp, dfAtk = t.foe || D.foeAtk;
+      const r = R(), F = V.FOE, t = global.__tune || {}, D = V.DIFF[r.diff] || V.DIFF.normal;
+      // Combine the base and relative difficulty before ramping to preserve legacy rounding.
+      const dfHp = t.foe || D.foeHp * (F.base?.hp ?? 1), dfAtk = t.foe || D.foeAtk * (F.base?.atk ?? 1);
       const L = V.ACT_LEN || 6, act = Math.max(1, Math.min(5, r.act)), f = r.round - L * (act - 1), ramp = Math.pow(F.ramp, Math.max(1, Math.min(L, f)) - (L + 1) / 2);
       const role = d.boss ? 'boss' : (x && x.elite) || d.elite ? 'elite' : 'normal';
       const nk = [F.normal.hp[act], F.normal.atk[act]];
