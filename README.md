@@ -8,6 +8,7 @@ A안의 게임판·배경부터 개발합니다. **목재 프레임, 두께 있�
 
 - 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
 - [구현 범위와 확인 화면](docs/tabletop3d-2026-10-08.md)
+- [게임판·배경 전용 5~10시간 구현 계획](docs/tabletop-board-background-plan-2026-10-08.md)
 - 개발: `python3 -m http.server 8001 --bind 127.0.0.1` 후 해당 주소를 브라우저로 열기
 - 검사: `node --test tests/*.test.cjs`, `node tests/browser-tabletop4.cjs` (Chromium·Playwright 필요)
 - Three.js는 저장소에 고정 버전으로 포함하므로 앱 실행에 npm 설치나 외부 CDN이 필요하지 않습니다.
