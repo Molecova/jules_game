@@ -1,0 +1,253 @@
+{
+  "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/index.html",
+  "sizes": [
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "active": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 112,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 11.286499999970175,
+          "phase": "combat",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 2,
+            "melee": 4,
+            "ranged": 2,
+            "magic": 1,
+            "cast": 0,
+            "hit": 7,
+            "death": 0
+          }
+        },
+        "triangles": 10174,
+        "drawCalls": 35,
+        "textures": 18,
+        "geometries": 18,
+        "programs": 15,
+        "quality": "normal",
+        "textureBudgetMiB": 24.917734781901043,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.75
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 16,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "숲의 원목 보드"
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "overflow": false,
+      "active": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 124,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 12.42509999996421,
+          "phase": "combat",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 2,
+            "melee": 12,
+            "ranged": 7,
+            "magic": 4,
+            "cast": 0,
+            "hit": 22,
+            "death": 0
+          }
+        },
+        "triangles": 10174,
+        "drawCalls": 35,
+        "textures": 18,
+        "geometries": 18,
+        "programs": 15,
+        "quality": "normal",
+        "textureBudgetMiB": 24.666239420572918,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.75
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 16,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "숲의 원목 보드"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Rock030-color.jpg",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-color.jpg",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-normal-dx.jpg",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-roughness.jpg",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Rock030-roughness.jpg",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Rock030-color.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Rock030-normal-dx.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-roughness.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Rock030-roughness.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-normal-dx.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/assets/tabletop/Wood062-color.jpg",
+      "status": 200
+    }
+  ],
+  "simulated": {
+    "casts": [
+      "shieldman:{\"u_shieldman\":2}",
+      "archer:{\"u_archer\":4}",
+      "acolyte:{\"u_acolyte\":3}"
+    ],
+    "won": true,
+    "gold": 0,
+    "t": 25.483333333333167,
+    "hpLeft": 1.0001611278952667,
+    "foeLeft": 0
+  },
+  "actual": {
+    "won": true,
+    "t": 25.483333333333167
+  },
+  "errors": [],
+  "hostingErrors": [
+    {
+      "url": "https://server.ethicalads.io/api/v1/decision/?publisher=githackcom&ad_types=image-v1&div_ids=githack-other-ad&callback=ad_1791498039565_148653&keywords=&campaign_types=paid%7Cpublisher-house%7Ccommunity%7Chouse&format=jsonp&client_version=2.5.0&placement_index=0&url=https%3A%2F%2Frawcdn.githack.com%2FMolecova%2Fjules_game%2F05777d4b0cced013e154aec39a2c0cca7d438957%2Fv4%2Findex.html",
+      "message": "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin"
+    }
+  ],
+  "fontHandling": "Optional Google Fonts CSS stubbed; game uses system fonts"
+}

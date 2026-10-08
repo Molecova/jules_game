@@ -2,6 +2,11 @@
 
 실제 게임의 유닛 딱지를 얇은 동전 모양으로 바꾸고, 배치부터 전투 퇴장까지 움직임을 연결했다. 기존 게임판·배경, 초상화, 전투 계산을 그대로 사용한다. 원본 작업 브랜치 대신 별도 `tabletop-a-3d` 브랜치에 게시한다.
 
+- [공개 동작 미리보기](https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/concepts/v4-coin-animation.html)
+- [공개 게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/v4/index.html)
+
+처음 표시되는 호스팅 안내에서 `Open the page`를 누른다. 링크는 구현 커밋 `05777d4`의 고정된 파일을 사용한다.
+
 ## 모양
 
 일반 딱지는 논리 지름 46px, 두께 2.88px다. 이전 6.72px보다 약 57% 얇으며, 실제 상하 뚜껑이 있는 원기둥과 작은 모따기, 금속 옆면의 잔무늬를 갖는다. 고무처럼 늘어나거나 찌그러지지 않는다. 몸체와 인쇄 면 두 메시만 사용한다. 2·3성은 은색·금색 옆면과 면에 인쇄한 별로 구분하고, 솟아 있는 성급 핀은 제거했다.
@@ -46,6 +51,8 @@
 
 증거: [동전 검사 요약](coin-evidence/coin-summary.json), [기존 3D 검사 요약](coin-evidence/browser-summary.json), [21딱지·캐시 검사 요약](coin-evidence/normal-stress-summary.json), [모바일 실제 전투 요약](coin-evidence/mobile-combat-summary.json).
 
+공개 링크도 Chromium에서 별도로 열어 확인했다. 미리보기의 공유 모델 로딩·세 직업 공격 자세·두 폰 너비 검사와 게임의 정상 구매·실제 전투·결과 일치 검사가 통과했다. 게임과 미리보기 콘솔 오류는 0이다. 호스팅 안내에 붙는 선택적 외부 광고의 차단 오류 1건씩은 게임 오류와 구분해 원문을 기록했다. [공개 미리보기 검사](coin-evidence/public/preview-public-summary.json), [공개 게임 검사](coin-evidence/public/mobile-combat-summary.json).
+
 ## 재현
 
 정적 서버를 8001에서 실행하고 Node.js·Playwright·Chromium으로 검사한다. 동영상 녹화 검사에만 Playwright ffmpeg가 필요하며, 게임 실행에는 별도 설치나 빌드가 필요 없다.
@@ -56,6 +63,7 @@ TABLETOP_OUTPUT=docs/coin-evidence node tests/browser-tabletop4.cjs
 TABLETOP_OUTPUT=docs/coin-evidence node tests/browser-tabletop-stress4.cjs
 TABLETOP_OUTPUT=docs/coin-evidence node tests/browser-tabletop-mobile4.cjs
 PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/coin-playwright node tests/browser-coin-animation4.cjs
+node tests/browser-coin-public4.cjs
 ```
 
 클라우드 설정 초안의 설치 스크립트에 공식 Playwright ffmpeg 다운로드를 추가하고, 시작 지침에 별도 3D 경로·8001 서버·녹화용 캐시 경로를 저장했다. 기존 원본 작업 경로와 브랜치는 유지한다.
