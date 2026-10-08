@@ -1,0 +1,63 @@
+{
+  "url": "http://127.0.0.1:8001/concepts/v4-board-ui-comparison.html",
+  "pictures": [
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/prep-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/prep-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/board-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/board-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/title-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/title-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/map-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/map-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/difficulty-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/difficulty-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/card-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/card-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/before/unit-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/docs/board-ui-evidence/after/unit-detail-390x844.png",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "hostingErrors": []
+}

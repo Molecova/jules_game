@@ -1,19 +1,100 @@
-/* A direction: the game UI stays separate from a tactile tabletop. */
-.phone { background: #e9e2d3; }
-.hud { background: #26313c; color: #f2e8d1; border-bottom: 1px solid #756247; }
-.hud .where span { color: #c4c3ba; }
-.hud .menu { background: #e4d9c2; box-shadow: none; border-color: #9b8864; }
-.tabletop-caption { flex: none; padding: 3px 12px; display: flex; justify-content: space-between; gap: 6px; color: #5c5142; font-size: 10px; }
-.tabletop-caption b { font-size: 10px; letter-spacing: .08em; }
-.tabletop-caption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mat { background: #3c4a45; border-color: #574d3e; border-radius: 8px; box-shadow: inset 0 1px 10px #1b292980; }
-.mat::before { border: 1px solid #b9b09540; border-radius: 5px; }
-.has-tabletop #cv { opacity: 0; position: relative; z-index: 1; }
-#tabletopCanvas { position: absolute; pointer-events: none; border-radius: 6px; }
-.srail { z-index: 2; }
-.sdrawer { z-index: 3; }
-.shop { background: #795c40; border-radius: 7px; }
-.shop .srow { border-radius: 4px; }
-.slot, .card { box-shadow: none; }
-#prepUI .actions .go { background: linear-gradient(#ebc97b, #caa04c) !important; border-color: #8d703b; color: #35291a; box-shadow: 0 2px 0 #765c32; }
-@media (prefers-reduced-motion: reduce) { .tabletop-caption { scroll-behavior: auto; } }
+/* Walnut, forest leather, warm paper and engraved brass. Layout stays playable. */
+:root {
+  --paper:#eee5d2; --paper2:#dfd3ba; --card:#faf4e7; --ink:#292e32;
+  --muted:#6e6557; --line:#c4b28d; --gold:#d9b56d; --golddk:#9c743a;
+  --display:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --leather:#253c35; --brass:#c5aa73;
+  --grain:url('./assets/ui/grain.svg');
+}
+body {background:radial-gradient(ellipse at 35% 20%,#d3aa6d20,transparent 60%),linear-gradient(#101814a8,#080e0ce8),url('./assets/tabletop/Wood062-color.jpg') center/680px}
+:root[data-view="2d"] body {background:radial-gradient(ellipse at 35% 20%,#3b4935,#101814)}
+.phone {background:var(--grain),radial-gradient(ellipse at 20% 0%,#64796735,transparent 65%),var(--leather);border-radius:18px;box-shadow:0 0 0 1px #c1a77c85,0 0 0 8px #241d16,0 0 0 9px #68513a,0 35px 80px #0009}
+.phone[data-act="2"] {--leather:#2d3536}
+.phone[data-act="3"] {--leather:#43352b}
+.phone[data-act="4"] {--leather:#293e47}
+.phone[data-act="5"] {--leather:#262e3c}
+.hud {background:var(--grain),linear-gradient(115deg,#203b33,#142821);color:#f3e7ce;border-bottom:1px solid #b89b6066;box-shadow:0 2px 8px #0003}
+.where b {font-weight:700;letter-spacing:-.5px;font-size:16px}
+.hud .where span,.hud .lv small {color:#c9c7b5}
+.hud .menu {background:linear-gradient(#ebdbc0,#bba379);border:1px solid #d6ba85;box-shadow:inset 0 1px #fff7,0 2px 3px #0005;border-radius:6px}
+.hud .coin::before,.econ .coin::before {border-color:#886534;box-shadow:inset 0 0 0 2px #f1d28b,0 2px 2px #0005;background:radial-gradient(circle at 35% 25%,#fff1bb,#c8a35e 60%,#8e6939)}
+.hud .lv b {background:#e5d4ac;color:#24372f;font-weight:700;border:1px solid #a68b58}
+.hud .xp {border-color:#738b73;background:#10251e}
+.hud .xp i {background:linear-gradient(90deg,#789b76,#d3c389)}
+.tabletop-caption {flex:none;padding:4px 16px;display:flex;justify-content:space-between;gap:6px;color:#bfb69b;font-size:10px}
+.tabletop-caption b {font-size:9px;font-weight:700;letter-spacing:.15em;color:#d9bd85}
+.tabletop-caption span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mat {background:var(--grain),radial-gradient(ellipse at 50% 10%,#5a78604d,transparent 75%),var(--leather);border:1px solid #9c855559;border-radius:9px;box-shadow:inset 0 0 0 3px #162c2390,inset 0 2px 12px #081c1a80,0 6px 16px #0003}
+.mat::before {border:1px dashed #b9ae7447;border-radius:6px}
+.has-tabletop #cv {opacity:0;position:relative;z-index:1}
+#tabletopCanvas {position:absolute;pointer-events:none;border-radius:6px}
+.srail {z-index:2}.sdrawer {z-index:3}
+.ri {background:linear-gradient(135deg,#f7efde,#dcd1b6);border-color:#aa9368;box-shadow:inset 0 1px #fff9,0 2px 3px #0003}
+.ri.on {border-color:#cbb47d;box-shadow:inset 0 0 0 1px #f9e5b7,0 2px 4px #0005;background:linear-gradient(#fff8e4,#e7d7ac)}
+.ri .nm {font-weight:700}
+.rall,.rnone,.mat .lbl {color:#d1c5a9}
+.mat .bench {background:#12282066;border:1px solid #baa77859;border-radius:7px;box-shadow:inset 0 2px 5px #0004}
+.mat .slot {border:1px solid #ab9d7540;background:radial-gradient(circle,#051c155c,#ffffff03);box-shadow:inset 0 2px 4px #0003}
+.mat .slot:empty::after {color:#c4bd9c7a}
+.mat .slot.sel {border-color:#f2d496;box-shadow:0 0 0 2px #cca659}
+.shop {background:linear-gradient(#4730209e,#2f2018cc),url('./assets/tabletop/Wood062-color.jpg') center/500px;border:1px solid #ac87594f;border-radius:9px;box-shadow:inset 0 1px #cbb99555,0 4px 9px #0005}
+:root[data-view="2d"] .shop {background:linear-gradient(#473020,#2f2018)}
+.econ {background:var(--grain),linear-gradient(#f6eedc,#e0d2b5);border-width:1px;border-radius:6px;box-shadow:inset 0 1px #fff9,0 2px 3px #0004}
+.econ .ec + .ec {border-color:#b9a67f7a}
+.elv b {background:#304b3e;color:#f7e9c8;font-weight:700;border-radius:3px}
+.xpbar {border-color:#a2997d;background:#c6baa0}.xpbar i {background:linear-gradient(90deg,#5d8268,#91a982)}
+.ec.up {background:linear-gradient(#dce7db,#bfd1b9);color:#294b35}.ec.up:disabled {color:#746e5c;background:#d7ceb9}
+.seg {border-width:1px;border-radius:5px;background:#c9bca1;box-shadow:inset 0 1px 3px #38271330}
+.seg button + button {border-color:#a18e6866}.seg button {color:#463e31;font-size:12px}
+.seg button.on {background:linear-gradient(#405849,#243d32);color:#f5e5c5;box-shadow:inset 0 1px #d2dcad3b}
+.mini {border-width:1px;border-radius:5px;background:linear-gradient(#f2e5cc,#ccba96);box-shadow:inset 0 1px #fff8,0 2px 2px #0003;color:#453b2d}.mini.lk.on {background:#2c4437;color:#efdeb7}
+.shop .srow {background:var(--grain),#d4c5a5;border-radius:5px;box-shadow:inset 0 2px 5px #291f1445}
+.card,.card.k-unit,.card.k-skill,.card.k-item {box-shadow:0 1px 3px #30251270,inset 0 1px #fff9}
+.card.k-unit {border-width:2px;border-radius:5px}.card.k-unit::before {height:3px;opacity:.85}
+.card.k-unit .txt {background:linear-gradient(transparent,color-mix(in srgb,var(--tc) 90%,#e0d6bd) 35%)}
+.card.k-unit .tr i {border-width:1px;box-shadow:0 1px 1px #0002}
+.card.sel {outline:2px solid #e4c388;outline-offset:1px}.card.ready {box-shadow:0 0 0 2px #e9c77e,0 0 8px #ddae6370}.card.sold {box-shadow:none;background:#ad9e8340}
+.actions .btn {border:1px solid #b6a17c;border-radius:6px;background:linear-gradient(#f3e6ca,#ccba96);box-shadow:inset 0 1px #fff8,0 3px 4px #0003;color:#382c1e;font-weight:700}
+.actions .btn.go,#prepUI .actions .go,.tbtns .btn.go {background:linear-gradient(#eed39c,#cfaa65) !important;border:1px solid #eed196;color:#32251a;box-shadow:inset 0 1px #fff6,0 3px 0 #795c35,0 5px 9px #0004;font-weight:700;letter-spacing:.02em}
+.btn:disabled {filter:saturate(.4);box-shadow:none}
+.bpanel {color:#e8dcc4}.tug {color:#f2e8d2;background:#1d322a;border-bottom:1px solid #aa916647}.tug .time {color:#efd9a8;font-weight:700}
+.speed {border-color:#9c916e;background:#233b31}.speed button {color:#efe5cb}.speed button.on {background:#d6bc83;color:#23362c}
+.strip {background:var(--grain),#e4dac2;border-radius:6px}
+.bstamp {font-weight:800;background:#faf1dfe8;border-width:2px;box-shadow:0 8px 20px #0004}
+/* Printed game box and token tray on a leather table. */
+#scr-title {background:radial-gradient(ellipse at 50% 32%,#7d906239,transparent 65%)}
+.titlebox {position:relative;gap:18px}
+.titlebox::before {content:"";position:absolute;inset:18px 14px;pointer-events:none;border:1px solid #c4ab6659;border-radius:8px;box-shadow:inset 0 0 0 5px #182921,inset 0 0 0 6px #bcab5d30}
+.logo {color:#ead7aa;font:600 49px/.96 Georgia,"Times New Roman",serif;letter-spacing:.075em;text-shadow:0 2px 0 #0007}
+.logo .paper {color:#263a30;background:linear-gradient(#f6e8c7,#cbb17a);clip-path:none;transform:none;border-radius:2px;font-size:30px;letter-spacing:.18em;padding:5px 12px 4px;margin-bottom:9px;box-shadow:0 3px 7px #0004}
+.logo .front {width:170px;border-top:1px solid #ba9b61;margin-top:15px}
+.logo .front::before,.logo .front::after {height:5px;width:5px;top:-3px;background:#ccb075;transform:rotate(45deg)}
+.logo small {color:#c9c7ae;font:500 10px/1.6 var(--body);letter-spacing:.03em;max-width:28ch}
+.fan {height:146px;filter:drop-shadow(0 7px 4px #0005)}
+.fan::before {content:"";position:absolute;inset:12px -4px 0;border:5px solid #72593d;border-radius:10px;background:repeating-linear-gradient(0deg,transparent 0 32px,#a3917140 32px 33px),repeating-linear-gradient(90deg,#d9cdb0 0 32px,#a3917166 32px 33px);box-shadow:inset 0 0 0 2px #b59b69,0 5px 0 #3f2d1e;transform:perspective(500px) rotateX(18deg) rotate(-4deg)}
+.ftok {filter:drop-shadow(0 3px 1px #0007)}
+.tagline {color:#d0c8b4;font-size:12px;line-height:1.7}.best {color:#cbbb97}
+.tbtns .btn {border:1px solid #b69a65;border-radius:5px;background:linear-gradient(#3b5443,#233c31);color:#ebdfc3;box-shadow:inset 0 1px #c9d6aa2b,0 3px 5px #0003;font-weight:700}.tbtns .btn small {color:#c8c8b6}
+/* Expedition map and dialogs: parchment, restrained ink, brass edges. */
+.phone[data-act] .mapbox,.mapbox {background:var(--grain),radial-gradient(ellipse at 30% 20%,#f6efd9,#c8b88f);border:1px solid #c1a779;border-radius:7px;box-shadow:inset 0 0 18px #8e704630,0 5px 12px #0004}
+.mapbox::after {content:"";position:absolute;inset:6px;pointer-events:none;border:1px solid #78653e40;border-radius:3px}
+.node {filter:drop-shadow(0 3px 2px #46301940)}.node.pick {outline-color:#ad7c35}.floor {color:#695f47}.legend {color:#d8ccb1}
+.mapinfo {background:var(--grain),linear-gradient(#f6eedc,#e1d2af);border:1px solid #c1a779;border-radius:6px;box-shadow:inset 0 1px #fff7,0 3px 7px #0004}.mapinfo b {font-weight:700;font-size:16px}
+.sheet {background:#091b16a8;backdrop-filter:blur(3px)}
+.sheet .in {background:var(--grain),linear-gradient(135deg,#f4ebd7,#ddd0b0);border-top:1px solid #e2c58e;box-shadow:0 -8px 28px #0005,inset 0 4px #c1a36d40;border-radius:12px 12px 0 0}
+.sheet h2,.cxhead h2 {font-weight:700}
+.sheet .btn,.diff,.startopt,.relic {border-width:1px;border-color:#ac956a;box-shadow:inset 0 1px #fff8,0 2px 4px #55422525;border-radius:6px}
+.diff.on,.startopt.on {box-shadow:0 0 0 2px #bfa066;background:#f0dfb5}
+.scene {border-color:#8a7656;box-shadow:0 2px 6px #42351b30}
+.codex {background:var(--grain),#e9dfc8}.cxhead {border-bottom:1px solid #b9a47c}
+.cxtabs button {border-width:1px;border-color:#ac956a;border-radius:4px}.cxtabs button.on {background:#304b3e;color:#f2e7cc}
+.tcard {box-shadow:0 0 0 1px #c5ae81,0 20px 35px #0007}
+.detail {background:var(--grain),linear-gradient(135deg,#f6edda,#e0d1ad);border-width:1px;border-color:#c1a779;box-shadow:0 6px 16px #0005}
+.dh .tt b {font-weight:700}
+.dbtn .btn {border-width:1px;border-color:#ad9366;box-shadow:inset 0 1px #fff7,0 2px 3px #503b262b;border-radius:5px}
+.tc-top,.tc-text {border-width:1px;border-color:#a99c7d;background:var(--grain),var(--card)}.tc-top b,.tc-text .ult-h b {font-weight:700}
+.over {color:#e9ddc2}.over p {color:#c9c6b1}.over .rec div {color:var(--ink);border-width:1px;border-color:#b49e72;background:var(--grain),var(--paper)}
+.toast {background:#1a342b;color:#f4e8cf;border:1px solid #bca36b;box-shadow:0 4px 15px #0004}
+@media(max-height:700px) {.tabletop-caption {padding-block:2px;font-size:9px}.titlebox {gap:11px}.logo {font-size:40px}.logo .paper {font-size:23px;margin-bottom:7px}.fan {height:122px;transform:scale(.88);margin-block:-7px}.titlebox::before {inset:10px 10px}}
+@media(max-width:760px),(max-height:640px) {.phone {border-radius:0;box-shadow:none}}
+@media(prefers-reduced-motion:reduce) {.card.ready,.node.next {animation:none}.sheet {backdrop-filter:none}}

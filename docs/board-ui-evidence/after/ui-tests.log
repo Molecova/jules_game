@@ -1,0 +1,4 @@
+PASS UI flow 390x844, including saved-run title
+PASS UI flow 360x640, including saved-run title
+PASS UI flow 768x1024, including saved-run title
+PASS title, difficulty, map, card detail, legal purchases, shop tabs/lock/odds and keyboard focus at three sizes; console errors 0

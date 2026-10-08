@@ -38,17 +38,27 @@ export async function createMaterials(low = false) {
   function tile(act, color, amount = .2) {
     if (!palette.has(act)) {
       const cv = document.createElement('canvas'); cv.width = cv.height = low ? 256 : 512;
-      const c = cv.getContext('2d'); c.fillStyle = '#fffdf6'; c.fillRect(0, 0, cv.width, cv.height);
+      const c = cv.getContext('2d'); c.fillStyle = '#eee8db'; c.fillRect(0, 0, cv.width, cv.height);
       c.globalAlpha = amount; c.drawImage(stoneMaps.color.image, 0, 0, cv.width, cv.height); c.globalAlpha = 1;
       const rnd = visualRandom(1031 + act);
       for (let i = 0; i < 45; i++) {
         const x = rnd() * cv.width, y = rnd() * cv.height;
         c.fillStyle = 'rgba(90,67,39,.035)'; c.fillRect(x, y, 1 + rnd() * 2, 1);
       }
+      // A carved border and small corner cuts on each individual stone slab.
+      const s = cv.width; c.strokeStyle = 'rgba(72,58,42,.19)'; c.lineWidth = s / 250;
+      c.strokeRect(s * .055, s * .055, s * .89, s * .89);
+      c.strokeStyle = 'rgba(255,253,237,.55)'; c.strokeRect(s * .064, s * .064, s * .872, s * .872);
+      c.strokeStyle = 'rgba(64,52,40,.24)';
+      for (const [x, y, dx, dy] of [[.085,.085,1,1],[.915,.085,-1,1],[.085,.915,1,-1],[.915,.915,-1,-1]]) {
+        c.beginPath(); c.moveTo(s*x,s*(y+dy*.06)); c.lineTo(s*x,s*y); c.lineTo(s*(x+dx*.06),s*y); c.stroke();
+      }
+      const light = c.createLinearGradient(0, 0, s, s); light.addColorStop(0, 'rgba(255,255,238,.16)'); light.addColorStop(1, 'rgba(45,38,29,.08)');
+      c.fillStyle = light; c.fillRect(0, 0, s, s);
       palette.set(act, canvasTexture(cv, true));
     }
     return new THREE.MeshStandardMaterial({ color, map: palette.get(act), normalMap: stoneMaps.normal,
-      normalScale: new THREE.Vector2(.18, -.18), roughnessMap: stoneMaps.roughness, roughness: .94 });
+      normalScale: new THREE.Vector2(.11, -.11), roughnessMap: stoneMaps.roughness, roughness: .82 });
   }
   const feltCanvas = document.createElement('canvas'); feltCanvas.width = feltCanvas.height = 128;
   const ctx = feltCanvas.getContext('2d'), rnd = visualRandom(390);

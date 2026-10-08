@@ -1,0 +1,339 @@
+{
+  "baseline": null,
+  "sizes": [
+    {
+      "width": 390,
+      "height": 844,
+      "title": {
+        "top": 600.015625,
+        "bottom": 648.015625,
+        "left": 55,
+        "right": 335,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 390,
+        "viewportHeight": 844,
+        "overflow": false
+      },
+      "go": {
+        "top": 790,
+        "bottom": 838,
+        "left": 16,
+        "right": 374,
+        "width": 358,
+        "height": 48,
+        "viewportWidth": 390,
+        "viewportHeight": 844,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 259,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 24.826699999988165,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10368,
+        "drawCalls": 39,
+        "textures": 19,
+        "geometries": 20,
+        "programs": 17,
+        "quality": "normal",
+        "textureBudgetMiB": 25.23320007324219,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 18,
+          "localTextures": 2,
+          "textureMiB": 2.4786885579427085
+        },
+        "name": "숲의 원목 보드"
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "title": {
+        "top": 455.515625,
+        "bottom": 503.515625,
+        "left": 40,
+        "right": 320,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 360,
+        "viewportHeight": 640,
+        "overflow": false
+      },
+      "go": {
+        "top": 594,
+        "bottom": 636,
+        "left": 16,
+        "right": 344,
+        "width": 328,
+        "height": 42,
+        "viewportWidth": 360,
+        "viewportHeight": 640,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 262,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 24.988700000077568,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10368,
+        "drawCalls": 39,
+        "textures": 19,
+        "geometries": 20,
+        "programs": 17,
+        "quality": "normal",
+        "textureBudgetMiB": 24.34806060791016,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 18,
+          "localTextures": 2,
+          "textureMiB": 2.4786885579427085
+        },
+        "name": "숲의 원목 보드"
+      }
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "title": {
+        "top": 692.015625,
+        "bottom": 740.015625,
+        "left": 244,
+        "right": 524,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 768,
+        "viewportHeight": 1024,
+        "overflow": false
+      },
+      "go": {
+        "top": 880,
+        "bottom": 928,
+        "left": 200,
+        "right": 568,
+        "width": 368,
+        "height": 48,
+        "viewportWidth": 768,
+        "viewportHeight": 1024,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 218,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 21.438499999970233,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10368,
+        "drawCalls": 39,
+        "textures": 19,
+        "geometries": 20,
+        "programs": 17,
+        "quality": "normal",
+        "textureBudgetMiB": 25.33407592773438,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 18,
+          "localTextures": 2,
+          "textureMiB": 2.4786885579427085
+        },
+        "name": "숲의 원목 보드"
+      }
+    }
+  ],
+  "errors": []
+}

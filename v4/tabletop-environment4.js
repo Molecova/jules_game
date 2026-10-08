@@ -53,7 +53,8 @@ export function createEnvironment(config, materials, low = false) {
   }
   function build(act) {
     clear(); theme = act; const L = LOOKS[act] || LOOKS[1], rnd = visualRandom(6200 + act);
-    const wood = own(materials.wood(L.wood, .32)), endGrain = own(materials.wood('#958878', .4));
+    const wood = own(materials.wood(L.wood, .22)), endGrain = own(materials.wood('#6e5140', .35));
+    wood.color.multiplyScalar(.72); wood.roughness = .64;
     const table = own(materials.wood(L.table, .26)), fabric = own(materials.fabric(L.felt));
     const stone = own(materials.stone(L.rock, .6));
     const leaf = own(new THREE.MeshStandardMaterial({ color: L.grass, roughness: .95 }));
@@ -77,15 +78,42 @@ export function createEnvironment(config, materials, low = false) {
     const frontRail = geo('miter-front', () => prism(plankPoints.map(([x, z]) => [x, -z]), .2, .02)); add(frontRail, wood, 0, -.045, 0);
     box(.19, .16, BH, wood, right - .11, -.055, center.z, .012);
     box(.19, .16, BH, wood, left + .11, -.055, center.z, .012);
+    // Fine brass inlay, dark carved channels and physical corner hardware.
+    const strips = [], channels = [], corners = [];
+    for (const z of [back + .055, front - .055]) {
+      strips.push({position:[center.x,.059,z],scale:[BW+.28,.009,.011]});
+      channels.push({position:[center.x,.057,z+(z<center.z?.031:-.031)],scale:[BW+.28,.008,.014]});
+    }
+    for (const x of [left + .055, right - .055]) {
+      strips.push({position:[x,.03,center.z],scale:[.011,.009,BH+.28]});
+      channels.push({position:[x+(x<center.x?.031:-.031),.029,center.z],scale:[.014,.008,BH+.28]});
+    }
+    for (const x of [left+.11,right-.11]) for (const z of [back+.11,front-.11]) {
+      corners.push({position:[x,.067,z],scale:[.16,.016,.045]});
+      corners.push({position:[x,.067,z],scale:[.045,.016,.16]});
+    }
+    const hardware = geo('hardware',()=>new THREE.BoxGeometry(1,1,1));
+    batches(hardware,brass,strips); batches(hardware,dark,channels); batches(hardware,brass,corners);
     const railX = xy(ML / 2 - 2, 0).x;
     box((ML - 17) / CS, .04, 6.03, fabric, railX, -.1, center.z, .01);
     // Instanced tiles share one bevel geometry and two materials (60 old faces → two batches).
     const tileGeometry = geo('tile', () => blockGeometry(.966, .065, .966, .012));
+    const tp=tileGeometry.attributes.position,tn=tileGeometry.attributes.normal,tu=tileGeometry.attributes.uv;
+    for(let i=0;i<tp.count;i++) if(Math.abs(tn.getY(i))>.65) tu.setXY(i,tp.getX(i)/.966+.5,tp.getZ(i)/.966+.5);
     const tilings = [[], []];
     for (const c of grid.cells) { const p = xy(c.x, c.y); tilings[(c.c + c.r) % 2].push({ position: [p.x, -.033, p.z], rotation: [0, ((c.c * 3 + c.r) % 4) * Math.PI / 2, 0] }); }
-    const tone = act === 2 ? .32 : act === 3 ? .18 : act === 4 ? .10 : .20;
+    const tone = act === 2 ? .44 : act === 3 ? .32 : act === 4 ? .19 : .30;
     batches(tileGeometry, own(materials.tile(act, L.paper, tone)), tilings[0]);
     batches(tileGeometry, own(materials.tile(act, L.alternate, tone)), tilings[1]);
+    // Etched battlefield seal lies below every coin, never over its printed face.
+    const seal=document.createElement('canvas'); seal.width=seal.height=low?128:256;
+    const sc=seal.getContext('2d'),s=seal.width; sc.translate(s/2,s/2); sc.strokeStyle='rgba(68,58,44,.16)'; sc.lineWidth=s/350;
+    for(const r of [.13,.155]){sc.beginPath();sc.arc(0,0,s*r,0,Math.PI*2);sc.stroke();}
+    for(let i=0;i<8;i++){const a=i*Math.PI/4,r=s*(i%2?.09:.12);sc.beginPath();sc.moveTo(Math.cos(a)*r,Math.sin(a)*r);sc.lineTo(Math.cos(a+.22)*s*.04,Math.sin(a+.22)*s*.04);sc.lineTo(0,0);sc.closePath();sc.stroke();}
+    for(const sign of [-1,1]){sc.beginPath();sc.moveTo(sign*s*.18,0);sc.lineTo(sign*s*.46,0);sc.stroke();}
+    const sealTexture=new THREE.CanvasTexture(seal);sealTexture.colorSpace=THREE.SRGBColorSpace;localTextures.push(sealTexture);
+    const sealMesh=add(geo('seal',()=>new THREE.PlaneGeometry(BW,BH)),own(new THREE.MeshBasicMaterial({map:sealTexture,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1})),center.x,.001,center.z);
+    sealMesh.rotation.x=-Math.PI/2;sealMesh.castShadow=false;
     const nails = [];
     for (const y of [M - 9, H - M + 9]) for (const x of [ML - 10, W - 9]) { const p = xy(x, y); nails.push({ position: [p.x, .074, p.z] }); }
     batches(geo('nail', () => new THREE.CylinderGeometry(.027, .027, .02, 12)), brass, nails);

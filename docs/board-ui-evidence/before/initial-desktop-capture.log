@@ -1,0 +1,20 @@
+PASS UI flow 390x844, including saved-run title
+PASS UI flow 360x640, including saved-run title
+locator.screenshot: Timeout 19659.024999999965ms exceeded.
+Call log:
+[2m  - taking element screenshot[22m
+[2m  - waiting for fonts to load...[22m
+[2m  - fonts loaded[22m
+[2m  - attempting scroll into view action[22m
+[2m    - waiting for element to be stable[22m
+
+    at /workspace/jules_game-tabletop3d/tests/browser-board-ui4.cjs:34:137 {
+  log: [
+    '  - taking element screenshot',
+    '  - waiting for fonts to load...',
+    '  - fonts loaded',
+    '  - attempting scroll into view action',
+    '    - waiting for element to be stable'
+  ],
+  name: 'TimeoutError'
+}

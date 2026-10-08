@@ -24,12 +24,12 @@ function create(source, config) {
   source.before(dom); source.parentElement.classList.add('has-tabletop');
   const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-W / CS / 2, W / CS / 2, H / CS / 2, -H / CS / 2, .1, 60);
   camera.position.set(0, 13, 9.5); camera.lookAt(0, 0, 0);
-  const hemisphere = new THREE.HemisphereLight('#fff1da', '#666354', 1.5); scene.add(hemisphere);
-  const light = new THREE.DirectionalLight('#fff2dd', 2.7); light.position.set(-4, 8, -4);
+  const hemisphere = new THREE.HemisphereLight('#fff1da', '#363d36', 1.05); scene.add(hemisphere);
+  const light = new THREE.DirectionalLight('#fff2dd', 3.25); light.position.set(-3.5, 7, -4.5);
   light.castShadow = true; light.shadow.mapSize.set(lowQuality ? 512 : 1024, lowQuality ? 512 : 1024);
   Object.assign(light.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: .1, far: 22 });
   light.shadow.normalBias = .02; light.shadow.bias = -.0002; scene.add(light);
-  const fill = new THREE.DirectionalLight('#d4e5ef', .6); fill.position.set(4, 4, 4); scene.add(fill);
+  const fill = new THREE.DirectionalLight('#d4e5ef', .8); fill.position.set(4, 4, 4); scene.add(fill);
   const xy = (x, y) => new THREE.Vector3((x - W / 2) / CS, 0, (y - H / 2) / CS);
   const environment = createEnvironment(config, materials, lowQuality); scene.add(environment.root);
   let act = 0, draws = 0, active = true, lastDraw = 0;
