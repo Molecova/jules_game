@@ -488,7 +488,7 @@
   function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200); }
   function stampAt(x, y, txt, cls = '') { const ph = $('phone'), el = document.createElement('div'); el.className = 'stamp ' + cls; el.textContent = txt; el.style.left = x + 'px'; el.style.top = y + 'px'; ph.appendChild(el); setTimeout(() => el.remove(), 1200); }
   const phoneRect = () => $('phone').getBoundingClientRect();
-  function cellScreen(x, y) { const r = $('cv').getBoundingClientRect(), p = phoneRect(), k = r.width / W; const c = grid.cells[grid.idx(x, y)]; return [r.left - p.left + c.x * k, r.top - p.top + (c.y - viewY()) * k]; }
+  function cellScreen(x, y) { const r = $('cv').getBoundingClientRect(), p = phoneRect(), k = r.width / W; const c = grid.cells[grid.idx(x, y)]; if (tabletop?.active) { const s = tabletop.screen(c.x, c.y); return [s.x - p.left, s.y - p.top]; } return [r.left - p.left + c.x * k, r.top - p.top + (c.y - viewY()) * k]; }
   function fxStampAtUnit(u, txt) {
     if (R.board.includes(u)) { const [x, y] = cellScreen(u.x, u.y); stampAt(x, y, txt); return; }
     const i = R.bench.indexOf(u), el = $('bench').children[i];
@@ -1220,6 +1220,14 @@
   // 보드 캔버스
   // =====================================================================
   const canvas = $('cv'), ctx = canvas.getContext('2d');
+  let tabletop = null;
+  function initTabletop() {
+    if (tabletop || !window.TABLETOP4) return;
+    tabletop = TABLETOP4.create(canvas, { W, H, CS, ML, M, grid, sprite });
+    if (!tabletop) $('tabletopStatus').textContent = '2D 보드';
+    fitBoard();
+  }
+  window.addEventListener('tabletopready', initTabletop);
   let kScale = 1, DPR = Math.min(2, window.devicePixelRatio || 1);
   // 상점 단계: 내 진영 세 줄만 보여 준다(적 필드 보기 버튼으로 전체)
   const mineOnly = () => false; // 상점 단계에서도 적·아군 6줄을 함께 보여 준다
@@ -1245,9 +1253,10 @@
     canvas.style.width = Math.round(W * kScale) + 'px'; canvas.style.height = Math.round(vh * kScale) + 'px';
     canvas.width = Math.round(W * kScale * DPR); canvas.height = Math.round(vh * kScale * DPR);
     if (R) { placeRail(); renderRail(); }
+    if (tabletop?.active) tabletop.resize();
     draw();
   }
-  function cellFromPoint(x, y) { const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale + viewY()); }
+  function cellFromPoint(x, y) { if (tabletop?.active) { const p = tabletop.point(x, y); return p ? grid.cellAt(p.x, p.y) : null; } const r = canvas.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null; return grid.cellAt((x - r.left) / kScale, (y - r.top) / kScale + viewY()); }
   canvas.addEventListener('pointerdown', (e) => {
     if (B || ui.screen !== 'play') return;
     const c = cellFromPoint(e.clientX, e.clientY);
@@ -1407,10 +1416,11 @@
     if (o.hitT > 0 && !motionPreference.matches) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
     // 판에 놓인 느낌: 딱지 아래 그림자(들어 올리면 옅어짐)
     if (o.glow) { ctx.save(); ctx.strokeStyle = o.glow; ctx.lineWidth = 3; ctx.setLineDash(o.dash ? [5, 4] : []); ctx.lineDashOffset = -performance.now() / 50; ctx.beginPath(); ctx.arc(x, y + 2, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-    ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha });
+    if (tabletop?.active) tabletop.token(x + jx, y, o, r);
+    else ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha });
     const ty = y - (o.lift || 0);
-    if (o.lo) ART.drawLoadout(ctx, x + jx, ty, r, o.lo);
-    if (o.star) starPips(x + jx, ty, r, o.star);
+    if (o.lo && !tabletop?.active) ART.drawLoadout(ctx, x + jx, ty, r, o.lo);
+    if (o.star && !tabletop?.active) starPips(x + jx, ty, r, o.star);
     if (o.kind === 'boss') {
       ctx.fillStyle = '#f5c400'; ctx.strokeStyle = INK; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(x - 13, ty - r + 3); ctx.lineTo(x - 13, ty - r - 10); ctx.lineTo(x - 6, ty - r - 3); ctx.lineTo(x, ty - r - 13); ctx.lineTo(x + 6, ty - r - 3); ctx.lineTo(x + 13, ty - r - 10); ctx.lineTo(x + 13, ty - r + 3); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -1603,7 +1613,8 @@
     ctx.save();
     ctx.translate(0, -vy);
     if (B && B.vfx.shake > 0.2 && !motionPreference.matches) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
-    ctx.drawImage(boardBg(R.act, R.round), 0, 0, W, H);
+    if (tabletop?.active) tabletop.begin(R.act);
+    else ctx.drawImage(boardBg(R.act, R.round), 0, 0, W, H);
     const now = performance.now();
     if (B && B.combat) {
       const cb = B.combat;
@@ -1644,6 +1655,7 @@
       if (!R.enemies.length && R.mode === 'rest' && !vy) { ctx.fillStyle = 'rgba(35,42,59,.55)'; ctx.font = "15px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center'; ctx.fillText(R.node ? NODE[R.node.k].name + ' · 전투 없음' : '', W / 2, M + CS * 1.5); }
     }
     ctx.restore();
+    if (tabletop?.active) tabletop.render();
   }
   let last = performance.now(), panelT = 0;
   function combatPaused() { return document.hidden || !$('sheet').hidden || !$('codex').hidden; }
@@ -2098,6 +2110,7 @@
 
   // 테스트·밸런스용 진입점
   window.__g = {
+    get tabletop() { return tabletop; },
     get R() { return R; }, set R(v) { R = v; }, get B() { return B; }, ui, newRun, enterNode, finishNode, reachable, nodeById, buy, reroll, levelUp, equip, unequip, sellCard, tryMerge, owned, simFight,
     W, H, renderPlay, openCodex, openMenu, buildCombat, deployMax, benchSize, def, canEquip, rollCard, gain, take, startCombat, endCombat, afterCombat, tapBench, tapCell, showMap, grid, genEnemies, battleApi, genMap, fixBench, addXp, skipCombat, eliteChoices, lootChoices, bossLoot,
   };

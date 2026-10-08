@@ -1,0 +1,5 @@
+PASS 3 viewports, all 30 projected cells, real purchases and board↔bench drag, visual RNG isolation
+PASS five board themes, live 3D battle equals simulation, confirmed result resume
+PASS explicit 2D fallback
+PASS WebGL context loss returns to playable 2D board
+PASS browser console errors 0

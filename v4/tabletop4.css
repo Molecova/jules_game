@@ -1,0 +1,19 @@
+/* A direction: the game UI stays separate from a tactile tabletop. */
+.phone { background: #e9e2d3; }
+.hud { background: #26313c; color: #f2e8d1; border-bottom: 1px solid #756247; }
+.hud .where span { color: #c4c3ba; }
+.hud .menu { background: #e4d9c2; box-shadow: none; border-color: #9b8864; }
+.tabletop-caption { flex: none; padding: 3px 12px; display: flex; justify-content: space-between; gap: 6px; color: #5c5142; font-size: 10px; }
+.tabletop-caption b { font-size: 10px; letter-spacing: .08em; }
+.tabletop-caption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mat { background: #3c4a45; border-color: #574d3e; border-radius: 8px; box-shadow: inset 0 1px 10px #1b292980; }
+.mat::before { border: 1px solid #b9b09540; border-radius: 5px; }
+.has-tabletop #cv { opacity: 0; position: relative; z-index: 1; }
+#tabletopCanvas { position: absolute; pointer-events: none; border-radius: 6px; }
+.srail { z-index: 2; }
+.sdrawer { z-index: 3; }
+.shop { background: #795c40; border-radius: 7px; }
+.shop .srow { border-radius: 4px; }
+.slot, .card { box-shadow: none; }
+#prepUI .actions .go { background: linear-gradient(#ebc97b, #caa04c) !important; border-color: #8d703b; color: #35291a; box-shadow: 0 2px 0 #765c32; }
+@media (prefers-reduced-motion: reduce) { .tabletop-caption { scroll-behavior: auto; } }

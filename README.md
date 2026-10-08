@@ -1,4 +1,20 @@
-# 오토체스 탑뷰 2D 시안
+# Paper Token Forces · Tabletop 3D
+
+원본 [Molecova/jules_game](https://github.com/Molecova/jules_game)의 `7d5c961`에서 분리한 독립 개발용 복제본입니다. 원본 변경 이력을 유지합니다. 같은 소유자의 저장소이므로 GitHub의 공식 fork 관계 대신 독립 복제 방식으로 준비했습니다.
+
+목표 저장소는 `Molecova/jules_game-tabletop3d`입니다. 연결된 앱의 새 저장소 생성 권한이 없어 GitHub 분리는 대기 중이며, 현재 원본의 별도 `tabletop-a-3d` 브랜치에 미리보기를 게시합니다. 원본 작업 브랜치 `ccr-5e12923f-aw0cjb`는 수정하지 않습니다. 빈 목표 저장소가 준비되면 이력을 그대로 푸시할 수 있습니다.
+
+A안의 게임판·배경부터 개발합니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자는 실제 Three.js 3D**이며 유닛은 간결한 인쇄 딱지로 유지합니다. 미니어처 유닛 모델은 아직 포함하지 않습니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
+
+- 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
+- [구현 범위와 확인 화면](docs/tabletop3d-2026-10-08.md)
+- 개발: `python3 -m http.server 8001 --bind 127.0.0.1` 후 해당 주소를 브라우저로 열기
+- 검사: `node --test tests/*.test.cjs`, `node tests/browser-tabletop4.cjs` (Chromium·Playwright 필요)
+- Three.js는 저장소에 고정 버전으로 포함하므로 앱 실행에 npm 설치나 외부 CDN이 필요하지 않습니다.
+
+아래는 복제 당시의 원본 게임 설명입니다.
+
+## 원본: 오토체스 탑뷰 2D 시안
 
 ## Paper Token Forces (페이퍼 토큰 포스, v4) — `v4/index.html` (폰 한 화면)
 
