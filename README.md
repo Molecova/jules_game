@@ -7,11 +7,13 @@
 A안의 게임판·배경부터 개발합니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자는 실제 Three.js 3D**이며 유닛은 간결한 인쇄 딱지로 유지합니다. 미니어처 유닛 모델은 아직 포함하지 않습니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
 
 - 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
-- [구현 범위와 확인 화면](docs/tabletop3d-2026-10-08.md)
+- [게임판·배경 개선 결과와 전후 화면](docs/tabletop-board-background-implementation-2026-10-08.md)
+- [최초 3D 연결 구현 기록](docs/tabletop3d-2026-10-08.md)
 - [게임판·배경 전용 5~10시간 구현 계획](docs/tabletop-board-background-plan-2026-10-08.md)
 - 개발: `python3 -m http.server 8001 --bind 127.0.0.1` 후 해당 주소를 브라우저로 열기
 - 검사: `node --test tests/*.test.cjs`, `node tests/browser-tabletop4.cjs` (Chromium·Playwright 필요)
 - Three.js는 저장소에 고정 버전으로 포함하므로 앱 실행에 npm 설치나 외부 CDN이 필요하지 않습니다.
+- 목재·석재 PBR 재질은 로컬 CC0 파일을 사용합니다. [출처·변환 기록](v4/assets/tabletop/ATTRIBUTION.md). 낮은 품질: `v4/index.html?quality=low`.
 
 아래는 복제 당시의 원본 게임 설명입니다.
 

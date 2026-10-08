@@ -1,0 +1,843 @@
+{
+  "description": "Visual fixture only: 9 three-star allies + 12 foes",
+  "themes": [
+    {
+      "act": 1,
+      "draws": 4,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "triangles": 13006,
+      "drawCalls": 90,
+      "textures": 24,
+      "geometries": 45,
+      "programs": 11,
+      "quality": "normal",
+      "textureBudgetMiB": 25.177419026692707,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 8,
+        "textureMiB": 12.75
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "forest"
+          }
+        ],
+        "sharedGeometries": 16,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "숲의 원목 보드"
+    },
+    {
+      "act": 2,
+      "draws": 7,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "triangles": 13620,
+      "drawCalls": 91,
+      "textures": 25,
+      "geometries": 47,
+      "programs": 14,
+      "quality": "normal",
+      "textureBudgetMiB": 26.510752360026043,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 9,
+        "textureMiB": 14.083333333333334
+      },
+      "environment": {
+        "theme": 2,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "ruins"
+          }
+        ],
+        "sharedGeometries": 17,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "폐허의 석판 보드"
+    },
+    {
+      "act": 3,
+      "draws": 10,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "triangles": 14148,
+      "drawCalls": 90,
+      "textures": 26,
+      "geometries": 47,
+      "programs": 14,
+      "quality": "normal",
+      "textureBudgetMiB": 27.844085693359375,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 10,
+        "textureMiB": 15.416666666666668
+      },
+      "environment": {
+        "theme": 3,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "sandstone"
+          }
+        ],
+        "sharedGeometries": 17,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "황야의 사암 보드"
+    },
+    {
+      "act": 4,
+      "draws": 13,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "triangles": 12180,
+      "drawCalls": 91,
+      "textures": 27,
+      "geometries": 48,
+      "programs": 14,
+      "quality": "normal",
+      "textureBudgetMiB": 29.177419026692707,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 11,
+        "textureMiB": 16.75
+      },
+      "environment": {
+        "theme": 4,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "snow"
+          }
+        ],
+        "sharedGeometries": 18,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "설원의 보드"
+    },
+    {
+      "act": 5,
+      "draws": 16,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "triangles": 11708,
+      "drawCalls": 93,
+      "textures": 28,
+      "geometries": 50,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 30.51075236002604,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 12,
+        "textureMiB": 18.083333333333332
+      },
+      "environment": {
+        "theme": 5,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "night"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "밤의 유적 보드"
+    }
+  ],
+  "portraitCache": {
+    "enemyTypes": 85,
+    "samples": [
+      {
+        "act": 5,
+        "draws": 30,
+        "tokens": 21,
+        "portraitTextures": 22,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 37,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 30.98218790690104,
+        "portraitMiB": 1.0310872395833335,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 33,
+        "tokens": 21,
+        "portraitTextures": 30,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 45,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.410573323567707,
+        "portraitMiB": 1.4594726562499996,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 36,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 46,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.437347412109375,
+        "portraitMiB": 1.486246744791666,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 39,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 46,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.388519287109375,
+        "portraitMiB": 1.437418619791666,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 42,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 46,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.43995157877604,
+        "portraitMiB": 1.488850911458333,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 45,
+        "tokens": 21,
+        "portraitTextures": 30,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 45,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.41578165690104,
+        "portraitMiB": 1.4646809895833328,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 48,
+        "tokens": 21,
+        "portraitTextures": 32,
+        "triangles": 11708,
+        "drawCalls": 93,
+        "textures": 47,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.41529337565104,
+        "portraitMiB": 1.4641927083333328,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      },
+      {
+        "act": 5,
+        "draws": 51,
+        "tokens": 10,
+        "portraitTextures": 32,
+        "triangles": 9420,
+        "drawCalls": 71,
+        "textures": 47,
+        "geometries": 50,
+        "programs": 19,
+        "quality": "normal",
+        "textureBudgetMiB": 31.41529337565104,
+        "portraitMiB": 1.4641927083333328,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 12,
+          "textureMiB": 18.083333333333332
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "night"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "night"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "밤의 유적 보드"
+      }
+    ]
+  },
+  "errors": []
+}

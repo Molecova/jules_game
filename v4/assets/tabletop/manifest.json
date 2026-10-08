@@ -1,0 +1,102 @@
+[
+  {
+    "asset": "Wood062",
+    "url": "https://ambientcg.com/a/Wood062",
+    "creationMethod": "PBRMultiAngle",
+    "source": "official PBR preview maps",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "normalType": "DirectX",
+    "files": [
+      {
+        "file": "Wood062_SQ_Color.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood062/Wood062_SQ_Color.jpg?52005",
+        "bytes": 2331278,
+        "sha256": "0b1e72a71d8c3f97946eaf49bf6c69bcda16ebe22beed233648dafe35fa4e42c",
+        "derived": {
+          "file": "Wood062-color.jpg",
+          "size": 1024,
+          "sha256": "1279fa69246e46e247cfb53915e835e926627971aba479857e7622ab36fb6f17",
+          "bytes": 446330,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      },
+      {
+        "file": "Wood062_SQ_NormalDX.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood062/Wood062_SQ_NormalDX.jpg?9067",
+        "bytes": 4303787,
+        "sha256": "6adae6a58dfc73c53b5423d424dd53a3c6a4c5c71039c47bc919eac95dcb50f5",
+        "derived": {
+          "file": "Wood062-normal-dx.jpg",
+          "size": 512,
+          "sha256": "e2f1206e1103448c779e74f136a1bbe12c3f233b5dfd3d04be791ebed781a2ee",
+          "bytes": 156174,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      },
+      {
+        "file": "Wood062_SQ_Roughness.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood062/Wood062_SQ_Roughness.jpg?15237",
+        "bytes": 1166680,
+        "sha256": "69e76188aff079ec78f7ad94ebf544b2a7ca71e5b6c9ffd35994606819108712",
+        "derived": {
+          "file": "Wood062-roughness.jpg",
+          "size": 512,
+          "sha256": "fd46c9ece29cf10982d294934c55e9bd28d86c981c5ffbf12db6d07b197ef2ee",
+          "bytes": 79075,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      }
+    ]
+  },
+  {
+    "asset": "Rock030",
+    "url": "https://ambientcg.com/a/Rock030",
+    "creationMethod": "PBRProcedural",
+    "source": "official PBR preview maps",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "normalType": "DirectX",
+    "files": [
+      {
+        "file": "Rock030_SQ_Color.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Rock030/Rock030_SQ_Color.jpg?35076",
+        "bytes": 1987109,
+        "sha256": "a321ac805121bdefdafd608bcaa371a5306860112a5b497b82bacd8e11279633",
+        "derived": {
+          "file": "Rock030-color.jpg",
+          "size": 1024,
+          "sha256": "f19cba243e2e4ef0e83cbfd54f9524cb046882b8b56f4b59058bbd909dbb2fe2",
+          "bytes": 428204,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      },
+      {
+        "file": "Rock030_SQ_NormalDX.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Rock030/Rock030_SQ_NormalDX.jpg?89766",
+        "bytes": 4751526,
+        "sha256": "1ff5b2e0b84c85acdaadc99c8298119e1ffbd7029776e451bbe15563d79a3fde",
+        "derived": {
+          "file": "Rock030-normal-dx.jpg",
+          "size": 512,
+          "sha256": "219dd244e3cd852eba1974cc0c6889ddcc8cef9e20a0906a2c1a3c262f32c6cc",
+          "bytes": 197572,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      },
+      {
+        "file": "Rock030_SQ_Roughness.jpg",
+        "url": "https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Rock030/Rock030_SQ_Roughness.jpg?63975",
+        "bytes": 1009508,
+        "sha256": "0a74f9e07a143f0d87f8d8f247521867fbb9671a689c93b88f46647430bbd99d",
+        "derived": {
+          "file": "Rock030-roughness.jpg",
+          "size": 512,
+          "sha256": "1d250394330c7275639c2cdeb066ebe42684579f7477487596266ac52f2cfdf8",
+          "bytes": 84663,
+          "transform": "Lanczos resize; JPEG 90 (normal 94)"
+        }
+      }
+    ]
+  }
+]

@@ -56,8 +56,27 @@ fs.mkdirSync(out, { recursive: true });
     for (let act = 1; act <= 5; act++) {
       await page.evaluate(act => { __g.R.act = act; __g.renderPlay(); }, act); await page.waitForTimeout(400);
       const d = await page.evaluate(() => __g.tabletop.diagnostics()); assert.equal(d.act, act);
+      assert.ok(d.materials.source.startsWith('ambientCG'), 'all local PBR maps loaded');
+      assert.ok(d.triangles < 100000 && d.drawCalls < 150 && d.textureBudgetMiB <= 32);
+      for (const p of d.environment.decorations) {
+        assert.ok(p.x + p.radius <= 96 || p.x - p.radius >= 416 || p.y + p.radius <= 22 || p.y - p.radius >= 406, 'scenery stays outside all playable squares');
+      }
       summary.themes.push(d); await page.screenshot({ path: path.join(out, `theme-act-${act}.png`) });
     }
+    // Warm all five themes, then repeat 1→5 twenty times; GPU object counts must plateau.
+    const memory = [];
+    for (let cycle = 0; cycle <= 20; cycle++) {
+      for (let act = 1; act <= 5; act++) {
+        const previous = await page.evaluate(() => __g.tabletop.diagnostics().draws);
+        await page.evaluate(act => { __g.R.act = act; __g.renderPlay(); }, act);
+        await page.waitForFunction(n => __g.tabletop.diagnostics().draws > n, previous);
+      }
+      const d = await page.evaluate(() => __g.tabletop.diagnostics());
+      memory.push({ cycle, textures: d.textures, geometries: d.geometries, programs: d.programs, textureBudgetMiB: d.textureBudgetMiB });
+    }
+    for (const m of memory.slice(1)) assert.deepEqual({ ...m, cycle: 0 }, memory[0], 'resource counts must stop growing after warm-up');
+    summary.memory = memory;
+    console.log('PASS scenery outside the grid, rendering budgets, twenty full 1→5 resource cycles');
     await page.evaluate(() => { __g.R.act = 1; __g.renderPlay(); });
     const simulated = await page.evaluate(() => __g.simFight());
     await page.locator('#goBtn').click(); await page.waitForTimeout(700);
@@ -68,9 +87,31 @@ fs.mkdirSync(out, { recursive: true });
     await page.reload(); await page.waitForFunction(() => window.__g?.tabletop?.active); await page.locator('#contBtn').click();
     assert.equal(await page.evaluate(() => __g.R.stats.battles), 1);
     console.log('PASS five board themes, live 3D battle equals simulation, confirmed result resume');
+    await page.goto(url + '?quality=low'); await page.waitForFunction(() => window.__g?.tabletop?.active); await page.locator('#contBtn').click();
+    await page.waitForTimeout(400);
+    summary.low = await page.evaluate(() => __g.tabletop.diagnostics());
+    assert.equal(summary.low.quality, 'low'); assert.ok(summary.low.textureBudgetMiB < summary.themes[0].textureBudgetMiB);
+    await page.screenshot({ path: path.join(out, 'low-390x844.png') });
+    // Visual load fixture, not a legal expedition or a fabricated victory.
+    await page.evaluate(() => {
+      __g.R.mode = 'fight'; __g.R.act = 5; __g.R.lv = 9;
+      __g.R.board = [0,3,6,9,12,15,18,21,24].map((n, i) => ({ kind:'unit', id:V4.UNITS[n].id, uid:'visual'+i, star:3, skills:[], item:null, x:i%5, y:3+Math.floor(i/5) }));
+      const original = __g.R.enemies;
+      __g.R.enemies = Array.from({length:12}, (_, i) => ({ ...original[i%original.length], uid:'visual-foe'+i, cell:__g.grid.idx(i%5, Math.floor(i/5)) }));
+      __g.renderPlay();
+    });
+    await page.waitForTimeout(400);
+    summary.stress = await page.evaluate(() => __g.tabletop.diagnostics());
+    assert.equal(summary.stress.tokens, 21); assert.ok(summary.stress.triangles < 100000 && summary.stress.drawCalls < 150 && summary.stress.textureBudgetMiB <= 32);
+    await page.screenshot({ path: path.join(out, 'visual-stress-21-tokens.png') });
+    console.log('PASS low quality and 21-token visual fixture within rendering budgets');
+    const pbrRequests = [];
+    const onRequest = r => { if (r.url().includes('/assets/tabletop/')) pbrRequests.push(r.url()); };
+    page.on('request', onRequest);
     await page.goto(url + '?view=2d'); await page.waitForFunction(() => window.TABLETOP4);
     assert.equal(await page.evaluate(() => __g.tabletop), null);
     await page.locator('#contBtn').click(); assert.equal(await page.locator('#cv').evaluate(el => getComputedStyle(el).opacity), '1');
+    page.off('request', onRequest); assert.deepEqual(pbrRequests, [], '2D fallback skips PBR downloads');
     console.log('PASS explicit 2D fallback');
     await page.goto(url); await page.waitForFunction(() => window.__g?.tabletop?.active); await page.locator('#contBtn').click();
     await page.evaluate(() => document.getElementById('tabletopCanvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext());
