@@ -3,6 +3,7 @@ import * as THREE from './vendor/three.module.min.js';
 
 import { createMaterials } from './tabletop-materials4.js';
 import { createEnvironment, LOOKS } from './tabletop-environment4.js';
+import { createCoins } from './tabletop-tokens4.js';
 const lowQuality = new URLSearchParams(location.search).get('quality') === 'low';
 const use2d = new URLSearchParams(location.search).get('view') === '2d';
 const materials = use2d ? null : await createMaterials(lowQuality);
@@ -31,15 +32,14 @@ function create(source, config) {
   const fill = new THREE.DirectionalLight('#d4e5ef', .6); fill.position.set(4, 4, 4); scene.add(fill);
   const xy = (x, y) => new THREE.Vector3((x - W / 2) / CS, 0, (y - H / 2) / CS);
   const environment = createEnvironment(config, materials, lowQuality); scene.add(environment.root);
-  const tokens = new Map(), portraits = new Map(), usedPortraits = new Set(); let frame = 0, act = 0, draws = 0, active = true, lastDraw = 0;
+  let act = 0, draws = 0, active = true, lastDraw = 0;
+  const coins = createCoins(scene, config, () => { renderer.shadowMap.needsUpdate = true; });
   const textureMiB = t => t.image.width * t.image.height * 4 * (t.generateMipmaps ? 4 / 3 : 1) / 1048576;
   const overlayTexture = new THREE.CanvasTexture(source); overlayTexture.colorSpace = THREE.SRGBColorSpace;
   overlayTexture.minFilter = THREE.LinearFilter; overlayTexture.generateMipmaps = false;
   const overlay = new THREE.Mesh(new THREE.PlaneGeometry(W / CS, H / CS), new THREE.MeshBasicMaterial({ map: overlayTexture, transparent: true, depthWrite: false, toneMapped: false }));
   overlay.rotation.x = -Math.PI / 2; overlay.position.y = .21; overlay.renderOrder = 10; scene.add(overlay);
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
-  const bodyGeometry = new THREE.CylinderGeometry(1, 1, 1, 40), faceGeometry = new THREE.CircleGeometry(1, 48);
-  const sideMaterials = [new THREE.MeshStandardMaterial({ color: '#c5b697', roughness: .88 }), new THREE.MeshStandardMaterial({ color: '#b5a188', roughness: .9 })];
 
   function build(next) {
     act = next;
@@ -57,53 +57,10 @@ function create(source, config) {
     if (!w || !h || !active) return;
     renderer.setSize(w, h); dom.style.left = source.offsetLeft + 'px'; dom.style.top = source.offsetTop + 'px';
   }
-  function begin(nextAct) { if (!active) return; if (nextAct !== act) build(nextAct); frame++; usedPortraits.clear(); }
-  function token(x, y, o, radius) {
-    if (!active) return;
-    const key = [o.artId, o.side, o.kind || '', o.star || 0].join(':');
-    const assetKey = [o.artId, o.side, o.kind || ''].join(':');
-    usedPortraits.add(assetKey);
-    let texture = portraits.get(assetKey);
-    if (!texture) {
-      const image = config.sprite(o.artId, o.side, o.kind);
-      texture = new THREE.CanvasTexture(image); texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); portraits.set(assetKey, texture);
-    }
-    // Multiple identical cards are legal. Reuse meshes by this frame's occurrence, never card IDs.
-    let n = 0; while (tokens.get(key + ':' + n)?.seen === frame) n++;
-    const id = key + ':' + n; let entry = tokens.get(id);
-    if (!entry) {
-      const group = new THREE.Group(), side = new THREE.Mesh(bodyGeometry, sideMaterials[o.side ? 1 : 0]);
-      side.scale.set(radius / CS, .105, radius / CS); side.castShadow = side.receiveShadow = true; group.add(side);
-      const face = new THREE.Mesh(faceGeometry, new THREE.MeshStandardMaterial({ map: texture, transparent: true, roughness: .96, metalness: 0 }));
-      face.rotation.x = -Math.PI / 2; face.position.y = .054; face.scale.setScalar((radius + 1) / CS); face.receiveShadow = true; group.add(face);
-      if (o.star > 1) {
-        for (let i = 0; i < o.star; i++) { const pin = new THREE.Mesh(new THREE.SphereGeometry(.023, 8, 6), new THREE.MeshStandardMaterial({ color: '#d2ae54', metalness: .5, roughness: .5 })); pin.position.set((i - (o.star - 1) / 2) * .07, .07, radius / CS * .76); group.add(pin); }
-      }
-      scene.add(group); entry = { group, seen: frame }; tokens.set(id, entry);
-      renderer.shadowMap.needsUpdate = true;
-    }
-    entry.seen = frame; entry.group.visible = true;
-    const p = xy(x, y), height = .065 + (o.lift || 0) / CS;
-    if (entry.group.position.x !== p.x || entry.group.position.z !== p.z || entry.group.position.y !== height) renderer.shadowMap.needsUpdate = true;
-    entry.group.position.set(p.x, height, p.z);
-    entry.group.rotation.y = -(o.rot || 0);
-  }
+  function begin(nextAct, motion) { if (!active) return; if (nextAct !== act) build(nextAct); coins.begin(motion); }
   function render() {
-    if (!active) return;
-    if (performance.now() - lastDraw < 1000 / 30) return;
-    lastDraw = performance.now();
-    for (const [id, entry] of tokens) if (entry.seen !== frame) {
-      scene.remove(entry.group); entry.group.traverse(o => { if (o.material && !sideMaterials.includes(o.material)) o.material.dispose(); if (o.geometry && o.geometry !== bodyGeometry && o.geometry !== faceGeometry) o.geometry.dispose(); }); tokens.delete(id);
-      renderer.shadowMap.needsUpdate = true;
-    }
-    // Visiting many enemy types must not retain every old portrait on the GPU.
-    // Keep every visible face; evict only unused textures after their meshes are removed.
-    let cachedMiB = [...portraits.values()].reduce((n, t) => n + textureMiB(t), 0);
-    for (const [key, texture] of portraits) {
-      if (cachedMiB <= 1.5) break;
-      if (!usedPortraits.has(key)) { cachedMiB -= textureMiB(texture); texture.dispose(); portraits.delete(key); }
-    }
+    if (!active || performance.now() - lastDraw < 1000 / 30) return;
+    lastDraw = performance.now(); coins.update();
     overlayTexture.needsUpdate = true; renderer.render(scene, camera); draws++;
   }
   function point(clientX, clientY) {
@@ -125,17 +82,17 @@ function create(source, config) {
     const materialStats = materials.stats(), envStats = environment.diagnostics();
     // RGBA8 maps + mip levels, live canvas, and a conservative 8 B/px shadow target.
     // This is a budget estimate, not a device-driver GPU allocation measurement.
-    const portraitMiB = [...portraits.values()].reduce((n, t) => n + textureMiB(t), 0);
+    const coinStats = coins.stats(), portraitMiB = coinStats.portraitMiB;
     const textureBudgetMiB = materialStats.textureMiB + envStats.textureMiB + textureMiB(overlayTexture)
-      + portraitMiB
+      + portraitMiB + coinStats.extraTextureMiB
       + light.shadow.mapSize.x * light.shadow.mapSize.y * 8 / 1048576;
-    return { act, draws, tokens: tokens.size, portraitTextures: portraits.size,
+    return { act, draws, tokens: coinStats.tokens, portraitTextures: coinStats.portraitTextures, coins: coinStats.coins,
       triangles: renderer.info.render.triangles, drawCalls: renderer.info.render.calls,
       textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries,
       programs: renderer.info.programs.length, quality: lowQuality ? 'low' : 'normal', textureBudgetMiB, portraitMiB,
       materials: materialStats, environment: envStats, name: LOOKS[act]?.name };
   }
-  return { begin, token, render, resize, point, screen, get active() { return active; },
+  return { begin, token: coins.token, attack: coins.attack, hit: coins.hit, death: coins.death, inspectTokens: coins.inspect, render, resize, point, screen, get active() { return active; },
     diagnostics };
 }
 window.TABLETOP4 = { create, LOOKS };

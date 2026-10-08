@@ -1,0 +1,1026 @@
+{
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 95,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 9.538699999958261,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10174,
+        "drawCalls": 35,
+        "textures": 18,
+        "geometries": 18,
+        "programs": 15,
+        "quality": "normal",
+        "textureBudgetMiB": 24.917734781901043,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 16,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "숲의 원목 보드"
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 107,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 10.67199999997018,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10174,
+        "drawCalls": 35,
+        "textures": 18,
+        "geometries": 18,
+        "programs": 15,
+        "quality": "normal",
+        "textureBudgetMiB": 24.018267313639324,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 16,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "숲의 원목 보드"
+      }
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 120,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 11.949899999976136,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 10174,
+        "drawCalls": 35,
+        "textures": 18,
+        "geometries": 18,
+        "programs": 15,
+        "quality": "normal",
+        "textureBudgetMiB": 25.021799723307293,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 + Rock030 (CC0)",
+          "count": 8,
+          "textureMiB": 12.750000000000002
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 121.6,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 243.2,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 384,
+              "y": 11.12,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 111.6,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 426.88,
+              "y": 322.8,
+              "radius": 10.24,
+              "kind": "forest"
+            },
+            {
+              "x": 128,
+              "y": 416.88,
+              "radius": 10.24,
+              "kind": "forest"
+            }
+          ],
+          "sharedGeometries": 16,
+          "localTextures": 1,
+          "textureMiB": 2.145355224609375
+        },
+        "name": "숲의 원목 보드"
+      }
+    }
+  ],
+  "themes": [
+    {
+      "act": 1,
+      "draws": 234,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 23.36049999997027,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 10174,
+      "drawCalls": 35,
+      "textures": 18,
+      "geometries": 18,
+      "programs": 15,
+      "quality": "normal",
+      "textureBudgetMiB": 24.917734781901043,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 8,
+        "textureMiB": 12.750000000000002
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "forest"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "forest"
+          }
+        ],
+        "sharedGeometries": 16,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "숲의 원목 보드"
+    },
+    {
+      "act": 2,
+      "draws": 246,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 24.560499999970286,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 10788,
+      "drawCalls": 36,
+      "textures": 19,
+      "geometries": 20,
+      "programs": 15,
+      "quality": "normal",
+      "textureBudgetMiB": 26.25106811523438,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 9,
+        "textureMiB": 14.083333333333336
+      },
+      "environment": {
+        "theme": 2,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "ruins"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "ruins"
+          }
+        ],
+        "sharedGeometries": 17,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "폐허의 석판 보드"
+    },
+    {
+      "act": 3,
+      "draws": 258,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 25.760499999970303,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 11316,
+      "drawCalls": 35,
+      "textures": 20,
+      "geometries": 20,
+      "programs": 15,
+      "quality": "normal",
+      "textureBudgetMiB": 27.584401448567714,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 10,
+        "textureMiB": 15.41666666666667
+      },
+      "environment": {
+        "theme": 3,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "sandstone"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "sandstone"
+          }
+        ],
+        "sharedGeometries": 17,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "황야의 사암 보드"
+    },
+    {
+      "act": 4,
+      "draws": 270,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 26.96049999997032,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 9348,
+      "drawCalls": 36,
+      "textures": 21,
+      "geometries": 21,
+      "programs": 15,
+      "quality": "normal",
+      "textureBudgetMiB": 28.917734781901046,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 11,
+        "textureMiB": 16.750000000000004
+      },
+      "environment": {
+        "theme": 4,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "snow"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "snow"
+          }
+        ],
+        "sharedGeometries": 18,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "설원의 보드"
+    },
+    {
+      "act": 5,
+      "draws": 282,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 28.160499999970337,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 8876,
+      "drawCalls": 38,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 17,
+      "quality": "normal",
+      "textureBudgetMiB": 30.25106811523438,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 + Rock030 (CC0)",
+        "count": 12,
+        "textureMiB": 18.083333333333336
+      },
+      "environment": {
+        "theme": 5,
+        "decorations": [
+          {
+            "x": 121.6,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 243.2,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 384,
+            "y": 11.12,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 426.88,
+            "y": 111.6,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 426.88,
+            "y": 322.8,
+            "radius": 10.24,
+            "kind": "night"
+          },
+          {
+            "x": 128,
+            "y": 416.88,
+            "radius": 10.24,
+            "kind": "night"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 1,
+        "textureMiB": 2.145355224609375
+      },
+      "name": "밤의 유적 보드"
+    }
+  ],
+  "memory": [
+    {
+      "cycle": 0,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 1,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 2,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 3,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 4,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 5,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 6,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 7,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 8,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 9,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 10,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 11,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 12,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 13,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 14,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 15,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 16,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 17,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 18,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 19,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    },
+    {
+      "cycle": 20,
+      "textures": 22,
+      "geometries": 23,
+      "programs": 20,
+      "textureBudgetMiB": 30.25106811523438
+    }
+  ],
+  "low": {
+    "act": 1,
+    "draws": 6,
+    "tokens": 7,
+    "portraitTextures": 6,
+    "coins": {
+      "thickness": 0.045,
+      "thicknessPx": 2.88,
+      "raisedPins": 0,
+      "reducedMotion": false,
+      "time": 0.1,
+      "phase": "prep",
+      "ghosts": 0,
+      "events": {
+        "placed": 7,
+        "moved": 0,
+        "melee": 0,
+        "ranged": 0,
+        "magic": 0,
+        "cast": 0,
+        "hit": 0,
+        "death": 0
+      }
+    },
+    "triangles": 8764,
+    "drawCalls": 35,
+    "textures": 18,
+    "geometries": 18,
+    "programs": 10,
+    "quality": "low",
+    "textureBudgetMiB": 9.392537434895832,
+    "portraitMiB": 0.25830078124999994,
+    "materials": {
+      "source": "ambientCG Wood062 + Rock030 (CC0)",
+      "count": 8,
+      "textureMiB": 4.416666666666666
+    },
+    "environment": {
+      "theme": 1,
+      "decorations": [
+        {
+          "x": 121.6,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "forest"
+        },
+        {
+          "x": 243.2,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "forest"
+        },
+        {
+          "x": 384,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "forest"
+        },
+        {
+          "x": 426.88,
+          "y": 111.6,
+          "radius": 10.24,
+          "kind": "forest"
+        },
+        {
+          "x": 426.88,
+          "y": 322.8,
+          "radius": 10.24,
+          "kind": "forest"
+        },
+        {
+          "x": 128,
+          "y": 416.88,
+          "radius": 10.24,
+          "kind": "forest"
+        }
+      ],
+      "sharedGeometries": 16,
+      "localTextures": 1,
+      "textureMiB": 0.9534912109375
+    },
+    "name": "숲의 원목 보드"
+  },
+  "stress": {
+    "act": 5,
+    "draws": 19,
+    "tokens": 21,
+    "portraitTextures": 15,
+    "coins": {
+      "thickness": 0.045,
+      "thicknessPx": 2.88,
+      "raisedPins": 0,
+      "reducedMotion": false,
+      "time": 0.1,
+      "phase": "prep",
+      "ghosts": 0,
+      "events": {
+        "placed": 28,
+        "moved": 0,
+        "melee": 0,
+        "ranged": 0,
+        "magic": 0,
+        "cast": 0,
+        "hit": 0,
+        "death": 0
+      }
+    },
+    "triangles": 15308,
+    "drawCalls": 66,
+    "textures": 28,
+    "geometries": 22,
+    "programs": 10,
+    "quality": "low",
+    "textureBudgetMiB": 10.113321940104166,
+    "portraitMiB": 0.645751953125,
+    "materials": {
+      "source": "ambientCG Wood062 + Rock030 (CC0)",
+      "count": 9,
+      "textureMiB": 4.749999999999999
+    },
+    "environment": {
+      "theme": 5,
+      "decorations": [
+        {
+          "x": 121.6,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "night"
+        },
+        {
+          "x": 243.2,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "night"
+        },
+        {
+          "x": 384,
+          "y": 11.12,
+          "radius": 10.24,
+          "kind": "night"
+        },
+        {
+          "x": 426.88,
+          "y": 111.6,
+          "radius": 10.24,
+          "kind": "night"
+        },
+        {
+          "x": 426.88,
+          "y": 322.8,
+          "radius": 10.24,
+          "kind": "night"
+        },
+        {
+          "x": 128,
+          "y": 416.88,
+          "radius": 10.24,
+          "kind": "night"
+        }
+      ],
+      "sharedGeometries": 19,
+      "localTextures": 1,
+      "textureMiB": 0.9534912109375
+    },
+    "name": "밤의 유적 보드"
+  },
+  "errors": [],
+  "combat": {
+    "simulated": {
+      "casts": [
+        "archer:{\"u_archer\":4}",
+        "acolyte:{\"u_acolyte\":3}",
+        "shieldman:{\"u_shieldman\":2}"
+      ],
+      "won": true,
+      "gold": 0,
+      "t": 26.899999999999753,
+      "hpLeft": 1,
+      "foeLeft": 0
+    },
+    "actual": {
+      "won": true,
+      "t": 26.899999999999753,
+      "battles": 1
+    }
+  }
+}

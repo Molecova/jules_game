@@ -1,0 +1,7 @@
+PASS 3 viewports, all 30 projected cells, real purchases and board↔bench drag, visual RNG isolation
+PASS scenery outside the grid, rendering budgets, twenty full 1→5 resource cycles
+PASS five board themes, live 3D battle equals simulation, confirmed result resume
+PASS low quality and 21-token visual fixture within rendering budgets
+PASS explicit 2D fallback
+PASS WebGL context loss returns to playable 2D board
+PASS browser console errors 0

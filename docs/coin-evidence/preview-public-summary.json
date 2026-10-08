@@ -1,0 +1,116 @@
+{
+  "url": "http://127.0.0.1:8001/concepts/v4-coin-animation.html?still",
+  "poses": {
+    "war": {
+      "id": "0:demo-2",
+      "artId": "squire",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        -0.7069608200752578,
+        0.10120691124044472,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -0.1799820251398309
+      ],
+      "opacity": 1,
+      "meshes": 2
+    },
+    "arc": {
+      "id": "0:demo-3",
+      "artId": "archer",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        -0.7778468592108623,
+        0.07724206722538787,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0.11138743684344922
+      ],
+      "opacity": 1,
+      "meshes": 2
+    },
+    "mag": {
+      "id": "0:demo-4",
+      "artId": "apprentice",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        -0.7711401099922456,
+        0.09805253038204063,
+        0
+      ],
+      "rotation": [
+        0,
+        0.07852040854262642,
+        0.0845604399689823
+      ],
+      "opacity": 1,
+      "meshes": 2
+    }
+  },
+  "assets": [
+    {
+      "url": "http://127.0.0.1:8001/concepts/v4-coin-animation.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/data4.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/tabletop-materials4.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/tabletop-tokens4.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/vendor/three.module.min.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Wood062-color.jpg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Rock030-color.jpg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Wood062-normal-dx.jpg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Wood062-roughness.jpg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Rock030-normal-dx.jpg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8001/v4/assets/tabletop/Rock030-roughness.jpg",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "hostingErrors": []
+}

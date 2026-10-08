@@ -4,10 +4,12 @@
 
 목표 저장소는 `Molecova/jules_game-tabletop3d`입니다. 연결된 앱의 새 저장소 생성 권한이 없어 GitHub 분리는 대기 중이며, 현재 원본의 별도 `tabletop-a-3d` 브랜치에 미리보기를 게시합니다. 원본 작업 브랜치 `ccr-5e12923f-aw0cjb`는 수정하지 않습니다. 빈 목표 저장소가 준비되면 이력을 그대로 푸시할 수 있습니다.
 
-A안의 게임판·배경부터 개발합니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자는 실제 Three.js 3D**이며 유닛은 간결한 인쇄 딱지로 유지합니다. 미니어처 유닛 모델은 아직 포함하지 않습니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
+A안의 게임판·배경과 동전 딱지를 구현했습니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자와 얇은 동전 딱지는 실제 Three.js 3D**입니다. 기존 초상화가 인쇄된 동전은 배치·이동·직업별 공격·시전·피격·퇴장 때 움직입니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
 
 - [공개 게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/3a40a4a588870def2c452068e13aa06ffca3fed3/v4/index.html) · 첫 안내 화면에서 `Open the page`를 누릅니다.
 - 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
+- 동전 동작 미리보기: `concepts/v4-coin-animation.html` · 직업·성급·동작 선택, 자동 재생·일시 정지
+- [동전 딱지 구현·검증과 실제 녹화](docs/tabletop-coins-2026-10-08.md)
 - [게임판·배경 개선 결과와 전후 화면](docs/tabletop-board-background-implementation-2026-10-08.md)
 - [최초 3D 연결 구현 기록](docs/tabletop3d-2026-10-08.md)
 - [게임판·배경 전용 5~10시간 구현 계획](docs/tabletop-board-background-plan-2026-10-08.md)

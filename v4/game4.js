@@ -374,7 +374,15 @@
     const ents = R.board.map((c) => api.makeAlly(c, grid.idx(c.x, c.y), syn));
     if (R.nextHp) for (const e of ents) e.hp = Math.round(e.maxHp * R.nextHp); // 이벤트 대가: 다음 전투 시작 체력
     for (const x of R.enemies) ents.push(api.makeFoe({ uid: x.uid, def: MONSTERS[x.id], cell: x.cell, scale: x.scale, rot: x.rot, elite: !!x.elite }));
-    const cb = new AC.Combat(grid, ents, { random, hooks: api.hooks(), maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
+    const hooks = api.hooks();
+    // Visual observers preserve hook return values, ordering and combat RNG.
+    const onAttack = hooks.onAttack, onHit = hooks.onHit, onDeath = hooks.onDeath, preAttack = hooks.preAttack;
+    const showCoinMotion = () => tabletop?.active && B && !B.sim && !B.skipping;
+    hooks.onAttack = (u, t, cb) => { const result = onAttack?.(u, t, cb); if (showCoinMotion()) tabletop.attack(u, t); return result; };
+    hooks.onHit = (...args) => { const result = onHit?.(...args); if (showCoinMotion()) tabletop.hit(args[0], args[2]); return result; };
+    hooks.onDeath = (...args) => { const result = onDeath?.(...args); if (showCoinMotion()) tabletop.death(args[0], args[1]); return result; };
+    hooks.preAttack = (u, t, cb) => { const handled = preAttack?.(u, t, cb); if (handled && showCoinMotion()) tabletop.attack(u, t); return handled; };
+    const cb = new AC.Combat(grid, ents, { random, hooks, maxTime: R.node && R.node.k === 'boss' ? 150 : 80 });
     cb.tele = cb.tele || [];
     return cb;
   }
@@ -1413,10 +1421,10 @@
     const r = tokenR(o.kind), spr = sprite(o.artId, o.side, o.kind);
     let sq = 0, jx = 0;
     if (o.popT > 0) { const t = 1 - o.popT / 0.35; sq = 0.2 * Math.sin(t * Math.PI * 2) * (1 - t); }
-    if (o.hitT > 0 && !motionPreference.matches) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
+    if (o.hitT > 0 && !motionPreference.matches && !tabletop?.active) { const k = o.hitT / 0.22; jx = (Math.random() - 0.5) * 5 * k; sq = Math.max(sq, 0.1 * k); }
     // 판에 놓인 느낌: 딱지 아래 그림자(들어 올리면 옅어짐)
     if (o.glow) { ctx.save(); ctx.strokeStyle = o.glow; ctx.lineWidth = 3; ctx.setLineDash(o.dash ? [5, 4] : []); ctx.lineDashOffset = -performance.now() / 50; ctx.beginPath(); ctx.arc(x, y + 2, r + 7, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-    if (tabletop?.active) tabletop.token(x + jx, y, o, r);
+    if (tabletop?.active) tabletop.token(x, y, o, r);
     else ART.drawToken(ctx, spr, x + jx, y, r, { rot: o.rot || 0, flash: o.flash || 0, squash: sq, lift: o.lift || 0, alpha: o.alpha });
     const ty = y - (o.lift || 0);
     if (o.lo && !tabletop?.active) ART.drawLoadout(ctx, x + jx, ty, r, o.lo);
@@ -1554,6 +1562,7 @@
   function shake(n) { if (B && !B.sim && !B.skipping && !motionPreference.matches) B.vfx.shake = Math.min(14, Math.max(B.vfx.shake, n)); }
   function onTokenDeath(t) {
     if (!B || B.sim || B.skipping || motionPreference.matches) return;
+    if (tabletop?.active) { SFX.play('place', 0.08); return; }
     const kind = kindOf(t);
     B.vfx.debris.push(ART.makeTear(sprite(t.artId, t.side, kind), t.px, t.py, tokenR(kind), t.rot || 0));
     burst(t.px, t.py, t.side ? '#e8436b' : '#2f6fd6', 8);
@@ -1613,7 +1622,7 @@
     ctx.save();
     ctx.translate(0, -vy);
     if (B && B.vfx.shake > 0.2 && !motionPreference.matches) ctx.translate((Math.random() - 0.5) * B.vfx.shake, (Math.random() - 0.5) * B.vfx.shake);
-    if (tabletop?.active) tabletop.begin(R.act);
+    if (tabletop?.active) tabletop.begin(R.act, { context: B?.combat || R, phase: B?.phase || 'prep', paused: combatPaused(), speed: B?.phase === 'combat' ? B.speed : 1, reducedMotion: motionPreference.matches });
     else ctx.drawImage(boardBg(R.act, R.round), 0, 0, W, H);
     const now = performance.now();
     if (B && B.combat) {
@@ -1624,7 +1633,7 @@
       VFX4.drawFields(ctx, cb, grid, { reducedMotion: motionPreference.matches });
       B.vfx.skills.draw(ctx, 'under');
       const alive = cb.units.filter((u) => !u.dead).sort((a, b) => a.py - b.py);
-      for (const e of alive) { const o = AC.lungeOffset ? AC.lungeOffset(e) : { x: 0, y: 0 }; drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }
+      for (const e of alive) { const o = !tabletop?.active && AC.lungeOffset ? AC.lungeOffset(e) : { x: 0, y: 0 }; drawUnit(e.px + o.x, e.py + o.y, unitOpts(e)); }
       drawVfx();
       drawProjectiles(cb); drawEffects(cb);
       B.vfx.skills.draw(ctx, 'over');
@@ -1641,10 +1650,10 @@
       }
       if (drag.on && drag.hover) { const ok = drag.hover.r >= PLAYER_ROW; fillCell(drag.hover.i, ok ? '#2f6fd6' : '#e8436b', 0.28); }
       const items = [
-        ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
+        ...R.enemies.map((x) => { const c = grid.cells[x.cell], d = MONSTERS[x.id]; return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: x.id, side: 1, tokenId: x.uid, kind: d.boss ? 'boss' : d.elite ? 'elite' : '', rot: x.rot || 0, alpha: 0.92 }) }; }),
         ...R.board.map((u) => { const c = grid.cells[grid.idx(u.x, u.y)], synMem = ui.synOpen && !B ? new Set(TRAITS[ui.synOpen].kind === 'job' ? R.board.filter((b) => b.item && TRAITS[ui.synOpen].members.includes(b.item.id)).map((b) => b.id) : synMembers(ui.synOpen)) : null; const selU = s && s.c === u, can = s && s.from === 'bench' && s.c.kind !== 'unit' && canEquip(s.c, u);
           if (selU && drag.on) return { y: c.y, f: () => {} }; // 끄는 동안 원래 자리는 비워 둔다(잔상 없음)
-          return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : synMem && synMem.has(u.id) ? TRAITS[ui.synOpen].col : null, dash: can || (!selU && synMem && synMem.has(u.id)) }) }; }),
+          return { y: c.y, f: () => drawUnit(c.x, c.y, { artId: u.id, side: 0, tokenId: u.uid, rot: u.rot || 0, lo: battleApi.loadoutOf(u), star: u.star, lift: selU ? 4 + Math.sin(now / 160) * 1.5 : 0, glow: selU ? '#f5c400' : can ? '#2f6fd6' : synMem && synMem.has(u.id) ? TRAITS[ui.synOpen].col : null, dash: can || (!selU && synMem && synMem.has(u.id)) }) }; }),
         ...R.bench.slice(benchSize()).map((c, k) => {
           if (!c || c.fx == null) return null;
           const cell = grid.cells[grid.idx(c.fx, c.fy)], sel = s && s.c === c;
