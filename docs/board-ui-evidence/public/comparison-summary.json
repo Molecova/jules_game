@@ -1,0 +1,121 @@
+{
+  "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/concepts/v4-board-ui-comparison.html",
+  "pictures": [
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/prep-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/prep-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/prep-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/prep-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/board-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/board-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/board-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/board-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/title-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/title-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/title-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/title-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/map-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/map-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/map-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/map-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/difficulty-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/difficulty-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/difficulty-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/difficulty-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/card-detail-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/card-detail-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/card-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/card-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/unit-detail-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/unit-detail-390x844.png",
+      "status": 301
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/before/unit-detail-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/docs/board-ui-evidence/after/unit-detail-390x844.png",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "hostingErrors": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin"
+  ]
+}

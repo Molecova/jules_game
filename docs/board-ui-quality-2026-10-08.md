@@ -2,6 +2,11 @@
 
 별도 `tabletop-a-3d` 브랜치의 동전 딱지 버전에서 보드와 화면 전체의 재질 표현을 발전시켰다. 원본 게임의 규칙·수치·저장·전투 엔진과 동전 애니메이션은 그대로 사용한다.
 
+- [공개 게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/v4/index.html)
+- [공개 전후 비교](https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/concepts/v4-board-ui-comparison.html)
+
+링크는 구현 커밋 `f443dc0`을 고정해서 사용한다. 첫 호스팅 안내에서 `Open the page`를 누른다.
+
 ## 보드
 
 - 호두나무 프레임에 얇은 황동 상감, 어두운 홈, 모서리 금속 장식을 실제 메시로 추가했다.
@@ -44,6 +49,8 @@
 전후 비교 페이지의 일곱 쌍 이미지 로딩, 슬라이더 조작, 두 폰 너비 검사도 통과했다. [보드 검사 요약](board-ui-evidence/after/browser-summary.json), [21딱지 검사 요약](board-ui-evidence/after/normal-stress-summary.json), [비교 페이지 검사](board-ui-evidence/after/comparison-summary.json).
 
 새 UI 검사는 390×844·360×640·768×1024에서 타이틀, 난이도 선택, 지도, 상점 상세·정상 구매, 유닛 상세, 상점 탭·잠금·등급 확률, 키보드 포커스와 저장 후 이어하기 타이틀을 모두 통과했다. 버튼·패널이 화면 안에 있고 가로 넘침이 없으며 콘솔 오류 0이다. [UI 검사 요약](board-ui-evidence/after/ui-summary.json).
+
+공개 URL에서도 세 직업을 정상 구매하고 390×844·360×640에서 실제 전투를 진행했다. 게임의 여섯 PBR 이미지가 로딩되고, 전투 결과·종료 시간이 시뮬레이션과 일치했다. 공개 비교 페이지의 일곱 쌍 이미지와 슬라이더도 통과했다. 게임·비교 페이지 콘솔 오류 0이며, 호스팅 안내의 선택적 외부 광고 차단 오류는 별도로 기록했다. [공개 게임 검사](board-ui-evidence/public/mobile-combat-summary.json), [공개 비교 검사](board-ui-evidence/public/comparison-summary.json).
 
 변경 전 참고 버전의 768px 확대 영역 캡처는 요소 안정성을 기다리다 시간 초과했다. [초기 참고 캡처 로그](board-ui-evidence/before/initial-desktop-capture.log)를 보존했고, 비교 페이지에 필요한 390×844 참고 화면을 대상으로 캡처를 다시 실행했다. 현재 버전의 768×1024 UI·영역 캡처 검사는 통과했다.
 
