@@ -6,6 +6,7 @@
 
 A안의 게임판·배경부터 개발합니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자는 실제 Three.js 3D**이며 유닛은 간결한 인쇄 딱지로 유지합니다. 미니어처 유닛 모델은 아직 포함하지 않습니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
 
+- [공개 게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/3a40a4a588870def2c452068e13aa06ffca3fed3/v4/index.html) · 첫 안내 화면에서 `Open the page`를 누릅니다.
 - 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
 - [게임판·배경 개선 결과와 전후 화면](docs/tabletop-board-background-implementation-2026-10-08.md)
 - [최초 3D 연결 구현 기록](docs/tabletop3d-2026-10-08.md)

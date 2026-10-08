@@ -59,6 +59,8 @@ Google Fonts 요청은 본 게임의 선택적인 기존 의존성이다. 3D 검
 
 독립 목표 저장소는 `Molecova/jules_game-tabletop3d`이다. 연결 앱의 생성 권한 부족으로 원격 독립 저장소는 아직 생성되지 않았다. 현재 구현은 원본 저장소의 별도 `tabletop-a-3d` 브랜치에 게시하며 `ccr-5e12923f-aw0cjb`는 수정하지 않는다. 빈 목표 저장소와 앱 접근 권한이 준비되면 전체 이력을 독립 원격으로 옮길 수 있다.
 
+[공개 플레이 주소](https://rawcdn.githack.com/Molecova/jules_game/3a40a4a588870def2c452068e13aa06ffca3fed3/v4/index.html)는 구현 커밋 `3a40a4a588870def2c452068e13aa06ffca3fed3`를 가리킨다. githack의 첫 안내 화면에서 **Open the page**를 한 번 눌러 연다. 안내 페이지의 `server.ethicalads.io` 광고 요청은 클라우드 브라우저에서 `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin`으로 차단됐다. 게임 자산 요청이나 JavaScript 예외와 구분해 기록한다. 테스트는 이 정확한 광고 오류만 별도로 분류하며 다른 게임 오류를 허용하지 않는다. 공개 주소에서도 6개 PBR 파일의 최종 HTTP 200, 실제 3종 클래스 구매, 두 모바일 크기의 3D 전투, 시뮬레이션과 승패·시간 일치, 게임 오류 0을 확인했다. [공개 검증 JSON](tabletop-evidence/polished/public-mobile-combat-summary.json), [실행 기록](tabletop-evidence/polished/public-mobile-combat.log). 공개 CDN의 정상적인 리다이렉트는 최종 파일 응답과 구분한다.
+
 재현 명령:
 
 ```sh

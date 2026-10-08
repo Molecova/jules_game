@@ -5,8 +5,14 @@ const out=process.env.TABLETOP_OUTPUT||path.resolve(__dirname,'../docs/tabletop-
 (async()=>{
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader']});
 try{
- const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,ignoreHTTPSErrors:true}),errors=[],assets=[];
- page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,ignoreHTTPSErrors:true}),errors=[],assets=[],hostingErrors=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{
+  if(m.type()!=='error')return;
+  // githack's separate content-notice page loads an optional third-party ad.
+  // Record that exact blocked ad request separately; every game error still fails.
+  if(m.location().url.startsWith('https://server.ethicalads.io/')&&m.text().includes('ERR_BLOCKED_BY_RESPONSE.NotSameOrigin'))hostingErrors.push({url:m.location().url,message:m.text()});
+  else errors.push(m.text());
+ });
  page.on('response',r=>{if(r.url().includes('/assets/tabletop/'))assets.push({url:r.url(),status:r.status()});});
  await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));
  await page.goto(url,{waitUntil:'domcontentloaded'});
@@ -24,8 +30,11 @@ try{
   await page.screenshot({path:path.join(out,`combat-${width}x${height}.png`)});
  }
  await page.evaluate(()=>__g.skipCombat());await page.locator('#resBtn').waitFor({state:'visible',timeout:60000});
- const actual=await page.evaluate(()=>({won:__g.B.won,t:__g.B.combat.t}));assert.equal(actual.won,simulated.won);assert.equal(actual.t,simulated.t);assert.deepEqual(errors,[]);assert.equal(assets.length,6);assert.ok(assets.every(r=>r.status===200));
- fs.writeFileSync(path.join(out,'mobile-combat-summary.json'),JSON.stringify({url,sizes,assets,simulated,actual,errors,fontHandling:'Optional Google Fonts CSS stubbed; game uses system fonts'},null,2)+'\n');
- console.log('PASS six local PBR assets, three legal class purchases, real 3D combat in both mobile sizes, simulation equality, console errors 0');
+ const actual=await page.evaluate(()=>({won:__g.B.won,t:__g.B.combat.t}));assert.equal(actual.won,simulated.won);assert.equal(actual.t,simulated.t);assert.deepEqual(errors,[]);
+ const loaded=new Set(assets.filter(r=>r.status===200).map(r=>new URL(r.url).pathname.split('/').pop()));
+ assert.equal(loaded.size,6);assert.ok(assets.every(r=>r.status>=200&&r.status<400),'no failed assets, including hosting redirects');
+ fs.writeFileSync(path.join(out,'mobile-combat-summary.json'),JSON.stringify({url,sizes,assets,simulated,actual,errors,hostingErrors,fontHandling:'Optional Google Fonts CSS stubbed; game uses system fonts'},null,2)+'\n');
+ if(hostingErrors.length)console.log('Separate hosting-notice ad failures recorded:',hostingErrors.length);
+ console.log('PASS six local PBR assets, three legal class purchases, real 3D combat in both mobile sizes, simulation equality, game console errors 0');
 }catch(e){console.error(e);process.exitCode=1;}finally{await browser.close();}
 })();
