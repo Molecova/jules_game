@@ -4,9 +4,11 @@
 
 목표 저장소는 `Molecova/jules_game-tabletop3d`입니다. 연결된 앱의 새 저장소 생성 권한이 없어 GitHub 분리는 대기 중이며, 현재 원본의 별도 `tabletop-a-3d` 브랜치에 미리보기를 게시합니다. 원본 작업 브랜치 `ccr-5e12923f-aw0cjb`는 수정하지 않습니다. 빈 목표 저장소가 준비되면 이력을 그대로 푸시할 수 있습니다.
 
-A안의 게임판·배경과 동전 딱지를 구현했습니다. **목재 프레임, 두께 있는 석판 보드, 주변 돌·풀·폐허, 조명·그림자와 얇은 동전 딱지는 실제 Three.js 3D**입니다. 기존 초상화가 인쇄된 동전은 배치·이동·직업별 공격·시전·피격·퇴장 때 움직입니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
+A안의 게임판·배경과 동전 딱지를 구현했습니다. **원목 프레임, 한 장으로 인쇄한 무광 게임판, 카드·주사위·카운터 트레이, 반사 조명과 얇은 동전 딱지는 실제 Three.js 3D**입니다. 기존 초상화가 인쇄된 동전은 배치·이동·직업별 공격·시전·피격·퇴장 때 움직입니다. 전투·경제·합성·장비·난이도 계산은 원본 그대로입니다.
 
 - [공개 게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/v4/index.html) · 첫 안내 화면에서 `Open the page`를 누릅니다.
+- [보드 귀퉁이·딱지 확대 화면](concepts/v4-tabletop-studio.html) · [이번 재질 변경 전후 비교](concepts/v4-tabletop-comparison.html)
+- [실물 재질·조명 구현과 검증](docs/tabletop-studio-2026-10-08.md)
 - 게임: `v4/index.html` · 기존 2D 보드: `v4/index.html?view=2d`
 - [보드·배경·UI 품질 개선 기록](docs/board-ui-quality-2026-10-08.md) · [공개 실행 화면 전후 비교](https://rawcdn.githack.com/Molecova/jules_game/f443dc04efdb46e71f68dd918aa5a3802fe5ed2a/concepts/v4-board-ui-comparison.html)
 - [동전 동작 미리보기](https://rawcdn.githack.com/Molecova/jules_game/05777d4b0cced013e154aec39a2c0cca7d438957/concepts/v4-coin-animation.html): `concepts/v4-coin-animation.html` · 직업·성급·동작 선택, 자동 재생·일시 정지
@@ -17,7 +19,7 @@ A안의 게임판·배경과 동전 딱지를 구현했습니다. **목재 프�
 - 개발: `python3 -m http.server 8001 --bind 127.0.0.1` 후 해당 주소를 브라우저로 열기
 - 검사: `node --test tests/*.test.cjs`, `node tests/browser-tabletop4.cjs` (Chromium·Playwright 필요)
 - Three.js는 저장소에 고정 버전으로 포함하므로 앱 실행에 npm 설치나 외부 CDN이 필요하지 않습니다.
-- 목재·석재 PBR 재질은 로컬 CC0 파일을 사용합니다. [출처·변환 기록](v4/assets/tabletop/ATTRIBUTION.md). 낮은 품질: `v4/index.html?quality=low`.
+- 목재 PBR 재질은 로컬 CC0 파일을 사용하고, 종이 인쇄면·미세 질감·반사 환경은 프로젝트 코드로 만듭니다. [출처·변환 기록](v4/assets/tabletop/ATTRIBUTION.md). 낮은 품질: `v4/index.html?quality=low`.
 
 아래는 복제 당시의 원본 게임 설명입니다.
 

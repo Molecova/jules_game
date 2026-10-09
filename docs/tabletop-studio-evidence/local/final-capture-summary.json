@@ -1,0 +1,120 @@
+{
+  "description": "Final font atlas/grid/dice; three legal class purchases at seed 123, then art-theme previews only",
+  "state": {
+    "board": [
+      {
+        "uid": "cmv07en3816",
+        "kind": "unit",
+        "id": "shieldman",
+        "star": 1,
+        "skills": [],
+        "item": null,
+        "rot": 0.006936736774984867,
+        "x": 2,
+        "y": 3
+      },
+      {
+        "uid": "cmv07en3819",
+        "kind": "unit",
+        "id": "archer",
+        "star": 1,
+        "skills": [],
+        "item": null,
+        "rot": 0.025663845201496865,
+        "x": 2,
+        "y": 5
+      },
+      {
+        "uid": "cmv07en3820",
+        "kind": "unit",
+        "id": "acolyte",
+        "star": 1,
+        "skills": [],
+        "item": null,
+        "rot": -0.04057684551789682,
+        "x": 1,
+        "y": 5
+      }
+    ],
+    "gold": 3,
+    "diagnostics": {
+      "act": 1,
+      "draws": 74,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 7.523700000047674,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 7,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5114,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.431594848632812,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "숲의 인쇄 보드"
+    }
+  },
+  "comparisonImages": 3,
+  "errors": []
+}

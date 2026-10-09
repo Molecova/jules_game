@@ -1,0 +1,321 @@
+{
+  "baseline": null,
+  "sizes": [
+    {
+      "width": 390,
+      "height": 844,
+      "title": {
+        "top": 600.015625,
+        "bottom": 648.015625,
+        "left": 55,
+        "right": 335,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 390,
+        "viewportHeight": 844,
+        "overflow": false
+      },
+      "go": {
+        "top": 790,
+        "bottom": 838,
+        "left": 16,
+        "right": 374,
+        "width": 358,
+        "height": 48,
+        "viewportWidth": 390,
+        "viewportHeight": 844,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 274,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 25.76430000010142,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5084,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.05175272623698,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.7034912109375
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "title": {
+        "top": 455.515625,
+        "bottom": 503.515625,
+        "left": 40,
+        "right": 320,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 360,
+        "viewportHeight": 640,
+        "overflow": false
+      },
+      "go": {
+        "top": 594,
+        "bottom": 636,
+        "left": 16,
+        "right": 344,
+        "width": 328,
+        "height": 42,
+        "viewportWidth": 360,
+        "viewportHeight": 640,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 58,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 6.9825999999046235,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5114,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 21.54645538330078,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "title": {
+        "top": 692.015625,
+        "bottom": 740.015625,
+        "left": 244,
+        "right": 524,
+        "width": 280,
+        "height": 48,
+        "viewportWidth": 768,
+        "viewportHeight": 1024,
+        "overflow": false
+      },
+      "go": {
+        "top": 880,
+        "bottom": 928,
+        "left": 200,
+        "right": 568,
+        "width": 368,
+        "height": 48,
+        "viewportWidth": 768,
+        "viewportHeight": 1024,
+        "overflow": false
+      },
+      "titleColor": "rgb(234, 215, 170)",
+      "phoneBackground": "rgb(37, 60, 53)",
+      "diagnostics": {
+        "act": 1,
+        "draws": 281,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 26.33069999998819,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5114,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 22.532470703125,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    }
+  ],
+  "errors": []
+}

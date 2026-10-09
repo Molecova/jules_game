@@ -3,7 +3,7 @@ import * as THREE from './vendor/three.module.min.js';
 
 export const visualRandom = seed => () => ((seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296);
 export async function createMaterials(low = false) {
-  const textures = new Set(), loader = new THREE.TextureLoader(), palette = new Map();
+  const textures = new Set(), loader = new THREE.TextureLoader();
   let fallback = false;
   const own = texture => { textures.add(texture); return texture; };
   const canvasTexture = (canvas, color = false) => {
@@ -22,56 +22,52 @@ export async function createMaterials(low = false) {
     else { c.fillStyle = channel === 'normal-dx' ? '#8080ff' : channel === 'roughness' ? '#cccccc' : asset === 'Wood062' ? '#927459' : '#77746b'; c.fillRect(0, 0, canvas.width, canvas.height); }
     return canvasTexture(canvas, channel === 'color');
   }
-  const packs = await Promise.all(['Wood062', 'Rock030'].map(async id => {
-    const [color, normal, roughness] = await Promise.all(['color', 'normal-dx', 'roughness'].map(ch => map(id, ch)));
-    return { color, normal, roughness };
-  }));
-  const [woodMaps, stoneMaps] = packs;
+  const [color, normal, roughness] = await Promise.all(['color', 'normal-dx', 'roughness'].map(ch => map('Wood062', ch)));
+  const woodMaps = { color, normal, roughness };
   function wood(color = '#ffffff', depth = .45) {
     return new THREE.MeshStandardMaterial({ color, map: woodMaps.color, normalMap: woodMaps.normal,
-      normalScale: new THREE.Vector2(depth, -depth), roughnessMap: woodMaps.roughness, roughness: .8, metalness: 0 });
+      normalScale: new THREE.Vector2(depth, -depth), roughnessMap: woodMaps.roughness, roughness: .62, metalness: 0 });
   }
-  function stone(color = '#ffffff', depth = .45) {
-    return new THREE.MeshStandardMaterial({ color, map: stoneMaps.color, normalMap: stoneMaps.normal,
-      normalScale: new THREE.Vector2(depth, -depth), roughnessMap: stoneMaps.roughness, roughness: .95 });
+  // One continuous printed sheet, with a fine paper weave instead of stone slabs.
+  const sheet = document.createElement('canvas'); sheet.width = low ? 400 : 800; sheet.height = low ? 480 : 960;
+  const p = sheet.getContext('2d'), sx = sheet.width / 5, sy = sheet.height / 6, grain = visualRandom(791);
+  p.fillStyle = '#eee9dc'; p.fillRect(0, 0, sheet.width, sheet.height);
+  for (let i = 0; i < 26000; i++) {
+    p.fillStyle = i % 2 ? 'rgba(106,93,68,.035)' : 'rgba(255,255,255,.16)';
+    p.fillRect(grain() * sheet.width, grain() * sheet.height, .5 + grain(), .4 + grain());
   }
-  function tile(act, color, amount = .2) {
-    if (!palette.has(act)) {
-      const cv = document.createElement('canvas'); cv.width = cv.height = low ? 256 : 512;
-      const c = cv.getContext('2d'); c.fillStyle = '#eee8db'; c.fillRect(0, 0, cv.width, cv.height);
-      c.globalAlpha = amount; c.drawImage(stoneMaps.color.image, 0, 0, cv.width, cv.height); c.globalAlpha = 1;
-      const rnd = visualRandom(1031 + act);
-      for (let i = 0; i < 45; i++) {
-        const x = rnd() * cv.width, y = rnd() * cv.height;
-        c.fillStyle = 'rgba(90,67,39,.035)'; c.fillRect(x, y, 1 + rnd() * 2, 1);
-      }
-      // A carved border and small corner cuts on each individual stone slab.
-      const s = cv.width; c.strokeStyle = 'rgba(72,58,42,.19)'; c.lineWidth = s / 250;
-      c.strokeRect(s * .055, s * .055, s * .89, s * .89);
-      c.strokeStyle = 'rgba(255,253,237,.55)'; c.strokeRect(s * .064, s * .064, s * .872, s * .872);
-      c.strokeStyle = 'rgba(64,52,40,.24)';
-      for (const [x, y, dx, dy] of [[.085,.085,1,1],[.915,.085,-1,1],[.085,.915,1,-1],[.915,.915,-1,-1]]) {
-        c.beginPath(); c.moveTo(s*x,s*(y+dy*.06)); c.lineTo(s*x,s*y); c.lineTo(s*(x+dx*.06),s*y); c.stroke();
-      }
-      const light = c.createLinearGradient(0, 0, s, s); light.addColorStop(0, 'rgba(255,255,238,.16)'); light.addColorStop(1, 'rgba(45,38,29,.08)');
-      c.fillStyle = light; c.fillRect(0, 0, s, s);
-      palette.set(act, canvasTexture(cv, true));
+  for (let row = 0; row < 6; row++) for (let col = 0; col < 5; col++) {
+    const x = col * sx, y = row * sy;
+    p.fillStyle = row < 3 ? 'rgba(107,97,79,.035)' : 'rgba(62,90,73,.055)';
+    p.fillRect(x, y, sx, sy);
+    // Print registration corners and a discreet point at each square's centre.
+    p.strokeStyle = 'rgba(70,67,53,.28)'; p.lineWidth = sheet.width / 900;
+    for (const [dx, dy, ax, ay] of [[.05,.05,1,1],[.95,.05,-1,1],[.05,.95,1,-1],[.95,.95,-1,-1]]) {
+      p.beginPath(); p.moveTo(x+sx*(dx+ax*.065),y+sy*dy); p.lineTo(x+sx*dx,y+sy*dy); p.lineTo(x+sx*dx,y+sy*(dy+ay*.065)); p.stroke();
     }
-    return new THREE.MeshStandardMaterial({ color, map: palette.get(act), normalMap: stoneMaps.normal,
-      normalScale: new THREE.Vector2(.11, -.11), roughnessMap: stoneMaps.roughness, roughness: .82 });
+    p.fillStyle = 'rgba(70,67,53,.20)'; p.beginPath(); p.arc(x+sx/2,y+sy/2,sx*.005,0,Math.PI*2); p.fill();
   }
+  p.strokeStyle = 'rgba(70,67,53,.46)'; p.lineWidth = sheet.width / 400;
+  for (let i = 1; i < 5; i++) { p.beginPath(); p.moveTo(i*sx,0); p.lineTo(i*sx,sheet.height); p.stroke(); }
+  for (let i = 1; i < 6; i++) { p.beginPath(); p.moveTo(0,i*sy); p.lineTo(sheet.width,i*sy); p.stroke(); }
+  p.strokeStyle = 'rgba(61,75,59,.50)'; p.lineWidth = sheet.width / 300;
+  p.beginPath(); p.moveTo(0,3*sy); p.lineTo(sheet.width,3*sy); p.stroke();
+  const printedSheet = canvasTexture(sheet, true);
   const feltCanvas = document.createElement('canvas'); feltCanvas.width = feltCanvas.height = 128;
   const ctx = feltCanvas.getContext('2d'), rnd = visualRandom(390);
   ctx.fillStyle = '#d3d3d3'; ctx.fillRect(0, 0, 128, 128);
   for (let i = 0; i < 2200; i++) { ctx.fillStyle = i % 2 ? '#dddddd' : '#a9a9a9'; ctx.fillRect(rnd() * 128, rnd() * 128, 1, 1); }
   const felt = canvasTexture(feltCanvas, true);
-  return { wood, stone, tile,
+  const paperGrain = canvasTexture(feltCanvas);
+  return { wood,
+    paper: color => new THREE.MeshStandardMaterial({ color, map: printedSheet, bumpMap: paperGrain,
+      bumpScale: .0006, roughness: .91, metalness: 0, envMapIntensity: .35 }),
     fabric: color => new THREE.MeshStandardMaterial({ color, map: felt, bumpMap: felt, bumpScale: .003, roughness: 1 }),
     track: own, get fallback() { return fallback; },
     stats: () => {
       let bytes = 0;
       for (const t of textures) bytes += (t.image?.width || 0) * (t.image?.height || 0) * 4 * (t.generateMipmaps ? 4 / 3 : 1);
-      return { source: fallback ? 'local PBR + fallback' : 'ambientCG Wood062 + Rock030 (CC0)', count: textures.size, textureMiB: bytes / 1048576 };
+      return { source: fallback ? 'local PBR + fallback' : 'ambientCG Wood062 (CC0) + original printed paper', count: textures.size, textureMiB: bytes / 1048576 };
     },
     dispose() { textures.forEach(t => t.dispose()); textures.clear(); }
   };

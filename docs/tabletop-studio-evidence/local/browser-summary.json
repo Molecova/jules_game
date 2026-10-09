@@ -1,0 +1,966 @@
+{
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 89,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 8.994599999994024,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5084,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 22.635086059570312,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.2868245442708333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 99,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 9.994599999994021,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5084,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 22.635086059570312,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.2868245442708333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "failures": [],
+      "overflow": false,
+      "buttonInside": true,
+      "diagnostics": {
+        "act": 1,
+        "draws": 113,
+        "tokens": 7,
+        "portraitTextures": 6,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 11.345899999976135,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 7,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 5084,
+        "drawCalls": 37,
+        "textures": 21,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 22.7359619140625,
+        "portraitMiB": 0.25830078124999994,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 1,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.2868245442708333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "숲의 인쇄 보드"
+      }
+    }
+  ],
+  "themes": [
+    {
+      "act": 1,
+      "draws": 222,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 22.320800000071575,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5084,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.635086059570312,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.2868245442708333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "숲의 인쇄 보드"
+    },
+    {
+      "act": 2,
+      "draws": 234,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 23.520800000071592,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5084,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.635086059570312,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 2,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.2868245442708333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "폐허의 인쇄 보드"
+    },
+    {
+      "act": 3,
+      "draws": 245,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 24.620800000071608,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5084,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.635086059570312,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 3,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.2868245442708333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "황야의 인쇄 보드"
+    },
+    {
+      "act": 4,
+      "draws": 256,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 25.720800000071623,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5084,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.635086059570312,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 4,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.2868245442708333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "설원의 인쇄 보드"
+    },
+    {
+      "act": 5,
+      "draws": 268,
+      "tokens": 7,
+      "portraitTextures": 6,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 26.92080000007164,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 9,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 5084,
+      "drawCalls": 37,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.635086059570312,
+      "portraitMiB": 0.25830078124999994,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 5,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.2868245442708333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "밤의 인쇄 보드"
+    }
+  ],
+  "memory": [
+    {
+      "cycle": 0,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 1,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 2,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 3,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 4,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 5,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 6,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 7,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 8,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 9,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 10,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 11,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 12,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 13,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 14,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 15,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 16,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 17,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 18,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 19,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    },
+    {
+      "cycle": 20,
+      "textures": 21,
+      "geometries": 24,
+      "programs": 16,
+      "textureBudgetMiB": 22.635086059570312
+    }
+  ],
+  "low": {
+    "act": 1,
+    "draws": 5,
+    "tokens": 7,
+    "portraitTextures": 6,
+    "coins": {
+      "thickness": 0.045,
+      "thicknessPx": 2.88,
+      "raisedPins": 0,
+      "reducedMotion": false,
+      "time": 0.1,
+      "phase": "prep",
+      "ghosts": 0,
+      "events": {
+        "placed": 7,
+        "moved": 0,
+        "melee": 0,
+        "ranged": 0,
+        "magic": 0,
+        "cast": 0,
+        "hit": 0,
+        "death": 0
+      }
+    },
+    "triangles": 5084,
+    "drawCalls": 37,
+    "textures": 21,
+    "geometries": 24,
+    "programs": 14,
+    "quality": "low",
+    "textureBudgetMiB": 9.611648559570312,
+    "portraitMiB": 0.25830078124999994,
+    "materials": {
+      "source": "ambientCG Wood062 (CC0) + original printed paper",
+      "count": 6,
+      "textureMiB": 3.143229166666667
+    },
+    "environment": {
+      "theme": 1,
+      "decorations": [
+        {
+          "x": 260,
+          "y": -28,
+          "radius": 37,
+          "kind": "cards"
+        },
+        {
+          "x": 144,
+          "y": -11,
+          "radius": 13,
+          "kind": "dice"
+        },
+        {
+          "x": 179,
+          "y": -13,
+          "radius": 11,
+          "kind": "dice"
+        },
+        {
+          "x": 500,
+          "y": 300,
+          "radius": 51,
+          "kind": "counter tray"
+        }
+      ],
+      "sharedGeometries": 20,
+      "localTextures": 3,
+      "textureMiB": 1.7034912109375
+    },
+    "studio": {
+      "reflectionMiB": 0.65625,
+      "shadowMiB": 2,
+      "reflectionSize": 64,
+      "source": "local softbox studio"
+    },
+    "name": "숲의 인쇄 보드"
+  },
+  "stress": {
+    "act": 5,
+    "draws": 18,
+    "tokens": 21,
+    "portraitTextures": 15,
+    "coins": {
+      "thickness": 0.045,
+      "thicknessPx": 2.88,
+      "raisedPins": 0,
+      "reducedMotion": false,
+      "time": 0.1,
+      "phase": "prep",
+      "ghosts": 0,
+      "events": {
+        "placed": 28,
+        "moved": 0,
+        "melee": 0,
+        "ranged": 0,
+        "magic": 0,
+        "cast": 0,
+        "hit": 0,
+        "death": 0
+      }
+    },
+    "triangles": 12504,
+    "drawCalls": 65,
+    "textures": 30,
+    "geometries": 24,
+    "programs": 16,
+    "quality": "low",
+    "textureBudgetMiB": 9.999099731445312,
+    "portraitMiB": 0.645751953125,
+    "materials": {
+      "source": "ambientCG Wood062 (CC0) + original printed paper",
+      "count": 6,
+      "textureMiB": 3.143229166666667
+    },
+    "environment": {
+      "theme": 5,
+      "decorations": [
+        {
+          "x": 260,
+          "y": -28,
+          "radius": 37,
+          "kind": "cards"
+        },
+        {
+          "x": 144,
+          "y": -11,
+          "radius": 13,
+          "kind": "dice"
+        },
+        {
+          "x": 179,
+          "y": -13,
+          "radius": 11,
+          "kind": "dice"
+        },
+        {
+          "x": 500,
+          "y": 300,
+          "radius": 51,
+          "kind": "counter tray"
+        }
+      ],
+      "sharedGeometries": 20,
+      "localTextures": 3,
+      "textureMiB": 1.7034912109375
+    },
+    "studio": {
+      "reflectionMiB": 0.65625,
+      "shadowMiB": 2,
+      "reflectionSize": 64,
+      "source": "local softbox studio"
+    },
+    "name": "밤의 인쇄 보드"
+  },
+  "errors": [],
+  "combat": {
+    "simulated": {
+      "casts": [
+        "archer:{\"u_archer\":4}",
+        "acolyte:{\"u_acolyte\":3}",
+        "shieldman:{\"u_shieldman\":2}"
+      ],
+      "won": true,
+      "gold": 0,
+      "t": 26.899999999999753,
+      "hpLeft": 1,
+      "foeLeft": 0
+    },
+    "actual": {
+      "won": true,
+      "t": 26.899999999999753,
+      "battles": 1
+    }
+  }
+}

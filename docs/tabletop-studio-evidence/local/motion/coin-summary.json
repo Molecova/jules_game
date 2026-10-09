@@ -1,0 +1,503 @@
+{
+  "demo": {
+    "base": {
+      "tokens": 2,
+      "portraitTextures": 4,
+      "portraitMiB": 0.17220052083333331,
+      "extraTextureMiB": 0.14583333333333334,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 2.1455000000298026,
+        "phase": "demo",
+        "ghosts": 0,
+        "events": {
+          "placed": 4,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      }
+    },
+    "war": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-2",
+        "artId": "squire",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.7004467122653669,
+          0.1061652604182132,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          -0.2072228396175565
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "arc": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-3",
+        "artId": "archer",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.7815339103765847,
+          0.07773888858069306,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0.12613564150633874
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "mag": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-4",
+        "artId": "apprentice",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.7815339103765846,
+          0.1020650480140582,
+          0
+        ],
+        "rotation": [
+          0,
+          0.11712595282731425,
+          0.12613564150633844
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "move": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-4",
+        "artId": "apprentice",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.7151513427401004,
+          0.07847718401980017,
+          0
+        ],
+        "rotation": [
+          0,
+          1.5920408388915593e-17,
+          -0.04647231720437669
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "hit": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-4",
+        "artId": "apprentice",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.22094178595385677,
+          0.06076859588691736,
+          0
+        ],
+        "rotation": [
+          0,
+          1.5920408388915593e-17,
+          -0.09860250894686477
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "cast": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-4",
+        "artId": "apprentice",
+        "side": 0,
+        "star": 3,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.203125,
+          0.06290950057740047,
+          0
+        ],
+        "rotation": [
+          0,
+          0.09522418328792845,
+          2.1705127111532148e-17
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ],
+    "death": [
+      {
+        "id": "1:demo-target",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1,
+          0.0255,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "0:demo-4",
+        "artId": "apprentice",
+        "side": 0,
+        "star": 3,
+        "dying": true,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.23169642857142847,
+          0.13962892197795554,
+          0
+        ],
+        "rotation": [
+          0,
+          0.08928571428571398,
+          0.326665903481321
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ]
+  },
+  "game": {
+    "diagnostics": {
+      "act": 1,
+      "draws": 27,
+      "tokens": 4,
+      "portraitTextures": 5,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": true,
+        "time": 2.4299000000059614,
+        "phase": "result",
+        "ghosts": 0,
+        "events": {
+          "placed": 6,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 1
+        }
+      },
+      "triangles": 3524,
+      "drawCalls": 31,
+      "textures": 20,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.38854471842448,
+      "portraitMiB": 0.21525065104166663,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "숲의 인쇄 보드"
+    },
+    "tokens": [
+      {
+        "id": "1:enc-1-0-0-1",
+        "artId": "gobarcher",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          0.578125,
+          0.0255,
+          -2.5
+        ],
+        "rotation": [
+          0,
+          0.017681016772985458,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "1:enc-1-0-0-0",
+        "artId": "woodguard",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          1.578125,
+          0.0255,
+          -0.5
+        ],
+        "rotation": [
+          0,
+          -0.030220372471958398,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "1:enc-1-0-0-2",
+        "artId": "bandit",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          0.578125,
+          0.0255,
+          -0.5
+        ],
+        "rotation": [
+          0,
+          -0.025076032038778066,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      },
+      {
+        "id": "1:enc-1-0-0-3",
+        "artId": "goblin",
+        "side": 1,
+        "star": 1,
+        "dying": false,
+        "diameter": 0.71875,
+        "thickness": 0.045,
+        "position": [
+          -0.421875,
+          0.0255,
+          -0.5
+        ],
+        "rotation": [
+          0,
+          0.002654650993645191,
+          0
+        ],
+        "opacity": 1,
+        "meshes": 2
+      }
+    ]
+  },
+  "errors": []
+}

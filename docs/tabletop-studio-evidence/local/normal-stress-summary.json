@@ -1,0 +1,1012 @@
+{
+  "description": "Visual fixture only: 9 three-star allies + 12 foes",
+  "themes": [
+    {
+      "act": 1,
+      "draws": 4,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 0.3750999999940396,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 21,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 12534,
+      "drawCalls": 65,
+      "textures": 28,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.732945760091148,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "숲의 인쇄 보드"
+    },
+    {
+      "act": 2,
+      "draws": 7,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 0.6750999999940396,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 21,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 12534,
+      "drawCalls": 65,
+      "textures": 28,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.732945760091148,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 2,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "폐허의 인쇄 보드"
+    },
+    {
+      "act": 3,
+      "draws": 10,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 0.9750999999940395,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 21,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 12534,
+      "drawCalls": 65,
+      "textures": 28,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.732945760091148,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 3,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "황야의 인쇄 보드"
+    },
+    {
+      "act": 4,
+      "draws": 13,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 1.2750999999940398,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 21,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 12534,
+      "drawCalls": 65,
+      "textures": 28,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.732945760091148,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 4,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "설원의 인쇄 보드"
+    },
+    {
+      "act": 5,
+      "draws": 16,
+      "tokens": 21,
+      "portraitTextures": 13,
+      "coins": {
+        "thickness": 0.045,
+        "thicknessPx": 2.88,
+        "raisedPins": 0,
+        "reducedMotion": false,
+        "time": 1.57509999999404,
+        "phase": "prep",
+        "ghosts": 0,
+        "events": {
+          "placed": 21,
+          "moved": 0,
+          "melee": 0,
+          "ranged": 0,
+          "magic": 0,
+          "cast": 0,
+          "hit": 0,
+          "death": 0
+        }
+      },
+      "triangles": 12534,
+      "drawCalls": 65,
+      "textures": 28,
+      "geometries": 24,
+      "programs": 16,
+      "quality": "normal",
+      "textureBudgetMiB": 22.732945760091148,
+      "portraitMiB": 0.5596516927083333,
+      "materials": {
+        "source": "ambientCG Wood062 (CC0) + original printed paper",
+        "count": 6,
+        "textureMiB": 9.739583333333334
+      },
+      "environment": {
+        "theme": 5,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "name": "밤의 인쇄 보드"
+    }
+  ],
+  "portraitCache": {
+    "enemyTypes": 85,
+    "samples": [
+      {
+        "act": 5,
+        "draws": 29,
+        "tokens": 21,
+        "portraitTextures": 22,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 2.905099999994041,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 33,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 37,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.204381306966148,
+        "portraitMiB": 1.0310872395833335,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 31,
+        "tokens": 21,
+        "portraitTextures": 30,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.144599999994041,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 45,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 45,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.632766723632812,
+        "portraitMiB": 1.4594726562499996,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 33,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.3865000000000016,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 57,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 46,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.65954081217448,
+        "portraitMiB": 1.486246744791666,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 35,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.6285999999940413,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 69,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 46,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.61071268717448,
+        "portraitMiB": 1.437418619791666,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 37,
+        "tokens": 21,
+        "portraitTextures": 31,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.8714000000059623,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 81,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 46,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.662144978841148,
+        "portraitMiB": 1.488850911458333,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 39,
+        "tokens": 21,
+        "portraitTextures": 30,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.1096000000238435,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 93,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 45,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.637975056966148,
+        "portraitMiB": 1.4646809895833328,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 41,
+        "tokens": 21,
+        "portraitTextures": 32,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.353100000023843,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 105,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 12534,
+        "drawCalls": 65,
+        "textures": 47,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.637486775716148,
+        "portraitMiB": 1.4641927083333328,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      },
+      {
+        "act": 5,
+        "draws": 43,
+        "tokens": 10,
+        "portraitTextures": 32,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.561700000017882,
+          "phase": "prep",
+          "ghosts": 0,
+          "events": {
+            "placed": 106,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        },
+        "triangles": 6704,
+        "drawCalls": 43,
+        "textures": 47,
+        "geometries": 24,
+        "programs": 16,
+        "quality": "normal",
+        "textureBudgetMiB": 23.637486775716148,
+        "portraitMiB": 1.4641927083333328,
+        "materials": {
+          "source": "ambientCG Wood062 (CC0) + original printed paper",
+          "count": 6,
+          "textureMiB": 9.739583333333334
+        },
+        "environment": {
+          "theme": 5,
+          "decorations": [
+            {
+              "x": 260,
+              "y": -28,
+              "radius": 37,
+              "kind": "cards"
+            },
+            {
+              "x": 144,
+              "y": -11,
+              "radius": 13,
+              "kind": "dice"
+            },
+            {
+              "x": 179,
+              "y": -13,
+              "radius": 11,
+              "kind": "dice"
+            },
+            {
+              "x": 500,
+              "y": 300,
+              "radius": 51,
+              "kind": "counter tray"
+            }
+          ],
+          "sharedGeometries": 20,
+          "localTextures": 3,
+          "textureMiB": 1.0833333333333333
+        },
+        "studio": {
+          "reflectionMiB": 1.5,
+          "shadowMiB": 8,
+          "reflectionSize": 128,
+          "source": "local softbox studio"
+        },
+        "name": "밤의 인쇄 보드"
+      }
+    ]
+  },
+  "errors": []
+}

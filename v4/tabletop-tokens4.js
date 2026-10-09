@@ -1,5 +1,6 @@
 /* Physical coin tokens. Visual state only: never writes to combat entities or RNG. */
 import * as THREE from './vendor/three.module.min.js';
+import { visualRandom } from './tabletop-materials4.js';
 
 const THICKNESS = .045, DROP_TIME = .26, DEATH_TIME = .56;
 const clamp = n => Math.max(0, Math.min(1, n));
@@ -23,7 +24,21 @@ export function createCoins(scene, config, invalidateShadow = () => {}) {
   const edgeContext = edgeCanvas.getContext('2d'); edgeContext.fillStyle = '#999999'; edgeContext.fillRect(0, 0, 256, 32);
   for (let x = 0; x < 256; x += 4) { edgeContext.fillStyle = '#dddddd'; edgeContext.fillRect(x, 2, 1, 28); edgeContext.fillStyle = '#555555'; edgeContext.fillRect(x + 1, 2, 1, 28); }
   const edgeTexture = new THREE.CanvasTexture(edgeCanvas);
-  const sides = ['#a9afb9', '#cbd0d5', '#c4a66b'].map(color => new THREE.MeshStandardMaterial({ color, metalness: .48, roughness: .36, bumpMap: edgeTexture, bumpScale: .0015 }));
+  const sides = ['#a9afb4', '#c4c8cb', '#c4a66b'].map(color => new THREE.MeshStandardMaterial({ color, metalness: .94, roughness: .29, envMapIntensity: .8, bumpMap: edgeTexture, bumpScale: .0008 }));
+  const grainCanvas = document.createElement('canvas'); grainCanvas.width = grainCanvas.height = 128;
+  const gc = grainCanvas.getContext('2d'), random = visualRandom(273);
+  gc.fillStyle = '#bcbcbc'; gc.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 6500; i++) { gc.fillStyle = i % 2 ? '#c5c5c5' : '#b5b5b5'; gc.fillRect(random()*128, random()*128, 1, 1); }
+  const printGrain = new THREE.CanvasTexture(grainCanvas);
+  // One instanced contact-shadow pass grounds all coins, even on low quality.
+  const shadowCanvas = document.createElement('canvas'); shadowCanvas.width = shadowCanvas.height = 64;
+  const sc = shadowCanvas.getContext('2d'), gradient = sc.createRadialGradient(32,32,23,32,32,32);
+  gradient.addColorStop(0,'rgba(33,27,20,.40)'); gradient.addColorStop(.55,'rgba(33,27,20,.17)'); gradient.addColorStop(1,'rgba(33,27,20,0)');
+  sc.fillStyle=gradient;sc.fillRect(0,0,64,64);
+  const contactTexture=new THREE.CanvasTexture(shadowCanvas),contactGeometry=new THREE.PlaneGeometry(2,2);
+  const contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,depthWrite:false,toneMapped:false});
+  const contact=new THREE.InstancedMesh(contactGeometry,contactMaterial,64),shadowPose=new THREE.Object3D();
+  contact.frustumCulled=false;contact.renderOrder=1;contact.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(contact);
   let frame = 0, time = 0, previous = performance.now(), context, reduced = reducedPreference.matches, phase = 'prep';
   const counts = { placed: 0, moved: 0, melee: 0, ranged: 0, magic: 0, cast: 0, hit: 0, death: 0 };
   const xy = (x, y) => new THREE.Vector3((x - W / 2) / CS, 0, (y - H / 2) / CS);
@@ -73,7 +88,8 @@ export function createCoins(scene, config, invalidateShadow = () => {}) {
     if (!e) {
       const group = new THREE.Group(), body = new THREE.Mesh(bodyGeometry, sides[Math.min(2, Math.max(0, (o.star || 1) - 1))]);
       body.scale.set(radius / CS, THICKNESS, radius / CS); body.castShadow = body.receiveShadow = true; group.add(body);
-      const face = new THREE.Mesh(faceGeometry, new THREE.MeshStandardMaterial({ map: asset.texture, transparent: true, roughness: .84, metalness: .02 }));
+      const face = new THREE.Mesh(faceGeometry, new THREE.MeshStandardMaterial({ map: asset.texture, transparent: true, roughness: .90, metalness: 0,
+        bumpMap: printGrain, bumpScale: .00035, envMapIntensity: .3 }));
       face.rotation.x = -Math.PI / 2; face.position.y = THICKNESS / 2 + .001; face.scale.setScalar(radius / CS * .966); face.receiveShadow = true; group.add(face);
       scene.add(group); e = { id, asset: asset.key, group, body, face, radius: radius / CS, born: time, target, origin: target.clone(), seen: frame, o, lastCasts: null };
       entries.set(id, e); counts.placed++; invalidateShadow();
@@ -122,7 +138,7 @@ export function createCoins(scene, config, invalidateShadow = () => {}) {
       let p = e.target.clone(), lift = (e.o.lift || 0) / CS, rx = 0, rz = 0, yaw = -(e.o.rot || 0);
       if (!reduced) {
         const birth = clamp((time - e.born) / DROP_TIME);
-        lift += .22 * (1 - birth) ** 2; rx += .13 * Math.sin(birth * Math.PI * 2) * (1 - birth);
+        lift += .16 * (1 - birth) ** 2; rx += .10 * Math.sin(birth * Math.PI * 2) * (1 - birth);
         if (e.moveAt != null && !e.o.entity) {
           const k = clamp((time - e.moveAt) / .22), smooth = k * k * (3 - 2 * k);
           p.lerpVectors(e.origin, e.target, smooth); lift += .075 * Math.sin(k * Math.PI); rz += .09 * Math.sin(k * Math.PI);
@@ -133,11 +149,11 @@ export function createCoins(scene, config, invalidateShadow = () => {}) {
         if (d && a) {
           const forward = e.attack.kind === 'melee' ? .055 : -.035, lean = e.attack.kind === 'melee' ? .23 : -.14;
           p.x += d.x * a * forward; p.z += d.z * a * forward; rx += d.z * a * lean; rz -= d.x * a * lean;
-          lift += a * (e.attack.kind === 'magic' ? .07 : .015); if (e.attack.kind === 'magic') yaw += .13 * a;
+          lift += a * (e.attack.kind === 'magic' ? .035 : .008); if (e.attack.kind === 'magic') yaw += .13 * a;
         }
         const h = pulse(time, e.hit, .22), hd = e.hit?.dir;
         if (hd && h) { const wobble = Math.sin((time - e.hit.at) * 48) * h; rx += hd.z * wobble * .1; rz -= hd.x * wobble * .1; p.x += hd.x * h * .018; p.z += hd.z * h * .018; }
-        const casting = pulse(time, e.cast, .42); lift += casting * .1; yaw += casting * .14;
+        const casting = pulse(time, e.cast, .42); lift += casting * .055; yaw += casting * .14;
         if (!e.o.entity && e.o.lift) { rx += .085; rz -= .045; }
         if (e.o.popT > 0) lift += .11 * Math.sin(Math.PI * clamp(1 - e.o.popT / .35));
       } else { lift = 0; yaw = -(e.o.entity?.rot || e.o.rot || 0); }
@@ -155,15 +171,24 @@ export function createCoins(scene, config, invalidateShadow = () => {}) {
       e.face.material.emissive.set('#ffffff'); e.face.material.emissiveIntensity = reduced ? 0 : Math.min(.5, (e.o.flash || 0) / .12 * .5);
       if (oldPosition.distanceToSquared(p) > 1e-8 || oldRotation.x !== rx || oldRotation.y !== yaw || oldRotation.z !== rz) invalidateShadow();
     }
+    let shadowCount=0;
+    for(const e of entries.values()) {
+      if(shadowCount===64)break;
+      const height=e.group.position.y-THICKNESS/2,visible=height<.13&&e.face.material.opacity>.3;
+      shadowPose.position.set(e.group.position.x,.0015,e.group.position.z);
+      shadowPose.rotation.set(-Math.PI/2,0,0);shadowPose.scale.setScalar(visible?e.radius*1.10:0);shadowPose.updateMatrix();
+      contact.setMatrixAt(shadowCount++,shadowPose.matrix);
+    }
+    contact.count=shadowCount;contact.instanceMatrix.needsUpdate=true;
     // Leave visible and departing faces intact; bound only the unused GPU cache.
     let cached = [...portraits.values()].reduce((n, t) => n + bytesMiB(t), 0);
     for (const [key, t] of portraits) { if (cached <= 1.5) break; if (!used.has(key)) { cached -= bytesMiB(t); t.dispose(); portraits.delete(key); } }
   }
   return { begin, token, attack, hit, death, update,
-    stats: () => ({ tokens: entries.size, portraitTextures: portraits.size, portraitMiB: [...portraits.values()].reduce((n, t) => n + bytesMiB(t), 0), extraTextureMiB: bytesMiB(edgeTexture),
+    stats: () => ({ tokens: entries.size, portraitTextures: portraits.size, portraitMiB: [...portraits.values()].reduce((n, t) => n + bytesMiB(t), 0), extraTextureMiB: bytesMiB(edgeTexture)+bytesMiB(printGrain)+bytesMiB(contactTexture),
       coins: { thickness: THICKNESS, thicknessPx: THICKNESS * CS, raisedPins: 0, reducedMotion: reduced, time, phase, ghosts: [...entries.values()].filter(e => e.dying).length, events: { ...counts } } }),
     inspect: () => [...entries.values()].map(e => ({ id: e.id, artId: e.o.artId, side: e.o.side, star: e.o.star || 1, dying: !!e.dying, diameter: e.radius * 2, thickness: THICKNESS,
       position: e.group.position.toArray(), rotation: [e.group.rotation.x, e.group.rotation.y, e.group.rotation.z], opacity: e.face.material.opacity, meshes: e.group.children.length })),
-    dispose() { [...entries.values()].forEach(release); portraits.forEach(t => t.dispose()); portraits.clear(); sides.forEach(m => m.dispose()); edgeTexture.dispose(); bodyGeometry.dispose(); faceGeometry.dispose(); effects.clear(); deaths.clear(); },
+    dispose() { [...entries.values()].forEach(release); portraits.forEach(t => t.dispose()); portraits.clear(); sides.forEach(m => m.dispose()); edgeTexture.dispose(); printGrain.dispose(); contactTexture.dispose(); contactGeometry.dispose(); contactMaterial.dispose(); contact.dispose(); scene.remove(contact); bodyGeometry.dispose(); faceGeometry.dispose(); effects.clear(); deaths.clear(); },
   };
 }

@@ -4,6 +4,7 @@ import * as THREE from './vendor/three.module.min.js';
 import { createMaterials } from './tabletop-materials4.js';
 import { createEnvironment, LOOKS } from './tabletop-environment4.js';
 import { createCoins } from './tabletop-tokens4.js';
+import { createStudio } from './tabletop-lighting4.js';
 const lowQuality = new URLSearchParams(location.search).get('quality') === 'low';
 const use2d = new URLSearchParams(location.search).get('view') === '2d';
 const materials = use2d ? null : await createMaterials(lowQuality);
@@ -18,18 +19,13 @@ function create(source, config) {
   renderer.setPixelRatio(Math.min(lowQuality ? 1 : 1.5, devicePixelRatio || 1));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.shadowMap.autoUpdate = false;
   const dom = renderer.domElement; dom.id = 'tabletopCanvas'; dom.setAttribute('aria-hidden', 'true');
   source.before(dom); source.parentElement.classList.add('has-tabletop');
   const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-W / CS / 2, W / CS / 2, H / CS / 2, -H / CS / 2, .1, 60);
   camera.position.set(0, 13, 9.5); camera.lookAt(0, 0, 0);
-  const hemisphere = new THREE.HemisphereLight('#fff1da', '#363d36', 1.05); scene.add(hemisphere);
-  const light = new THREE.DirectionalLight('#fff2dd', 3.25); light.position.set(-3.5, 7, -4.5);
-  light.castShadow = true; light.shadow.mapSize.set(lowQuality ? 512 : 1024, lowQuality ? 512 : 1024);
-  Object.assign(light.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: .1, far: 22 });
-  light.shadow.normalBias = .02; light.shadow.bias = -.0002; scene.add(light);
-  const fill = new THREE.DirectionalLight('#d4e5ef', .8); fill.position.set(4, 4, 4); scene.add(fill);
+  const studio = createStudio(renderer, scene, lowQuality);
   const xy = (x, y) => new THREE.Vector3((x - W / 2) / CS, 0, (y - H / 2) / CS);
   const environment = createEnvironment(config, materials, lowQuality); scene.add(environment.root);
   let act = 0, draws = 0, active = true, lastDraw = 0;
@@ -46,8 +42,7 @@ function create(source, config) {
     const L = environment.build(act);
     renderer.shadowMap.needsUpdate = true;
     scene.background = new THREE.Color(L.sky);
-    light.color.set(L.light); fill.color.set(L.fill);
-    hemisphere.color.set(L.light); hemisphere.groundColor.set(L.sky);
+    studio.theme(L);
     renderer.toneMappingExposure = L.exposure;
     document.getElementById('tabletopStatus').textContent = L.name;
     document.getElementById('phone').dataset.tabletop = '3d';
@@ -82,15 +77,15 @@ function create(source, config) {
     const materialStats = materials.stats(), envStats = environment.diagnostics();
     // RGBA8 maps + mip levels, live canvas, and a conservative 8 B/px shadow target.
     // This is a budget estimate, not a device-driver GPU allocation measurement.
-    const coinStats = coins.stats(), portraitMiB = coinStats.portraitMiB;
+    const coinStats = coins.stats(), portraitMiB = coinStats.portraitMiB, studioStats = studio.stats();
     const textureBudgetMiB = materialStats.textureMiB + envStats.textureMiB + textureMiB(overlayTexture)
       + portraitMiB + coinStats.extraTextureMiB
-      + light.shadow.mapSize.x * light.shadow.mapSize.y * 8 / 1048576;
+      + studioStats.shadowMiB + studioStats.reflectionMiB;
     return { act, draws, tokens: coinStats.tokens, portraitTextures: coinStats.portraitTextures, coins: coinStats.coins,
       triangles: renderer.info.render.triangles, drawCalls: renderer.info.render.calls,
       textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries,
       programs: renderer.info.programs.length, quality: lowQuality ? 'low' : 'normal', textureBudgetMiB, portraitMiB,
-      materials: materialStats, environment: envStats, name: LOOKS[act]?.name };
+      materials: materialStats, environment: envStats, studio: studioStats, name: LOOKS[act]?.name };
   }
   return { begin, token: coins.token, attack: coins.attack, hit: coins.hit, death: coins.death, inspectTokens: coins.inspect, render, resize, point, screen, get active() { return active; },
     diagnostics };

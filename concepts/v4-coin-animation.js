@@ -1,14 +1,13 @@
 import * as THREE from '../v4/vendor/three.module.min.js';
 import { createCoins } from '../v4/tabletop-tokens4.js';
 import { createMaterials } from '../v4/tabletop-materials4.js';
+import { createStudio } from '../v4/tabletop-lighting4.js';
 const canvas = document.getElementById('stage'), renderer = new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(1.5,devicePixelRatio));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#393830');
 const camera=new THREE.OrthographicCamera(-2.05,2.05,1.1,-1.1,.1,30);camera.position.set(0,5,5);camera.lookAt(0,0,0);
-scene.add(new THREE.HemisphereLight('#fff4dc','#4e4a40',2));
-const light=new THREE.DirectionalLight('#fff1d3',3.2);light.position.set(-3,5,-2);light.castShadow=true;light.shadow.mapSize.set(1024,1024);Object.assign(light.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:12});light.shadow.normalBias=.01;scene.add(light);
-const fill=new THREE.DirectionalLight('#d6e6f7',1.1);fill.position.set(4,3,3);scene.add(fill);
+createStudio(renderer,scene);
 const materials=await createMaterials(false),table=new THREE.Mesh(new THREE.BoxGeometry(12,.1,6),materials.wood('#ddd2ba',.25));table.position.y=-.053;table.receiveShadow=true;scene.add(table);
 // Match the game's printed tier colors and class rims as well as its shared coin model.
 const tierColors=[null,'#cfcabd','#86c991','#7eaaea','#ad8be6','#efc33f'];
@@ -28,7 +27,8 @@ document.getElementById('auto').onclick=()=>{auto=!auto;document.getElementById(
 document.getElementById('pause').onclick=()=>{paused=!paused;document.getElementById('pause').setAttribute('aria-pressed',paused);};
 document.getElementById('rank').onclick=()=>{star=star%3+1;document.getElementById('rank').textContent='성급 '+'★'.repeat(star);};
 document.getElementById('auto').setAttribute('aria-pressed',auto);document.getElementById('state').textContent='직업과 움직임을 선택하세요';
-function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.left=-1.1*w/h;camera.right=1.1*w/h;camera.updateProjectionMatrix();}window.addEventListener('resize',resize);resize();
+let dirty=true,lastPose='';
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.left=-1.1*w/h;camera.right=1.1*w/h;camera.updateProjectionMatrix();dirty=true;}window.addEventListener('resize',resize);resize();
 let lastDraw=0;
 function loop(now){requestAnimationFrame(loop);if(document.hidden||now-lastDraw<1000/30)return;lastDraw=now;
  tokenApi.begin({context,phase:'demo',paused,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});const t=tokenApi.stats().coins.time;
@@ -36,6 +36,8 @@ function loop(now){requestAnimationFrame(loop);if(document.hidden||now-lastDraw<
  if(action?.name==='move'){const k=Math.min(1,(t-action.at)/.65),ease=k*k*(3-2*k);hero.px=74+35*ease;hero.moving=k<1?{fx:74,fy:87,tx:109,ty:87,t:k}:null;}else hero.moving=null;
  if(hero.flash&&!paused)hero.flash=Math.max(0,.12-(t-(action?.at||0)));
  if(!hero.dead)tokenApi.token(hero.px,hero.py,{artId:hero.artId,side:0,star,entity:hero,lift:selected?9:hero.moving?Math.sin(hero.moving.t*Math.PI)*5:0,flash:hero.flash},23);
- tokenApi.token(target.px,target.py,{artId:target.artId,side:1,entity:target},23);tokenApi.update();renderer.render(scene,camera);
+ tokenApi.token(target.px,target.py,{artId:target.artId,side:1,entity:target},23);tokenApi.update();
+ const pose=JSON.stringify([tokenApi.inspect(),hero.flash]);
+ if(dirty||pose!==lastPose){renderer.render(scene,camera);dirty=false;lastPose=pose;}
 }
 window.COIN_DEMO={play,inspect:tokenApi.inspect,stats:tokenApi.stats,get paused(){return paused;},get subject(){return hero.uidRef;}};requestAnimationFrame(loop);
