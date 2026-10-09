@@ -1,11 +1,14 @@
 // Exercise the actual shared board/coins under the close-up camera, locally or hosted.
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const verifiedTransport=require('./browser-tls4.cjs');
 const url=process.env.STUDIO_URL||'http://127.0.0.1:8001/concepts/v4-tabletop-studio.html';
 const out=process.env.STUDIO_OUTPUT||path.resolve(__dirname,'../docs/tabletop-studio-evidence/local');fs.mkdirSync(out,{recursive:true});
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox','--enable-unsafe-swiftshader']});
+ let transport;
  try{
   const page=await browser.newPage({viewport:{width:1040,height:850},deviceScaleFactor:1}),summary={url,views:[],themes:[],errors:[],hostingErrors:[],assets:[]};
+  transport=await verifiedTransport(page);summary.transport=transport.transport;
   page.on('pageerror',e=>summary.errors.push(e.message));page.on('console',m=>{if(m.type()!=='error')return;
    if(m.location().url.startsWith('https://server.ethicalads.io/')&&m.text().includes('ERR_BLOCKED_BY_RESPONSE.NotSameOrigin'))summary.hostingErrors.push(m.text());else summary.errors.push(m.text());});
   page.on('response',r=>{if(/\/(v4|concepts)\/.*\.(js|jpg)(\?|$)/.test(r.url()))summary.assets.push({url:r.url(),status:r.status()});});
@@ -43,5 +46,5 @@ const out=process.env.STUDIO_OUTPUT||path.resolve(__dirname,'../docs/tabletop-st
   assert.ok(summary.assets.every(a=>a.status>=200&&a.status<400));assert.deepEqual(summary.errors,[]);
   fs.writeFileSync(path.join(out,'studio-summary.json'),JSON.stringify(summary,null,2)+'\n');
   console.log('PASS shared physical board/coins, reflection map, 3 camera angles at 3 sizes, 5 acts, attack/cast/hit, pause, ranks, loaded assets and console errors 0');
- }finally{await browser.close();}
+ }finally{await browser.close();await transport?.dispose();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

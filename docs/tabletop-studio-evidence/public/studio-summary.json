@@ -1,0 +1,1457 @@
+{
+  "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/concepts/v4-tabletop-studio.html",
+  "views": [
+    {
+      "width": 1040,
+      "height": 850,
+      "overflow": false,
+      "angle": "corner",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 0.5613000000119209,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "width": 1040,
+      "height": 850,
+      "overflow": false,
+      "angle": "edge",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 0.9927000000178814,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 550.187960054232,
+          "right": 831.7214338752361,
+          "top": 237.4980851220122,
+          "bottom": 349.0418259558573,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 162.25088861929237,
+          "right": 440.6407164733665,
+          "top": 235.54295766285588,
+          "bottom": 345.8218215470441,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2342,
+      "drawCalls": 24
+    },
+    {
+      "width": 1040,
+      "height": 850,
+      "overflow": false,
+      "angle": "overhead",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 1.3552000000178817,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 381.00711116249363,
+          "right": 490.52753422650636,
+          "top": 300.6280799065946,
+          "bottom": 410.3749259839031,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 499.5170952005108,
+          "right": 608.9213338151333,
+          "top": 148.640281816622,
+          "bottom": 257.7989967027705,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "angle": "corner",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 1.9383000000119217,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 197.9109641132176,
+          "right": 293.7404882442724,
+          "top": 164.78752506229003,
+          "bottom": 227.6742256628844,
+          "width": 360,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 77.92475478947293,
+          "right": 162.6910118634561,
+          "top": 145.8344987436996,
+          "bottom": 201.41906452552192,
+          "width": 360,
+          "height": 368
+        }
+      ],
+      "triangles": 2342,
+      "drawCalls": 24
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "angle": "edge",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 2.2017000000178824,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 203.7367570125729,
+          "right": 324.82642317214453,
+          "top": 166.14971403097297,
+          "bottom": 214.12551654015365,
+          "width": 360,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 36.88210263195375,
+          "right": 156.61966299929745,
+          "top": 165.30879899477674,
+          "bottom": 212.7405684073308,
+          "width": 360,
+          "height": 368
+        }
+      ],
+      "triangles": 2040,
+      "drawCalls": 18
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "angle": "overhead",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 2.4753000000119214,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 130.97080049999727,
+          "right": 178.07635880709952,
+          "top": 193.30239995982564,
+          "bottom": 240.50534450920563,
+          "width": 360,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 181.94283664538102,
+          "right": 228.99842314629385,
+          "top": 127.93130400714928,
+          "bottom": 174.88128890441743,
+          "width": 360,
+          "height": 368
+        }
+      ],
+      "triangles": 3062,
+      "drawCalls": 29
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "overflow": false,
+      "angle": "corner",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 2.8656999999880806,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 181.41838377044948,
+          "right": 269.26211422391634,
+          "top": 166.38856464043252,
+          "bottom": 224.03470685764404,
+          "width": 330,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 71.43102522368352,
+          "right": 149.13342754150145,
+          "top": 149.01495718172464,
+          "bottom": 199.9674758150618,
+          "width": 330,
+          "height": 368
+        }
+      ],
+      "triangles": 2342,
+      "drawCalls": 24
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "overflow": false,
+      "angle": "edge",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.124399999976159,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 186.7586939281918,
+          "right": 297.7575545744658,
+          "top": 167.63723786172525,
+          "bottom": 211.6150568284742,
+          "width": 330,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 33.80859407929094,
+          "right": 143.56802441602267,
+          "top": 166.86639907854533,
+          "bottom": 210.34552104005326,
+          "width": 330,
+          "height": 368
+        }
+      ],
+      "triangles": 2040,
+      "drawCalls": 18
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "overflow": false,
+      "angle": "overhead",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.4020999999642383,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 120.0565671249975,
+          "right": 163.23666223984122,
+          "top": 192.52719996317347,
+          "bottom": 235.79656580010518,
+          "width": 330,
+          "height": 368
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 166.78093359159928,
+          "right": 209.91522121743603,
+          "top": 132.60369533988683,
+          "bottom": 175.64118149571598,
+          "width": 330,
+          "height": 368
+        }
+      ],
+      "triangles": 3062,
+      "drawCalls": 29
+    }
+  ],
+  "themes": [
+    {
+      "angle": "corner",
+      "act": 1,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.8301999999880803,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 1,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "angle": "corner",
+      "act": 2,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 3.9605000000000015,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 2,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "angle": "corner",
+      "act": 3,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.105199999988081,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 3,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "angle": "corner",
+      "act": 4,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.238800000011922,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 4,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    },
+    {
+      "angle": "corner",
+      "act": 5,
+      "coins": {
+        "tokens": 2,
+        "portraitTextures": 2,
+        "portraitMiB": 0.34440104166666663,
+        "extraTextureMiB": 0.14583333333333334,
+        "coins": {
+          "thickness": 0.045,
+          "thicknessPx": 2.88,
+          "raisedPins": 0,
+          "reducedMotion": false,
+          "time": 4.359600000023843,
+          "phase": "studio",
+          "ghosts": 0,
+          "events": {
+            "placed": 2,
+            "moved": 0,
+            "melee": 0,
+            "ranged": 0,
+            "magic": 0,
+            "cast": 0,
+            "hit": 0,
+            "death": 0
+          }
+        }
+      },
+      "studio": {
+        "reflectionMiB": 1.5,
+        "shadowMiB": 8,
+        "reflectionSize": 128,
+        "source": "local softbox studio"
+      },
+      "board": {
+        "theme": 5,
+        "decorations": [
+          {
+            "x": 260,
+            "y": -28,
+            "radius": 37,
+            "kind": "cards"
+          },
+          {
+            "x": 144,
+            "y": -11,
+            "radius": 13,
+            "kind": "dice"
+          },
+          {
+            "x": 179,
+            "y": -13,
+            "radius": 11,
+            "kind": "dice"
+          },
+          {
+            "x": 500,
+            "y": 300,
+            "radius": 51,
+            "kind": "counter tray"
+          }
+        ],
+        "sharedGeometries": 20,
+        "localTextures": 3,
+        "textureMiB": 1.0833333333333333
+      },
+      "framing": [
+        {
+          "id": "0:studio-war",
+          "left": 536.6429915632309,
+          "right": 759.4466351679333,
+          "top": 234.3309957698243,
+          "bottom": 380.54257466620624,
+          "width": 990,
+          "height": 558
+        },
+        {
+          "id": "0:studio-arc",
+          "left": 257.67505488552445,
+          "right": 454.7566025825355,
+          "top": 190.26520957910157,
+          "bottom": 319.49932502183856,
+          "width": 990,
+          "height": 558
+        }
+      ],
+      "triangles": 2462,
+      "drawCalls": 26
+    }
+  ],
+  "errors": [],
+  "hostingErrors": [],
+  "assets": [
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/data4.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/concepts/v4-tabletop-studio.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/tabletop-lighting4.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/tabletop-tokens4.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/tabletop-environment4.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/tabletop-materials4.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/vendor/three.module.min.js",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/assets/tabletop/Wood062-normal-dx.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/assets/tabletop/Wood062-roughness.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/assets/tabletop/Wood062-color.jpg",
+      "status": 200
+    }
+  ],
+  "transport": "HTTPS API through inherited proxy, TLS verification enabled with configured system/Node CA",
+  "attack": [
+    {
+      "id": "0:studio-war",
+      "artId": "squire",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        1.5896855393163076,
+        0.0523763980174983,
+        -2.488439460683692
+      ],
+      "rotation": [
+        0.04834407350455923,
+        -3.141592653589793,
+        -0.04834407350455923
+      ],
+      "opacity": 1,
+      "meshes": 2
+    },
+    {
+      "id": "0:studio-arc",
+      "artId": "archer",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        2.5854817068376503,
+        0.04280993415429053,
+        -1.4926432931623497
+      ],
+      "rotation": [
+        0.02942682735060127,
+        -3.141592653589793,
+        -0.02942682735060127
+      ],
+      "opacity": 1,
+      "meshes": 2
+    }
+  ],
+  "cast": [
+    {
+      "id": "0:studio-war",
+      "artId": "squire",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        1.578125,
+        0.06290950057740047,
+        -2.5
+      ],
+      "rotation": [
+        1.9916989293416343e-17,
+        -3.0463684703018648,
+        -1.9916989293416343e-17
+      ],
+      "opacity": 1,
+      "meshes": 2
+    },
+    {
+      "id": "0:studio-arc",
+      "artId": "archer",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        2.578125,
+        0.06290950057740045,
+        -1.5
+      ],
+      "rotation": [
+        1.2123384787296905e-17,
+        -3.0463684703018648,
+        -1.2123384787296905e-17
+      ],
+      "opacity": 1,
+      "meshes": 2
+    }
+  ],
+  "hit": [
+    {
+      "id": "0:studio-war",
+      "artId": "squire",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        1.5655266298330786,
+        0.060768595886917375,
+        -2.5125983701669212
+      ],
+      "rotation": [
+        0.06972250271833533,
+        -3.141592653589793,
+        -0.06972250271833533
+      ],
+      "opacity": 1,
+      "meshes": 2
+    },
+    {
+      "id": "0:studio-arc",
+      "artId": "archer",
+      "side": 0,
+      "star": 1,
+      "dying": false,
+      "diameter": 0.71875,
+      "thickness": 0.045,
+      "position": [
+        2.578125,
+        0.025500000000000012,
+        -1.5
+      ],
+      "rotation": [
+        1.2123384787296905e-17,
+        -3.141592653589793,
+        -1.2123384787296905e-17
+      ],
+      "opacity": 1,
+      "meshes": 2
+    }
+  ]
+}

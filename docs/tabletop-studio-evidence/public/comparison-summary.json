@@ -1,0 +1,20 @@
+{
+  "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/concepts/v4-tabletop-comparison.html",
+  "images": [
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/docs/board-ui-evidence/after/board-390x844.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/docs/tabletop-studio-evidence/local/studio-corner-1040.png",
+      "status": 200
+    },
+    {
+      "url": "https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/docs/tabletop-studio-evidence/local/ui/board-390x844.png",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "hostingErrors": [],
+  "transport": "HTTPS API through inherited proxy, TLS verification enabled with configured system/Node CA"
+}

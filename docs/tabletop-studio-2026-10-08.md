@@ -48,9 +48,19 @@
 - 동전 두께/지름 비율 7% 미만과 딱지당 2개 메쉬, 직업별 공격·이동·시전·피격·퇴장, 일시 정지와 동작 줄이기, 동일 카드의 개별 ID, 사망한 모델 해제와 즉시 부활, 시트에 의한 전투 시계 정지 통과: [동작 검사](tabletop-studio-evidence/local/motion/coin-summary.json), [실제 녹화](tabletop-studio-evidence/local/motion/coin-animations.webm).
 - 모든 완료된 게임·확대·UI·동작 검사에서 **게임/시안 콘솔 오류 0개**.
 
-공개 링크와 게시 후 검사는 아래에 기록한다.
+공개 코드 커밋: `d55395d927b44bef326470fb0f6d9155337592c0`.
+
+- [게임 플레이](https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/v4/index.html)
+- [보드 귀퉁이·딱지 확대 조작](https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/concepts/v4-tabletop-studio.html)
+- [실제 게임 전후 비교](https://rawcdn.githack.com/Molecova/jules_game/d55395d927b44bef326470fb0f6d9155337592c0/concepts/v4-tabletop-comparison.html)
+
+공개 주소에서도 세 직업을 정상 구매하고 390×844·360×640에서 실제 전투를 수행했다. 결과는 같은 입력의 시뮬레이션과 같은 승리/25.48초이며, 원목 맵 3개가 모두 HTTP 200으로 로드됐다. 게임 콘솔 오류는 0개: [공개 게임 검사](tabletop-studio-evidence/public/mobile-combat-summary.json).
+
+공개 확대 화면에서도 세 각도×세 크기·다섯 막·공격·시전·피격·성급·일시 정지 검사를 통과했고, 전후 비교의 원본 이미지 3장·슬라이더·두 폰 너비를 확인했다. 양쪽 콘솔 오류 0개: [공개 확대 검사](tabletop-studio-evidence/public/studio-summary.json), [공개 비교 검사](tabletop-studio-evidence/public/comparison-summary.json).
 
 검사 환경은 클라우드 Chromium의 소프트웨어 WebGL이다. 실제 휴대폰의 FPS 측정은 포함하지 않는다. 정적 UI 검사는 기존 검사 방식대로 재그리기만 3Hz로 제한하고, 전투와 자원 반복 전환 검사는 게임의 실제 렌더러를 쓴다. 선택적 Google Fonts CSS는 검사에서 시스템 글꼴로 대체한다. githack 첫 안내 화면의 선택적 광고에만 발생하는 `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin`은 별도 기록하고, 모든 게임·시안 오류는 실패로 처리한다.
+
+클라우드의 Chromium은 환경 프록시 CA를 신뢰하지 않아 직접 HTTPS 검사에서 `ERR_CERT_AUTHORITY_INVALID`가 발생했다. 영구 NSS 저장소에 CA를 추가하는 작업은 자동 승인 검토에서 지속적인 HTTPS 신뢰 범위 변경이라는 이유로 거부됐다. 공개 검사는 대신 이미 설정된 시스템/Node CA와 상속된 프록시를 사용하는 Playwright HTTPS API로 각 응답의 TLS 인증서·호스트명을 검증한 다음 브라우저에 전달했다. 응답 헤더·페이지 주소·원본 공개 자산을 유지하며 TLS 오류를 무시하지 않는다. [검증 전송 헬퍼](../tests/browser-tls4.cjs)는 `TABLETOP_PROXY_TLS=1 node --use-system-ca`로만 활성화하며 게임 코드에는 들어가지 않는다. 시스템 또는 브라우저 신뢰 저장소를 바꾸지 않는다.
 
 재실행:
 
@@ -62,5 +72,7 @@ STUDIO_OUTPUT=docs/tabletop-studio-evidence/local node tests/browser-tabletop-st
 UI_OUTPUT=docs/tabletop-studio-evidence/local/ui node tests/browser-board-ui4.cjs
 PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/coin-playwright COIN_OUTPUT=docs/tabletop-studio-evidence/local/motion node tests/browser-coin-animation4.cjs
 ```
+
+현재 클라우드의 공개 주소 검사에는 위 공개 링크를 `GAME_URL`/`STUDIO_URL`로 지정하고, `TABLETOP_PROXY_TLS=1 node --use-system-ca`로 브라우저 검사를 실행한다. 일반 브라우저로 플레이할 때 이 검사용 설정은 필요 없다.
 
 정적 서버: `python3 -m http.server 8001 --bind 127.0.0.1`을 저장소에서 실행한다. 배포 실행에 별도 빌드나 npm 설치는 필요 없다.
